@@ -1,4 +1,4 @@
-package main
+package allInOneBroker
 
 import (
 	"encoding/json"

@@ -1,4 +1,4 @@
-package main
+package allInOneBroker
 
 import (
 	easyConversion "github.com/sainipankaj15/data-type-conversion"

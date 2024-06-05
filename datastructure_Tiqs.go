@@ -1,4 +1,4 @@
-package main
+package allInOneBroker
 
 type ReadDataJsonTiqs struct {
 	Date        string `json:"Date"`
