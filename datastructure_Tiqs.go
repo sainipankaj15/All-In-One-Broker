@@ -50,3 +50,40 @@ type PositionAPIResp_Tiqs struct {
 	S                 string             `json:"status"`
 	NetPosition_Tiqss []NetPosition_Tiqs `json:"data"`
 }
+
+type Order_Tiqs struct {
+	Orders   int `json:"orders"`
+	Price    int `json:"price"`
+	Quantity int `json:"quantity"`
+}
+
+type QuotesData_Tiqs struct {
+	Asks         []Order_Tiqs `json:"asks"`
+	AvgPrice     int          `json:"avgPrice"`
+	Bids         []Order_Tiqs `json:"bids"`
+	Close        int          `json:"close"`
+	High         int          `json:"high"`
+	Low          int          `json:"low"`
+	LowerLimit   int          `json:"lowerLimit"`
+	Ltp          int          `json:"ltp"`
+	Ltq          int          `json:"ltq"`
+	Ltt          int          `json:"ltt"`
+	NetChange    int          `json:"netChange"`
+	NetChangeInd int          `json:"netChangeIndicator"`
+	Oi           int          `json:"oi"`
+	OiDayHigh    int          `json:"oiDayHigh"`
+	OiDayLow     int          `json:"oiDayLow"`
+	Open         int          `json:"open"`
+	OpeningOi    int          `json:"openingOI"`
+	Time         int          `json:"time"`
+	Token        int          `json:"token"`
+	TotalBuyQty  int          `json:"totalBuyQty"`
+	TotalSellQty int          `json:"totalSellQty"`
+	UpperLimit   int          `json:"upperLimit"`
+	Volume       int          `json:"volume"`
+}
+type QuotesAPIResp_Tiqs struct {
+	Data      []QuotesData_Tiqs       `json:"data"`
+	Status    string                  `json:"status"`
+	TokenData map[int]QuotesData_Tiqs `json:"-"`
+}

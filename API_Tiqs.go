@@ -132,3 +132,65 @@ func OrderPlaceMarket_Tiqs(exchange, token, quantity, TransSide, productType, Us
 	log.Println(msg)
 	return nil
 }
+
+// fetchQuotes sends a POST request with the specified data and userID, then returns the response body as a string and any error encountered.
+func FetchQuotes_Tiqs(tokenSlice []int, UserID_Tiqs string) (QuotesAPIResp_Tiqs, error) {
+
+	quotesUrl := "https://api.tiqs.trading/info/quotes/full"
+
+	accessTokenofUser, appIdOfUser, err := readingAccessToken_Tiqs(UserID_Tiqs)
+	if err != nil {
+		msg := fmt.Sprintf("Error while getting access token from file for %v User ", UserID_Tiqs)
+		log.Println(msg)
+		return QuotesAPIResp_Tiqs{}, err
+	}
+
+	// Convert []int to []byte
+	jsonData, err := json.Marshal(tokenSlice)
+	if err != nil {
+		log.Println("Error while Marshalling token slice", err)
+		return QuotesAPIResp_Tiqs{}, err
+	}
+
+	// Create a new request using http
+	req, err := http.NewRequest("POST", quotesUrl, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return QuotesAPIResp_Tiqs{}, fmt.Errorf("error creating request: %v", err)
+	}
+
+	// Add the Session and token to the request header
+	req.Header.Add("appId", appIdOfUser)
+	req.Header.Add("token", accessTokenofUser)
+	req.Header.Set("Content-Type", "application/json")
+
+	// Create an HTTP client and send the request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return QuotesAPIResp_Tiqs{}, fmt.Errorf("error sending request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return QuotesAPIResp_Tiqs{}, fmt.Errorf("error reading response body: %v", err)
+	}
+
+	log.Println(string(body))
+
+	var apiResponse QuotesAPIResp_Tiqs
+	err = json.Unmarshal(body, &apiResponse)
+	if err != nil {
+		fmt.Println("Error while unmarshaling JSON of Tiqs Quotes API", err)
+		return QuotesAPIResp_Tiqs{}, err
+	}
+
+	// Populate the map
+	apiResponse.TokenData = make(map[int]QuotesData_Tiqs)
+	for _, data := range apiResponse.Data {
+		apiResponse.TokenData[data.Token] = data
+	}
+
+	return apiResponse, nil
+}
