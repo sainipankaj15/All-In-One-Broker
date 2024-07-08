@@ -1,4 +1,4 @@
-package allInOneBroker
+package tiqs
 
 import (
 	"encoding/json"
