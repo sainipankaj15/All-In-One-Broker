@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	allInOneBroker "github.com/sainipankaj15/All-In-One-Broker"
+	allInOneBroker "github.com/sainipankaj15/All-In-One-Broker/Tiqs"
 )
 
 func main() {

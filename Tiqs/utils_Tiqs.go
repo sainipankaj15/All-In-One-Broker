@@ -1,8 +1,32 @@
 package allInOneBroker
 
 import (
+	"encoding/json"
+	"io/ioutil"
+
 	easyConversion "github.com/sainipankaj15/data-type-conversion"
 )
+
+func readingAccessToken_Tiqs(userID_Tiqs string) (string, string, error) {
+
+	fileName := userID_Tiqs + `.json`
+
+	fileContent, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		return "", "", err
+	}
+
+	var fileData ReadDataJsonTiqs
+
+	err = json.Unmarshal(fileContent, &fileData)
+	if err != nil {
+		return "", "", err
+	}
+	accessToken := fileData.AccessToken
+	APPID := fileData.APPID
+
+	return accessToken, APPID, nil
+}
 
 func CurrentQtyForAnySymbol_Tiqs(symbol string, productType string, UserId_Tiqs string) (string, error) {
 
