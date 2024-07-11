@@ -3,6 +3,7 @@ package fyers
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -173,12 +174,12 @@ func ExitPositionByID_Fyers(UserID_Fyers string, symbolName string) error {
 	return nil
 }
 
-func MarketDepth_Fyers(symbolName string, UserID_Fyers string) (MarketDepthAPI_Fyers, error) {
+func MarketDepthAPI_Fyers(symbolName string, UserID_Fyers string) (MarketDepthAPIResp_Fyers, error) {
 
 	AccessToken, err := readingAccessToken_Fyers(UserID_Fyers)
 	if err != nil {
 		log.Fatalf("Error while getting access token in Fyers")
-		return MarketDepthAPI_Fyers{}, err
+		return MarketDepthAPIResp_Fyers{}, err
 	}
 
 	url := fmt.Sprintf("https://api-t1.fyers.in/data/depth?symbol=%s&ohlcv_flag=1", symbolName)
@@ -186,7 +187,7 @@ func MarketDepth_Fyers(symbolName string, UserID_Fyers string) (MarketDepthAPI_F
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		log.Println("Error while making request in marketDepthAPI")
-		return MarketDepthAPI_Fyers{}, err
+		return MarketDepthAPIResp_Fyers{}, err
 	}
 
 	// Add the Bearer token to the request header
@@ -197,7 +198,7 @@ func MarketDepth_Fyers(symbolName string, UserID_Fyers string) (MarketDepthAPI_F
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println("Error while making request in marketDepthAPI")
-		return MarketDepthAPI_Fyers{}, err
+		return MarketDepthAPIResp_Fyers{}, err
 	}
 	defer resp.Body.Close()
 
@@ -205,19 +206,19 @@ func MarketDepth_Fyers(symbolName string, UserID_Fyers string) (MarketDepthAPI_F
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Println("Error while reading the body in byte array in marketDepthAPI")
-		return MarketDepthAPI_Fyers{}, err
+		return MarketDepthAPIResp_Fyers{}, err
 	}
 
 	jsonBody := string(body)
 	log.Printf("Direct Response from Market Depth API of fyers for %v is %v", symbolName, jsonBody)
 
 	// Converting into Response struct format
-	var marketDepthResponse MarketDepthAPI_Fyers
+	var marketDepthResponse MarketDepthAPIResp_Fyers
 
 	err = json.Unmarshal(body, &marketDepthResponse)
 	if err != nil {
 		log.Println("Error while Unmarshaling the data in marketDepthAPI")
-		return MarketDepthAPI_Fyers{}, err
+		return MarketDepthAPIResp_Fyers{}, err
 	}
 
 	return marketDepthResponse, nil
@@ -261,7 +262,7 @@ func LTP_Fyers(symbolName string, UserID_Fyers string) (float64, error) {
 	log.Printf("Direct Response from Market Depth API of fyers for %v is %v", symbolName, jsonBody)
 
 	// Converting into Response struct format
-	var marketDepthResponse MarketDepthAPI_Fyers
+	var marketDepthResponse MarketDepthAPIResp_Fyers
 
 	err = json.Unmarshal(body, &marketDepthResponse)
 	if err != nil {
@@ -458,6 +459,7 @@ func SymbolNameToExchToken(symbolName, UserID_Fyers string) (string, error) {
 
 	if len(fytoken) < 12 {
 		// Minimum size requirement not met
+		err := errors.New("fyers token(FyToken) is less than 12 ")
 		return "", err
 	}
 

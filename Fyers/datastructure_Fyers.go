@@ -69,7 +69,7 @@ type PositionAPIResp_Fyers struct {
 	Overall      Overall             `json:"overall"`
 }
 
-type MarketDepthAPI_Fyers struct {
+type MarketDepthAPIResp_Fyers struct {
 	D       map[string]StockData `json:"d"`
 	Message string               `json:"message"`
 	Status  string               `json:"s"`
