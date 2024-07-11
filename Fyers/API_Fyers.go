@@ -354,12 +354,12 @@ func PlaceOrder_Fyers(symbolName string, LimitPriceForOrder float64, qty int, Us
 	return true, nil
 }
 
-func QuotesAPI_Fyers(symbolName, UserID_Fyers string) (float64, string, error) {
+func QuotesAPI_Fyers(symbolName, UserID_Fyers string) (QuoteAPI_Fyers, error) {
 
 	AccessToken, err := readingAccessToken_Fyers(UserID_Fyers)
 	if err != nil {
 		log.Fatalf("Error while getting access token in Fyers")
-		return 0.0, "", err
+		return QuoteAPI_Fyers{}, err
 	}
 
 	url := fmt.Sprintf("https://api-t1.fyers.in/data/quotes?symbols=%s", symbolName)
@@ -367,7 +367,7 @@ func QuotesAPI_Fyers(symbolName, UserID_Fyers string) (float64, string, error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		log.Println("Error while making request in quotesFyersAPI")
-		return 0.0, "", err
+		return QuoteAPI_Fyers{}, err
 	}
 
 	// Add the Bearer token to the request header
@@ -378,7 +378,7 @@ func QuotesAPI_Fyers(symbolName, UserID_Fyers string) (float64, string, error) {
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println("Error while making request in quotesFyersAPI")
-		return 0.0, "", err
+		return QuoteAPI_Fyers{}, err
 	}
 	defer resp.Body.Close()
 
@@ -386,7 +386,57 @@ func QuotesAPI_Fyers(symbolName, UserID_Fyers string) (float64, string, error) {
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Println("Error while reading the body in byte array in quotesFyersAPI")
-		return 0.0, "", err
+		return QuoteAPI_Fyers{}, err
+	}
+
+	jsonBody := string(body)
+	log.Printf("Direct Response from Quotes API of fyers for %v is %v", symbolName, jsonBody)
+
+	// Converting into Response struct format
+	var qpr QuoteAPI_Fyers
+
+	err = json.Unmarshal(body, &qpr)
+	if err != nil {
+		log.Println("Error while Unmarshaling the data in quotes Fyers API")
+		return QuoteAPI_Fyers{}, err
+	}
+
+	return qpr, nil
+}
+
+func SymbolNameToExchToken(symbolName, UserID_Fyers string) (string, error) {
+
+	AccessToken, err := readingAccessToken_Fyers(UserID_Fyers)
+	if err != nil {
+		log.Fatalf("Error while getting access token in Fyers")
+		return "", err
+	}
+
+	url := fmt.Sprintf("https://api-t1.fyers.in/data/quotes?symbols=%s", symbolName)
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		log.Println("Error while making request in quotesFyersAPI")
+		return "", err
+	}
+
+	// Add the Bearer token to the request header
+	req.Header.Add("Authorization", AccessToken)
+
+	// Make the request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println("Error while making request in quotesFyersAPI")
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("Error while reading the body in byte array in quotesFyersAPI")
+		return "", err
 	}
 
 	jsonBody := string(body)
@@ -398,18 +448,21 @@ func QuotesAPI_Fyers(symbolName, UserID_Fyers string) (float64, string, error) {
 	err = json.Unmarshal(body, &qpr)
 	if err != nil {
 		log.Println("Error while Unmarshaling the data in marketDepthAPI")
-		return 0.0, "", err
+		return "", err
 	}
 
-	// ltp is the last traded price
-	ltp := qpr.D[0].V.Lp
-	final := fmt.Sprintf("\nFor %v LTP is %v", symbolName, ltp)
+	// Fyers token
+	fytoken := qpr.D[0].V.FyToken
+	final := fmt.Sprintf("\nFor %v Fyers token is %v", symbolName, fytoken)
 	log.Println(final)
 
-	// This is the Fyers token (fytoken)
-	fyToken := qpr.D[0].V.FyToken
-	final = fmt.Sprintf("\nFor %v FyToken is %v", symbolName, fyToken)
-	log.Println(final)
+	if len(fytoken) < 12 {
+		// Minimum size requirement not met
+		return "", err
+	}
 
-	return ltp, fyToken, nil
+	// Remove first 10 characters
+	// For more info read this : https://myapi.fyers.in/docsv3#tag/Appendix/Fytoken
+	exchangeToken := fytoken[10:]
+	return exchangeToken, nil
 }
