@@ -68,3 +68,48 @@ type PositionAPIResp_Fyers struct {
 	NetPositions []NetPosition_Fyers `json:"netPositions"`
 	Overall      Overall             `json:"overall"`
 }
+
+type MarketDepthAPI_Fyers struct {
+	D       map[string]StockData `json:"d"`
+	Message string               `json:"message"`
+	Status  string               `json:"s"`
+}
+
+type StockData struct {
+	H   float64 `json:"h"`
+	L   float64 `json:"l"`
+	Ltp float64 `json:"ltp"`
+}
+
+type QuoteAPI_Fyers struct {
+	Code int          `json:"code"`
+	S    string       `json:"s"`
+	D    []StockEntry `json:"d"`
+}
+
+type StockEntry struct {
+	N string     `json:"n"`
+	S string     `json:"s"`
+	V StockValue `json:"v"`
+}
+
+type StockValue struct {
+	Ch             float64 `json:"ch"`
+	Chp            float64 `json:"chp"`
+	Lp             float64 `json:"lp"`
+	Spread         float64 `json:"spread"`
+	Ask            float64 `json:"ask"`
+	Bid            float64 `json:"bid"`
+	OpenPrice      float64 `json:"open_price"`
+	HighPrice      float64 `json:"high_price"`
+	LowPrice       float64 `json:"low_price"`
+	PrevClosePrice float64 `json:"prev_close_price"`
+	Volume         int     `json:"volume"`
+	ShortName      string  `json:"short_name"`
+	Exchange       string  `json:"exchange"`
+	Description    string  `json:"description"`
+	OriginalName   string  `json:"original_name"`
+	Symbol         string  `json:"symbol"`
+	FyToken        string  `json:"fyToken"`
+	Tt             string  `json:"tt"`
+}

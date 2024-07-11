@@ -5,8 +5,7 @@ import (
 	"log"
 
 	fyers "github.com/sainipankaj15/All-In-One-Broker/Fyers"
-	utils "github.com/sainipankaj15/All-In-One-Broker/commanUtilsAcrossBroker"
-	tiqs "github.com/sainipankaj15/All-In-One-Broker/tiqs"
+	tiqs "github.com/sainipankaj15/All-In-One-Broker/Tiqs"
 )
 
 func main() {
@@ -36,5 +35,4 @@ func main() {
 	_ = fyers.ExitingAllPosition([]int{1, -1}, []int{10, 11, 12, 20}, []string{"INTRADAY", "MARGIN", "CO", "BO"}, "XP03754")
 	// log.Println(resp)
 
-	utils.TelegramSend("6043988834:AAGDYEjx-Pjr82L821S435rNfJMMbauoaBo", "@pankajTestingGroup", "Hello World")
 }
