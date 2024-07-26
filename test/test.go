@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	tiqs "github.com/sainipankaj15/All-In-One-Broker/Tiqs"
@@ -51,14 +50,17 @@ func main() {
 	// _ = tiqs.ExitByPositionID_Tiqs("MIDCPNIFTY22JUL24C12700", "M", "FB5650")
 
 	// a, _, err := tiqs.GetOptionChain_Tiqs("26009", "1", "31-JUL-2024", "FB5650")
-	a , _ , err := tiqs.GetExpiryList_Tiqs("FB5650")
-	if err != nil {
-		fmt.Println(err)
-	}
+	// a , _ , err := tiqs.GetExpiryList_Tiqs("FB5650")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
 
-	b := a.Data["BANKNIFTY"]
-	c := b[0]
-	log.Println(c)
+	// b := a.Data["BANKNIFTY"]
+	// c := b[0]
+	// log.Println(c)
+
+	a, _ := tiqs.ClosestExpiryDate_Tiqs(tiqs.Index.FINNIFTY, tiqs.ADMIN_TIQS)
+	fmt.Println(a)
 
 	time.Sleep(50000 * time.Second)
 

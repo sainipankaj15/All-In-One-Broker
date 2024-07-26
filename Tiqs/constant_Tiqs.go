@@ -11,3 +11,13 @@ var Product = struct {
 	MARGIN:   "M",
 	CNC:      "C",
 }
+
+var Index = struct {
+	BANKNIFTY, NIFTY, MIDCPNIFTY, FINNIFTY, NIFTYNXT string
+}{
+	BANKNIFTY:  "BANKNIFTY",
+	NIFTY:      "NIFTY",
+	MIDCPNIFTY: "MIDCPNIFTY",
+	FINNIFTY:   "FINNIFTY",
+	NIFTYNXT:   "NIFTYNXT50",
+}

@@ -124,3 +124,16 @@ func ExitByPositionID_Tiqs(symbolExchToken string, productType string, UserId_Ti
 	}
 	return nil
 }
+
+func ClosestExpiryDate_Tiqs(indexName string, UserId_Tiqs string) (string, error) {
+
+	resp, _, err := GetExpiryList_Tiqs(UserId_Tiqs)
+
+	if err != nil {
+		return "", err
+	}
+
+	allExpiryList := resp.Data[indexName]
+	lastExpiryDate := allExpiryList[0]
+	return lastExpiryDate, nil
+}
