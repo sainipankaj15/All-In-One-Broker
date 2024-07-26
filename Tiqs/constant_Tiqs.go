@@ -21,3 +21,10 @@ var Index = struct {
 	FINNIFTY:   "FINNIFTY",
 	NIFTYNXT:   "NIFTYNXT50",
 }
+
+var OptionTypes = struct {
+	CALL, PUT string
+}{
+	CALL: "CE",
+	PUT:  "PE",
+}
