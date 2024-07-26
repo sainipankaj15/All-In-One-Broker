@@ -256,3 +256,62 @@ func GetOptionChain_Tiqs(IndexTokenNumber, OptionChainLength, expiryDay, UserID_
 	log.Println(msg)
 	return Resp, resp.StatusCode, nil
 }
+func GetExpiryList_Tiqs(UserID_Tiqs string) (ExpiryResp_Tiqs, int, error) {
+
+	expiryDayListUrl := "https://api.tiqs.trading/info/option-chain-symbols"
+
+	accessTokenofUser, appIdOfUser, err := readingAccessToken_Tiqs(UserID_Tiqs)
+	if err != nil {
+		msg := fmt.Sprintf("Error while getting access token from file for %v User ", UserID_Tiqs)
+		log.Println(msg)
+		return ExpiryResp_Tiqs{}, 0, err
+	}
+
+	values := map[string]string{}
+	jsonParameters, err := json.Marshal(values)
+	if err != nil {
+		log.Println("Error marshaling JSON in GetExpiryList_Tiqs(): ", err)
+		return ExpiryResp_Tiqs{}, 0, err
+	}
+
+	req, err := http.NewRequest("GET", expiryDayListUrl, bytes.NewBuffer(jsonParameters))
+	if err != nil {
+		log.Println("Error while making request in GetExpiryList_Tiqs()")
+		return ExpiryResp_Tiqs{}, 0, err
+	}
+
+	// Add the Session and token to the request header : Here session will be APPID and Token will be token
+	req.Header.Add("appId", appIdOfUser)
+	req.Header.Add("token", accessTokenofUser)
+	req.Header.Set("Content-Type", "application/json")
+
+	// Make the request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println("Error while getting response in GetExpiryList_Tiqs()")
+		return ExpiryResp_Tiqs{}, resp.StatusCode, err
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("Error while reading the body in byte array in GetExpiryList_Tiqs()")
+		return ExpiryResp_Tiqs{}, resp.StatusCode, err
+	}
+
+	jsonBody := string(body)
+	// Converting into Response struct format
+	var Resp ExpiryResp_Tiqs
+	err = json.Unmarshal(body, &Resp)
+	if err != nil {
+		log.Println("Error while Unmarshaling the data in GetExpiryList_Tiqs()", err)
+		return ExpiryResp_Tiqs{}, resp.StatusCode, err
+	}
+
+	msg := fmt.Sprintf("Direct Response in GetExpiryList_Tiqs() is %v", jsonBody)
+
+	log.Println(msg)
+	return Resp, resp.StatusCode, nil
+}

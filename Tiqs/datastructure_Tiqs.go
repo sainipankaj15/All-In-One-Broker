@@ -104,3 +104,8 @@ type OptionChainResp_Tiqs struct {
 	Data   []Option `json:"data"`
 	Status string   `json:"status"`
 }
+
+type ExpiryResp_Tiqs struct {
+	Data   map[string][]string `json:"data"`
+	Status string              `json:"status"`
+}
