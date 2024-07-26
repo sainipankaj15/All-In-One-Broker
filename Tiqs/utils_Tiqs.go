@@ -28,7 +28,7 @@ func readingAccessToken_Tiqs(userID_Tiqs string) (string, string, error) {
 	return accessToken, APPID, nil
 }
 
-func CurrentQtyForAnySymbol_Tiqs(symbol string, productType string, UserId_Tiqs string) (string, error) {
+func CurrentQtyForAnySymbol_Tiqs(symbolExchToken string, productType string, UserId_Tiqs string) (string, error) {
 
 	PositionAPIResp_Tiqs, err := PositionApi_Tiqs(UserId_Tiqs)
 
@@ -39,14 +39,14 @@ func CurrentQtyForAnySymbol_Tiqs(symbol string, productType string, UserId_Tiqs 
 	for i := 0; i < len(PositionAPIResp_Tiqs.NetPosition_Tiqss); i++ {
 		position := PositionAPIResp_Tiqs.NetPosition_Tiqss[i]
 
-		if position.Symbol == symbol {
+		if position.Token == symbolExchToken {
 			if position.Product == productType {
 				return position.Qty, nil
 			}
 		}
 	}
 
-	return "0", nil
+	return "", nil
 }
 
 func ExitAllPosition_Tiqs(UserId_Tiqs string) (string, error) {
@@ -85,7 +85,7 @@ func ExitAllPosition_Tiqs(UserId_Tiqs string) (string, error) {
 	return "success", nil
 }
 
-func ExitByPositionID_Tiqs(symbol string, productType string, UserId_Tiqs string) error {
+func ExitByPositionID_Tiqs(symbolExchToken string, productType string, UserId_Tiqs string) error {
 
 	PositionAPIResp_Tiqs, err := PositionApi_Tiqs(UserId_Tiqs)
 
@@ -98,7 +98,7 @@ func ExitByPositionID_Tiqs(symbol string, productType string, UserId_Tiqs string
 
 		go func(pos NetPosition_Tiqs) {
 
-			if position.Symbol == symbol {
+			if position.Token == symbolExchToken {
 				if position.Product == productType {
 
 					buyQtyInString := position.DayBuyQty
