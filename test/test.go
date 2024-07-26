@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"time"
 
-	fyers "github.com/sainipankaj15/All-In-One-Broker/Fyers"
+	tiqs "github.com/sainipankaj15/All-In-One-Broker/Tiqs"
 )
 
 func main() {
@@ -43,7 +43,13 @@ func main() {
 
 	// a, _ := fyers.QuotesAPI_Fyers("NSE:ITC-EQ", "XP03754")
 	// a , _ := fyers.LTP_Fyers("NSE:ITC-EQ", "XP03754")
-	a, _ := fyers.MarketDepthAPI_Fyers("NSE:ITC-EQ", "XP03754")
-	log.Println(a)
+	// a, _ := fyers.MarketDepthAPI_Fyers("NSE:ITC-EQ", "XP03754")
+
+	// _, _ = tiqs.ExitAllPosition_Tiqs("FB5650")
+
+	_ = tiqs.ExitByPositionID_Tiqs("MIDCPNIFTY22JUL24C12700", "M", "FB5650")
+	// log.Println(a)
+
+	time.Sleep(50000 * time.Second)
 
 }

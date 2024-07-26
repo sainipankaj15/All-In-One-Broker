@@ -194,3 +194,65 @@ func FetchQuotes_Tiqs(tokenSlice []int, UserID_Tiqs string) (QuotesAPIResp_Tiqs,
 
 	return apiResponse, nil
 }
+
+func GetOptionChain_Tiqs(IndexTokenNumber, OptionChainLength, expiryDay, UserID_Tiqs string) (OptionChainResp_Tiqs, int, error) {
+
+	getOptionChainUrl := "https://api.tiqs.trading/info/option-chain"
+
+	log.Printf("GetOptionChain_Tiqs API for %v token , option chain length is %v and expiryDay is %v ", IndexTokenNumber, OptionChainLength, expiryDay)
+
+	accessTokenofUser, appIdOfUser, err := readingAccessToken_Tiqs(UserID_Tiqs)
+	if err != nil {
+		msg := fmt.Sprintf("Error while getting access token from file for %v User ", UserID_Tiqs)
+		log.Println(msg)
+		return OptionChainResp_Tiqs{}, 0, err
+	}
+
+	values := map[string]string{"token": IndexTokenNumber, "exchange": "INDEX", "count": OptionChainLength, "expiry": expiryDay}
+	jsonParameters, err := json.Marshal(values)
+	if err != nil {
+		log.Println("Error marshaling JSON in GetOptionChain_Tiqs(): ", err)
+		return OptionChainResp_Tiqs{}, 0, err
+	}
+
+	req, err := http.NewRequest("POST", getOptionChainUrl, bytes.NewBuffer(jsonParameters))
+	if err != nil {
+		log.Println("Error while making request in GetOptionChain_Tiqs()")
+		return OptionChainResp_Tiqs{}, 0, err
+	}
+
+	// Add the Session and token to the request header : Here session will be APPID and Token will be token
+	req.Header.Add("appId", appIdOfUser)
+	req.Header.Add("token", accessTokenofUser)
+	req.Header.Set("Content-Type", "application/json")
+
+	// Make the request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println("Error while getting response in GetOptionChain_Tiqs()")
+		return OptionChainResp_Tiqs{}, resp.StatusCode, err
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("Error while reading the body in byte array in GetOptionChain_Tiqs()")
+		return OptionChainResp_Tiqs{}, resp.StatusCode, err
+	}
+
+	jsonBody := string(body)
+	// Converting into Response struct format
+	var Resp OptionChainResp_Tiqs
+	err = json.Unmarshal(body, &Resp)
+	if err != nil {
+		log.Println("Error while Unmarshaling the data in GetOptionChain_Tiqs()", err)
+		return OptionChainResp_Tiqs{}, resp.StatusCode, err
+	}
+
+	msg := fmt.Sprintf("Direct Response in GetOptionChain_Tiqs() is %v", jsonBody)
+
+	log.Println(msg)
+	return Resp, resp.StatusCode, nil
+}

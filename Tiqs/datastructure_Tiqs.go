@@ -87,3 +87,20 @@ type QuotesAPIResp_Tiqs struct {
 	Status    string                  `json:"status"`
 	TokenData map[int]QuotesData_Tiqs `json:"-"`
 }
+
+type Option struct {
+	Exchange       string `json:"exchange"`
+	Symbol         string `json:"symbol"`
+	Token          string `json:"token"`
+	OptionType     string `json:"optionType"`
+	StrikePrice    string `json:"strikePrice"`
+	PricePrecision string `json:"pricePrecision"`
+	TickSize       string `json:"tickSize"`
+	LotSize        string `json:"lotSize"`
+	OpeningOI      string `json:"openingOI"`
+}
+
+type OptionChainResp_Tiqs struct {
+	Data   []Option `json:"data"`
+	Status string   `json:"status"`
+}
