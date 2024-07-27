@@ -363,7 +363,7 @@ func PlaceMktOrder_Fyers(symbolName string, qty int, UserID_Fyers string, whichS
 	}
 
 	// I will use ltp as a limit price to avoid big loss while executing order basically market spread
-	msg := fmt.Sprintf("Placing Order for %v and Price is %v and total qty is %v and Client Name is %v", symbolName, LimitPriceForOrder, qty, UserID_Fyers)
+	msg := fmt.Sprintf("Placing Market Order for %v and total qty is %v and Client Name is %v", symbolName, qty, UserID_Fyers)
 	log.Println(msg)
 	// TelegramSend(msg)
 
