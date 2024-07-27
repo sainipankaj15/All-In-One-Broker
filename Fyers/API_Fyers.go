@@ -12,7 +12,7 @@ import (
 
 func PositionApi_Fyers(UserID_Fyers string) (PositionAPIResp_Fyers, error) {
 
-	AccessToken, err := readingAccessToken_Fyers(UserID_Fyers)
+	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
 	if err != nil {
 		log.Fatalf("Error while getting access token in Fyers")
 		return PositionAPIResp_Fyers{}, err
@@ -62,7 +62,7 @@ func PositionApi_Fyers(UserID_Fyers string) (PositionAPIResp_Fyers, error) {
 
 func ExitingAllPosition(Side, Segement []int, ProductType []string, UserID_Fyers string) error {
 
-	AccessToken, err := readingAccessToken_Fyers(UserID_Fyers)
+	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
 	if err != nil {
 		log.Fatalf("Error while getting access token in Fyers")
 		return err
@@ -120,7 +120,7 @@ func ExitingAllPosition(Side, Segement []int, ProductType []string, UserID_Fyers
 
 func ExitPositionByID_Fyers(UserID_Fyers string, symbolName string) error {
 
-	AccessToken, err := readingAccessToken_Fyers(UserID_Fyers)
+	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
 	if err != nil {
 		log.Fatalf("Error while getting access token in Fyers")
 		return err
@@ -176,7 +176,7 @@ func ExitPositionByID_Fyers(UserID_Fyers string, symbolName string) error {
 
 func MarketDepthAPI_Fyers(symbolName string, UserID_Fyers string) (MarketDepthAPIResp_Fyers, error) {
 
-	AccessToken, err := readingAccessToken_Fyers(UserID_Fyers)
+	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
 	if err != nil {
 		log.Fatalf("Error while getting access token in Fyers")
 		return MarketDepthAPIResp_Fyers{}, err
@@ -225,7 +225,7 @@ func MarketDepthAPI_Fyers(symbolName string, UserID_Fyers string) (MarketDepthAP
 }
 func LTP_Fyers(symbolName string, UserID_Fyers string) (float64, error) {
 
-	AccessToken, err := readingAccessToken_Fyers(UserID_Fyers)
+	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
 	if err != nil {
 		log.Fatalf("Error while getting access token in Fyers")
 		return 0.0, err
@@ -280,7 +280,7 @@ func LTP_Fyers(symbolName string, UserID_Fyers string) (float64, error) {
 
 func PlaceOrder_Fyers(symbolName string, LimitPriceForOrder float64, qty int, UserID_Fyers string, whichSide int) (bool, error) {
 
-	AccessToken, err := readingAccessToken_Fyers(UserID_Fyers)
+	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
 	if err != nil {
 		log.Fatalf("Error while getting access token in Fyers")
 		return false, err
@@ -306,7 +306,7 @@ func PlaceOrder_Fyers(symbolName string, LimitPriceForOrder float64, qty int, Us
 		"offlineOrder": false,
 		"stopLoss":     0,
 		"takeProfit":   0,
-		"orderTag":     "fiveEMAKaOrder",
+		"orderTag":     "orderFromSDK",
 	}
 
 	// Now will change the name of symbol and price
@@ -354,10 +354,85 @@ func PlaceOrder_Fyers(symbolName string, LimitPriceForOrder float64, qty int, Us
 
 	return true, nil
 }
+func PlaceMktOrder_Fyers(symbolName string, qty int, UserID_Fyers string, whichSide int) (bool, error) {
+
+	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
+	if err != nil {
+		log.Fatalf("Error while getting access token in Fyers")
+		return false, err
+	}
+
+	// I will use ltp as a limit price to avoid big loss while executing order basically market spread
+	msg := fmt.Sprintf("Placing Order for %v and Price is %v and total qty is %v and Client Name is %v", symbolName, LimitPriceForOrder, qty, UserID_Fyers)
+	log.Println(msg)
+	// TelegramSend(msg)
+
+	url := "https://api-t1.fyers.in/api/v3/orders/sync"
+
+	dataPayload := map[string]interface{}{
+		"symbol":       "NSE:ITC-EQ",
+		"qty":          1,
+		"type":         2,
+		"side":         whichSide,
+		"productType":  "MARGIN",
+		"limitPrice":   0,
+		"disclosedQty": 0,
+		"stopPrice":    0,
+		"validity":     "DAY",
+		"offlineOrder": false,
+		"stopLoss":     0,
+		"takeProfit":   0,
+		"orderTag":     "orderFromSDK",
+	}
+
+	// Now will change the name of symbol and price
+	dataPayload["symbol"] = symbolName
+	dataPayload["qty"] = qty
+
+	jsonData, err := json.Marshal(dataPayload)
+	if err != nil {
+		log.Println("Error marshaling JSON:", err)
+		return false, err
+	}
+
+	// Create a new HTTP POST request
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		log.Println(err)
+		return false, err
+	}
+
+	// Add headers to the request
+	req.Header.Add("Authorization", AccessToken)
+	req.Header.Set("Content-Type", "application/json")
+
+	msg = fmt.Sprintf("Order Placement Payload is %v", dataPayload)
+	log.Println(msg)
+
+	// Make the request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println(err)
+		return false, err
+	}
+	defer resp.Body.Close()
+
+	// Print the response status and body
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println(err)
+		return false, err
+	}
+	msg = fmt.Sprintf("Order Place Status for : %v is %v  \n\nAfter order placement response is %v ", symbolName, resp.Status, string(body))
+	log.Println(msg)
+
+	return true, nil
+}
 
 func QuotesAPI_Fyers(symbolName, UserID_Fyers string) (QuoteAPI_Fyers, error) {
 
-	AccessToken, err := readingAccessToken_Fyers(UserID_Fyers)
+	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
 	if err != nil {
 		log.Fatalf("Error while getting access token in Fyers")
 		return QuoteAPI_Fyers{}, err
@@ -407,7 +482,7 @@ func QuotesAPI_Fyers(symbolName, UserID_Fyers string) (QuoteAPI_Fyers, error) {
 
 func SymbolNameToExchToken(symbolName, UserID_Fyers string) (string, error) {
 
-	AccessToken, err := readingAccessToken_Fyers(UserID_Fyers)
+	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
 	if err != nil {
 		log.Fatalf("Error while getting access token in Fyers")
 		return "", err

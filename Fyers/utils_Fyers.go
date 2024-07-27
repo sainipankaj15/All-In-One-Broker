@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 )
 
-func readingAccessToken_Fyers(userFyersID string) (string, error) {
+func ReadingAccessToken_Fyers(userFyersID string) (string, error) {
 
 	fileName := userFyersID + `.json`
 

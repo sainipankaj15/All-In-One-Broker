@@ -7,7 +7,7 @@ import (
 	easyConversion "github.com/sainipankaj15/data-type-conversion"
 )
 
-func readingAccessToken_Tiqs(userID_Tiqs string) (string, string, error) {
+func ReadingAccessToken_Tiqs(userID_Tiqs string) (string, string, error) {
 
 	fileName := userID_Tiqs + `.json`
 

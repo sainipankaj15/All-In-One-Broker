@@ -13,7 +13,7 @@ import (
 func PositionApi_Tiqs(UserID_Tiqs string) (PositionAPIResp_Tiqs, error) {
 
 	// Reading accessToken and APPID for fetching the APIs
-	AccessToken, APPID, err := readingAccessToken_Tiqs(UserID_Tiqs)
+	AccessToken, APPID, err := ReadingAccessToken_Tiqs(UserID_Tiqs)
 	if err != nil {
 		log.Println("Error while getting acces token from file")
 		panic(err)
@@ -65,7 +65,7 @@ func PositionApi_Tiqs(UserID_Tiqs string) (PositionAPIResp_Tiqs, error) {
 // This API is used to place market for Tiqs Broker
 func OrderPlaceMarket_Tiqs(exchange, token, quantity, TransSide, productType, UserID_Tiqs string) error {
 
-	accessTokenofUser, appIdOfUser, err := readingAccessToken_Tiqs(UserID_Tiqs)
+	accessTokenofUser, appIdOfUser, err := ReadingAccessToken_Tiqs(UserID_Tiqs)
 	if err != nil {
 		msg := fmt.Sprintf("Error while getting access token from file for %v User ", UserID_Tiqs)
 		log.Println(msg)
@@ -138,7 +138,7 @@ func FetchQuotes_Tiqs(tokenSlice []int, UserID_Tiqs string) (QuotesAPIResp_Tiqs,
 
 	quotesUrl := "https://api.tiqs.trading/info/quotes/full"
 
-	accessTokenofUser, appIdOfUser, err := readingAccessToken_Tiqs(UserID_Tiqs)
+	accessTokenofUser, appIdOfUser, err := ReadingAccessToken_Tiqs(UserID_Tiqs)
 	if err != nil {
 		msg := fmt.Sprintf("Error while getting access token from file for %v User ", UserID_Tiqs)
 		log.Println(msg)
@@ -201,7 +201,7 @@ func GetOptionChain_Tiqs(IndexTokenNumber, OptionChainLength, expiryDay, UserID_
 
 	log.Printf("GetOptionChain_Tiqs API for %v token , option chain length is %v and expiryDay is %v ", IndexTokenNumber, OptionChainLength, expiryDay)
 
-	accessTokenofUser, appIdOfUser, err := readingAccessToken_Tiqs(UserID_Tiqs)
+	accessTokenofUser, appIdOfUser, err := ReadingAccessToken_Tiqs(UserID_Tiqs)
 	if err != nil {
 		msg := fmt.Sprintf("Error while getting access token from file for %v User ", UserID_Tiqs)
 		log.Println(msg)
@@ -260,7 +260,7 @@ func GetExpiryList_Tiqs(UserID_Tiqs string) (ExpiryResp_Tiqs, int, error) {
 
 	expiryDayListUrl := "https://api.tiqs.trading/info/option-chain-symbols"
 
-	accessTokenofUser, appIdOfUser, err := readingAccessToken_Tiqs(UserID_Tiqs)
+	accessTokenofUser, appIdOfUser, err := ReadingAccessToken_Tiqs(UserID_Tiqs)
 	if err != nil {
 		msg := fmt.Sprintf("Error while getting access token from file for %v User ", UserID_Tiqs)
 		log.Println(msg)
