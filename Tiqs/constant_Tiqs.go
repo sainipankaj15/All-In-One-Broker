@@ -28,3 +28,26 @@ var OptionTypes = struct {
 	CALL: "CE",
 	PUT:  "PE",
 }
+
+var OrderSide = struct {
+	BUY, SELL string
+}{
+	BUY:  "B",
+	SELL: "S",
+}
+
+var PositionSide = struct {
+	LONG, SHORT int
+}{
+	LONG:  1,
+	SHORT: -1,
+}
+
+var OrderType = struct {
+	LIMIT, MARKET, STOP, STOP_LIMIT string
+}{
+	LIMIT:      "LMT",
+	MARKET:     "MKT",
+	STOP:       "SL-MKT",
+	STOP_LIMIT: "SL-LMT",
+}
