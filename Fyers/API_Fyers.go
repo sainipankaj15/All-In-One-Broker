@@ -278,7 +278,7 @@ func LTP_Fyers(symbolName string, UserID_Fyers string) (float64, error) {
 	return ltp, nil
 }
 
-func PlaceOrder_Fyers(symbolName string, LimitPriceForOrder float64, qty int, UserID_Fyers string, whichSide int) (bool, error) {
+func PlaceOrder_Fyers(symbolName string, LimitPriceForOrder float64, qty int, whichSide int, productType string, UserID_Fyers string) (bool, error) {
 
 	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
 	if err != nil {
@@ -298,7 +298,7 @@ func PlaceOrder_Fyers(symbolName string, LimitPriceForOrder float64, qty int, Us
 		"qty":          1,
 		"type":         1,
 		"side":         whichSide,
-		"productType":  "MARGIN",
+		"productType":  productType,
 		"limitPrice":   0,
 		"disclosedQty": 0,
 		"stopPrice":    0,
@@ -354,7 +354,7 @@ func PlaceOrder_Fyers(symbolName string, LimitPriceForOrder float64, qty int, Us
 
 	return true, nil
 }
-func PlaceMktOrder_Fyers(symbolName string, qty int, UserID_Fyers string, whichSide int) (bool, error) {
+func PlaceMktOrder_Fyers(symbolName string, qty int, whichSide int, productType string, UserID_Fyers string) (bool, error) {
 
 	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
 	if err != nil {
@@ -374,7 +374,7 @@ func PlaceMktOrder_Fyers(symbolName string, qty int, UserID_Fyers string, whichS
 		"qty":          1,
 		"type":         2,
 		"side":         whichSide,
-		"productType":  "MARGIN",
+		"productType":  productType,
 		"limitPrice":   0,
 		"disclosedQty": 0,
 		"stopPrice":    0,
