@@ -55,6 +55,16 @@ var OrderType = struct {
 var Exchange = struct {
 	NSE, NFO string
 }{
-	NSE : "NSE",
-	NFO : "NFO",
+	NSE: "NSE",
+	NFO: "NFO",
+}
+
+var ExchangeToken = struct {
+	BANKNIFTY, NIFTY50, MIDCPNIFTY, FINNIFTY, NIFTYNXT int
+}{
+	BANKNIFTY:  26009,
+	NIFTY50:    26000,
+	MIDCPNIFTY: 26074,
+	FINNIFTY:   26037,
+	NIFTYNXT:   26013,
 }
