@@ -51,3 +51,10 @@ var OrderType = struct {
 	STOP:       "SL-MKT",
 	STOP_LIMIT: "SL-LMT",
 }
+
+var Exchange = struct {
+	NSE, NFO string
+}{
+	NSE : "NSE",
+	NFO : "NFO",
+}

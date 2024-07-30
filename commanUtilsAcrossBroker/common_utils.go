@@ -10,6 +10,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"time"
 )
 
 func TelegramSend(botToken, chatID, text string) {
@@ -107,4 +108,63 @@ func UploadFileToTelegram(botToken, chatID, filePath string) error {
 	}
 
 	return nil
+}
+
+func CurrentDate() string {
+
+	// Set the time zone to Indian Standard Time (IST)
+	ist, err := time.LoadLocation("Asia/Kolkata")
+	if err != nil {
+		log.Println("Error loading IST location:", err)
+		return ""
+	}
+
+	// Get the current date adn time time in IST
+	currentTimeIST := time.Now().In(ist)
+
+	// Format the date as a string
+	istFormat := "2006-01-02"
+	formattedDate := currentTimeIST.Format(istFormat)
+
+	return formattedDate
+}
+
+func CurrentTime() string {
+
+	// Set the time zone to Indian Standard Time (IST)
+	ist, err := time.LoadLocation("Asia/Kolkata")
+	if err != nil {
+		log.Println("Error loading IST location:", err)
+		return ""
+	}
+
+	// Get the current time in IST
+	currentTimeIST := time.Now().In(ist)
+
+	// Format the time as a string
+	istFormat := "15:04:05"
+	formattedTime := currentTimeIST.Format(istFormat)
+
+	return formattedTime
+}
+
+func ApplicationStart(StartingHour, StartingMinutes, StartingSeconds int) {
+
+	// Load IST location (India)
+	ist, err := time.LoadLocation("Asia/Kolkata")
+	if err != nil {
+		log.Println("Error loading IST location:", err)
+		return
+	}
+
+	// Specify the target time in IST (For Example 09:30:02 PM) : Application start time
+	targetTime := time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), StartingHour, StartingMinutes, StartingSeconds, 0, ist)
+
+	// Calculate the duration until the target time
+	durationUntilTarget := time.Until(targetTime)
+
+	// Put sleep for that duration
+	time.Sleep(durationUntilTarget)
+
+	// Sleeping Done, Now we can Resume our application
 }
