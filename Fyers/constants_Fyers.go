@@ -33,11 +33,29 @@ var OrderType = struct {
 }
 
 var ProductType = struct {
-	INTRADAY, MARGIN, CNC, BO,CO string
+	INTRADAY, MARGIN, CNC, BO, CO string
 }{
 	INTRADAY: "INTRADAY",
 	MARGIN:   "MARGIN",
 	CNC:      "CNC",
 	BO:       "BO",
 	CO:       "CO",
+}
+
+var Lotsize = struct {
+	BANKNIFTY, NIFTY50, MIDCPNIFTY, FINNIFTY int
+}{
+	BANKNIFTY:  15,
+	NIFTY50:    25,
+	MIDCPNIFTY: 50,
+	FINNIFTY:   25,
+}
+
+var StrikeGap = struct {
+	BANKNIFTY, NIFTY50, MIDCPNIFTY, FINNIFTY int
+}{
+	BANKNIFTY:  100,
+	NIFTY50:    50,
+	MIDCPNIFTY: 25,
+	FINNIFTY:   50,
 }
