@@ -543,3 +543,80 @@ func SymbolNameToExchToken(symbolName, UserID_Fyers string) (string, error) {
 	exchangeToken := fytoken[10:]
 	return exchangeToken, nil
 }
+
+func MarginMktOrder_Fyers(symbolName string, qty int, whichSide int, productType string, UserID_Fyers string) (MarginAPIResp_Fyers, error) {
+
+	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
+	if err != nil {
+		log.Fatalf("Error while getting access token in Fyers")
+		return MarginAPIResp_Fyers{}, err
+	}
+
+	// I will use ltp as a limit price to avoid big loss while executing order basically market spread
+	msg := fmt.Sprintf("Margin Market Order for %v and total qty is %v and Client Name is %v", symbolName, qty, UserID_Fyers)
+	log.Println(msg)
+
+	url := "https://api-t1.fyers.in/trade/v3/margin"
+
+	dataPayload := map[string]interface{}{
+		"symbol":       "NSE:ITC-EQ",
+		"qty":          1,
+		"type":         2,
+		"side":         whichSide,
+		"productType":  productType,
+		"limitPrice":   0,
+		"disclosedQty": 0,
+		"stopPrice":    0,
+		"validity":     "DAY",
+		"offlineOrder": false,
+		"stopLoss":     0,
+		"takeProfit":   0,
+		"orderTag":     "orderFromSDK",
+	}
+
+	// Now will change the name of symbol and price
+	dataPayload["symbol"] = symbolName
+	dataPayload["qty"] = qty
+
+	jsonData, err := json.Marshal(dataPayload)
+	if err != nil {
+		log.Println("Error marshaling JSON:", err)
+		return MarginAPIResp_Fyers{}, err
+	}
+
+	// Create a new HTTP POST request
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		log.Println(err)
+		return MarginAPIResp_Fyers{}, err
+	}
+
+	// Add headers to the request
+	req.Header.Add("Authorization", AccessToken)
+	req.Header.Set("Content-Type", "application/json")
+
+	// Make the request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println(err)
+		return MarginAPIResp_Fyers{}, err
+	}
+	defer resp.Body.Close()
+
+	// Print the response status and body
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println(err)
+		return MarginAPIResp_Fyers{}, err
+	}
+
+	var response MarginAPIResp_Fyers
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		log.Println("Failed to unmarshal response in Margin API in Fyers", err)
+		return MarginAPIResp_Fyers{}, err
+	}
+
+	return response, nil
+}

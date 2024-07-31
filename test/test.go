@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	tiqs "github.com/sainipankaj15/All-In-One-Broker/Tiqs"
+	fyers "github.com/sainipankaj15/All-In-One-Broker/Fyers"
 )
 
 func main() {
@@ -59,8 +59,11 @@ func main() {
 	// c := b[0]
 	// log.Println(c)
 
-	a, _ := tiqs.ClosestExpiryDate_Tiqs(tiqs.Index.FINNIFTY, tiqs.ADMIN_TIQS)
-	fmt.Println(a)
+	// a, _ := tiqs.ClosestExpiryDate_Tiqs(tiqs.Index.FINNIFTY, tiqs.ADMIN_TIQS)
+	// fmt.Println(a)
+
+	a, _ := fyers.MarginMktOrder_Fyers("NSE:ITC-EQ", 1, 1, fyers.ProductType.INTRADAY, "XP03754")
+	fmt.Println(a.Data.MarginTotal)
 
 	time.Sleep(50000 * time.Second)
 

@@ -113,3 +113,13 @@ type StockValue struct {
 	FyToken        string  `json:"fyToken"`
 	Tt             string  `json:"tt"`
 }
+
+type MarginAPIResp_Fyers struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Data    struct {
+		MarginAvail float64 `json:"margin_avail"`
+		MarginTotal float64 `json:"margin_total"`
+	} `json:"data"`
+	S string `json:"s"`
+}
