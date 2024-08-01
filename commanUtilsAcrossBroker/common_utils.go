@@ -168,3 +168,28 @@ func ApplicationStart(StartingHour, StartingMinutes, StartingSeconds int) {
 
 	// Sleeping Done, Now we can Resume our application
 }
+
+func ApplicationClosing(ClosingHour, ClosingMinutes, ClosingSeconds int, isWorkDone chan<- time.Time) {
+
+	// Load IST location (India)
+	ist, err := time.LoadLocation("Asia/Kolkata")
+	if err != nil {
+		log.Println("Error loading IST location:", err)
+		return
+	}
+
+	// Specify the target time in IST (3:30:45 PM)
+	targetTime := time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), ClosingHour, ClosingMinutes, ClosingSeconds, 0, ist)
+
+	for {
+		// Calculate the duration until the target time
+		durationUntilTarget := time.Until(targetTime)
+
+		// Put sleep for that duration
+		time.Sleep(durationUntilTarget)
+
+		// When Sleeping Done, Push current time to channel
+		isWorkDone <- time.Now()
+		break
+	}
+}
