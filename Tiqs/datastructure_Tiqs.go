@@ -109,3 +109,12 @@ type ExpiryResp_Tiqs struct {
 	Data   map[string][]string `json:"data"`
 	Status string              `json:"status"`
 }
+
+type LTPofTokenResp_Tiqs struct {
+	Data struct {
+		Close int `json:"close"`
+		LTP   int `json:"ltp"`
+		Token int `json:"token"`
+	} `json:"data"`
+	Status string `json:"status"`
+}

@@ -315,3 +315,66 @@ func GetExpiryList_Tiqs(UserID_Tiqs string) (ExpiryResp_Tiqs, int, error) {
 	log.Println(msg)
 	return Resp, resp.StatusCode, nil
 }
+
+func LTPInPaisa_Tiqs(tokenNumber int, UserID_Tiqs string) (int, error) {
+
+	// Reading accessToken and APPID for fetching the APIs
+	AccessToken, APPID, err := ReadingAccessToken_Tiqs(UserID_Tiqs)
+	if err != nil {
+		log.Println("Error while getting acces token from file")
+		panic(err)
+	}
+
+	url := "https://api.tiqs.trading/info/quote/ltp"
+
+	// Create a map for the JSON data
+	data := map[string]int{
+		"token": tokenNumber,
+	}
+
+	// Convert the map to JSON
+	jsonData, _ := json.Marshal(data)
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		log.Println("Error while making request in LTPOfToken_Tiqs request")
+		return 0, err
+	}
+
+	// Add the Bearer token to the request header
+	req.Header.Add("token", AccessToken)
+	req.Header.Add("appId", APPID)
+	req.Header.Set("Content-Type", "application/json")
+
+	// Make the request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println("Error while making request in LTPOfToken_Tiqs API")
+		return 0, err
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("Error while reading the body in byte array in LTPOfToken_Tiqs API")
+		return 0, err
+	}
+
+	jsonBody := string(body)
+	log.Printf("Direct Response from LTPOfToken_Tiqs API of Tiqs %v", jsonBody)
+
+	// Converting into Response struct format
+	var apiResp LTPofTokenResp_Tiqs
+
+	err = json.Unmarshal(body, &apiResp)
+	if err != nil {
+		log.Println("Error while Unmarshaling the data in Position API")
+		return 0, err
+	}
+
+	ltp := apiResp.Data.LTP
+
+	return ltp, nil
+}
