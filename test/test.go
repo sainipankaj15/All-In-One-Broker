@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	fyers "github.com/sainipankaj15/All-In-One-Broker/Fyers"
 	tiqs "github.com/sainipankaj15/All-In-One-Broker/Tiqs"
 )
 
@@ -67,6 +68,12 @@ func main() {
 
 	a, _ := tiqs.LTPInPaisa_Tiqs(26009, "FB5650")
 	fmt.Println(a)
+
+	b, err := fyers.GetOptionChain_Fyers("NSE:NIFTYBANK-INDEX", 2, "XP03754")
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("%+v", b.Data.OptionsChain)
 
 	time.Sleep(50000 * time.Second)
 

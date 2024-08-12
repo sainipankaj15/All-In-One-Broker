@@ -620,3 +620,48 @@ func MarginMktOrder_Fyers(symbolName string, qty int, whichSide int, productType
 
 	return response, nil
 }
+
+func GetOptionChain_Fyers(Symbol string, StrikeCount int, UserID_Fyers string) (OptionChainAPIResponse, error) {
+
+	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
+	if err != nil {
+		log.Fatalf("Error while getting access token in Fyers")
+		return OptionChainAPIResponse{}, err
+	}
+
+	url := fmt.Sprintf("https://api-t1.fyers.in/data/options-chain-v3?symbol=%s&strikecount=%d", Symbol, StrikeCount)
+
+	// Create a new HTTP POST request
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		log.Println(err)
+		return OptionChainAPIResponse{}, err
+	}
+
+	// Add headers to the request
+	req.Header.Add("Authorization", AccessToken)
+
+	// Make the request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println(err)
+		return OptionChainAPIResponse{}, err
+	}
+	defer resp.Body.Close()
+
+	// Print the response status and body
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println(err)
+		return OptionChainAPIResponse{}, err
+	}
+
+	var response OptionChainAPIResponse
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		log.Println("Failed to unmarshal response in Option Chain API in Fyers", err)
+		return OptionChainAPIResponse{}, err
+	}
+	return response, nil
+}

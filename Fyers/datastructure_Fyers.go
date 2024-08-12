@@ -123,3 +123,61 @@ type MarginAPIResp_Fyers struct {
 	} `json:"data"`
 	S string `json:"s"`
 }
+
+type OptionChainAPIResponse struct {
+	Code    int    `json:"code"`
+	Data    Data   `json:"data"`
+	Message string `json:"message"`
+	S       string `json:"s"`
+}
+
+type Data struct {
+	CallOi       int64         `json:"callOi"`
+	ExpiryData   []Expiry      `json:"expiryData"`
+	IndiaVixData IndiaVix      `json:"indiavixData"`
+	OptionsChain []OptionChain `json:"optionsChain"`
+	PutOi        int64         `json:"putOi"`
+}
+
+type Expiry struct {
+	Date   string `json:"date"`
+	Expiry string `json:"expiry"`
+}
+
+type IndiaVix struct {
+	Ask         float64 `json:"ask"`
+	Bid         float64 `json:"bid"`
+	Description string  `json:"description"`
+	ExSymbol    string  `json:"ex_symbol"`
+	Exchange    string  `json:"exchange"`
+	FyToken     string  `json:"fyToken"`
+	Ltp         float64 `json:"ltp"`
+	LtpCh       float64 `json:"ltpch"`
+	LtpChp      float64 `json:"ltpchp"`
+	OptionType  string  `json:"option_type"`
+	StrikePrice int64   `json:"strike_price"`
+	Symbol      string  `json:"symbol"`
+}
+
+type OptionChain struct {
+	Ask         float64 `json:"ask"`
+	Bid         float64 `json:"bid"`
+	Description string  `json:"description,omitempty"`
+	ExSymbol    string  `json:"ex_symbol,omitempty"`
+	Exchange    string  `json:"exchange,omitempty"`
+	Fp          float64 `json:"fp,omitempty"`
+	Fpch        float64 `json:"fpch,omitempty"`
+	Fpchp       float64 `json:"fpchp,omitempty"`
+	FyToken     string  `json:"fyToken"`
+	Ltp         float64 `json:"ltp"`
+	LtpCh       float64 `json:"ltpch"`
+	LtpChp      float64 `json:"ltpchp"`
+	Oi          int64   `json:"oi,omitempty"`
+	Oich        int64   `json:"oich,omitempty"`
+	Oichp       float64 `json:"oichp,omitempty"`
+	OptionType  string  `json:"option_type"`
+	PrevOi      int64   `json:"prev_oi,omitempty"`
+	StrikePrice int64   `json:"strike_price"`
+	Symbol      string  `json:"symbol"`
+	Volume      int64   `json:"volume,omitempty"`
+}
