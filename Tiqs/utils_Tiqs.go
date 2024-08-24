@@ -137,3 +137,52 @@ func ClosestExpiryDate_Tiqs(indexName string, UserId_Tiqs string) (string, error
 	lastExpiryDate := allExpiryList[0]
 	return lastExpiryDate, nil
 }
+
+func GetOptionChainMap_Tiqs(TargetSymbol, TargetSymbolToken, OptionChainLength string) (map[string]map[string]Symbol, error) {
+	// First we will fetch closest expiry for that Index
+	closestExpiry, err := ClosestExpiryDate_Tiqs(TargetSymbol, ADMIN_TIQS)
+	if err != nil {
+		return nil, err
+	}
+
+	// Now we will fetch option chain from Tiqs using that closestExpiry
+	optionChainFromTiqs, _, err := GetOptionChain_Tiqs(TargetSymbolToken, OptionChainLength, closestExpiry, ADMIN_TIQS)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create a local variable to store the option chain
+	optionChain := make(map[string]map[string]Symbol)
+
+	for _, data := range optionChainFromTiqs.Data {
+		optionChain[data.StrikePrice] = make(map[string]Symbol)
+	}
+
+	for _, data := range optionChainFromTiqs.Data {
+		optionChain[data.StrikePrice][data.OptionType] = Symbol{
+			Name:  data.Symbol,
+			Token: data.Token,
+		}
+	}
+
+	newOptionChain := make(map[string]map[string]Symbol)
+
+	for strike, innerMap := range optionChain {
+		strikeInFloat := easyConversion.StringToFloat64(strike)
+		strikeInInt := easyConversion.Float64ToInt(strikeInFloat)
+		strikeRounded := easyConversion.IntToString(strikeInInt)
+
+		// If the rounded strike doesn't exist in the new map, initialize it
+		if _, exists := newOptionChain[strikeRounded]; !exists {
+			newOptionChain[strikeRounded] = make(map[string]Symbol)
+		}
+
+		// Copy CE and PE data to the rounded strike
+		for optionType, symbol := range innerMap {
+			newOptionChain[strikeRounded][optionType] = symbol
+		}
+	}
+
+	// Return the processed option chain
+	return newOptionChain, nil
+}

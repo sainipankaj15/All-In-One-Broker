@@ -118,3 +118,8 @@ type LTPofTokenResp_Tiqs struct {
 	} `json:"data"`
 	Status string `json:"status"`
 }
+
+type Symbol struct {
+	Name  string
+	Token string
+}

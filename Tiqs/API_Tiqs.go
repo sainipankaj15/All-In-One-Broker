@@ -3,6 +3,7 @@ package tiqs
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -312,6 +313,11 @@ func GetExpiryList_Tiqs(UserID_Tiqs string) (ExpiryResp_Tiqs, int, error) {
 
 	msg := fmt.Sprintf("Direct Response in GetExpiryList_Tiqs() is %v", jsonBody)
 
+	if resp.StatusCode != 200 {
+		log.Println(msg)
+		err := errors.New("token Expired")
+		return ExpiryResp_Tiqs{}, resp.StatusCode, err
+	}
 	log.Println(msg)
 	return Resp, resp.StatusCode, nil
 }
