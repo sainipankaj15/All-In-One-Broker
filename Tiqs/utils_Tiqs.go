@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 
-	easyConversion "github.com/sainipankaj15/data-type-conversion"
+	typeConversion "github.com/sainipankaj15/data-type-conversion"
 )
 
 func ReadingAccessToken_Tiqs(userID_Tiqs string) (string, string, error) {
@@ -64,18 +64,18 @@ func ExitAllPosition_Tiqs(UserId_Tiqs string) (string, error) {
 			buyQtyInString := position.DayBuyQty
 			sellQtyInString := position.DaySellQty
 
-			buyQty := easyConversion.StringToInt(buyQtyInString)
-			sellQty := easyConversion.StringToInt(sellQtyInString)
+			buyQty := typeConversion.StringToInt(buyQtyInString)
+			sellQty := typeConversion.StringToInt(sellQtyInString)
 
 			diff := buyQty - sellQty
 
 			if diff > 0 {
 				// it means long position : Have to cut it by opposite order
-				qtyInString := easyConversion.IntToString(diff)
+				qtyInString := typeConversion.IntToString(diff)
 				go OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "S", position.Product, UserId_Tiqs)
 			} else if diff < 0 {
 				// it means short position : Have to cut it by opposite order
-				qtyInString := easyConversion.IntToString(diff)
+				qtyInString := typeConversion.IntToString(diff)
 				go OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "B", position.Product, UserId_Tiqs)
 			}
 
@@ -104,18 +104,18 @@ func ExitByPositionID_Tiqs(symbolExchToken string, productType string, UserId_Ti
 					buyQtyInString := position.DayBuyQty
 					sellQtyInString := position.DaySellQty
 
-					buyQty := easyConversion.StringToInt(buyQtyInString)
-					sellQty := easyConversion.StringToInt(sellQtyInString)
+					buyQty := typeConversion.StringToInt(buyQtyInString)
+					sellQty := typeConversion.StringToInt(sellQtyInString)
 
 					diff := buyQty - sellQty
 
 					if diff > 0 {
 						// it means long position : Have to cut it by opposite order
-						qtyInString := easyConversion.IntToString(diff)
+						qtyInString := typeConversion.IntToString(diff)
 						OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "S", position.Product, UserId_Tiqs)
 					} else if diff < 0 {
 						// it means short position : Have to cut it by opposite order
-						qtyInString := easyConversion.IntToString(diff)
+						qtyInString := typeConversion.IntToString(diff)
 						OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "B", position.Product, UserId_Tiqs)
 					}
 				}
@@ -168,9 +168,9 @@ func GetOptionChainMap_Tiqs(TargetSymbol, TargetSymbolToken, OptionChainLength s
 	newOptionChain := make(map[string]map[string]Symbol)
 
 	for strike, innerMap := range optionChain {
-		strikeInFloat := easyConversion.StringToFloat64(strike)
-		strikeInInt := easyConversion.Float64ToInt(strikeInFloat)
-		strikeRounded := easyConversion.IntToString(strikeInInt)
+		strikeInFloat := typeConversion.StringToFloat64(strike)
+		strikeInInt := typeConversion.Float64ToInt(strikeInFloat)
+		strikeRounded := typeConversion.IntToString(strikeInInt)
 
 		// If the rounded strike doesn't exist in the new map, initialize it
 		if _, exists := newOptionChain[strikeRounded]; !exists {
