@@ -181,3 +181,8 @@ type OptionChain struct {
 	Symbol      string  `json:"symbol"`
 	Volume      int64   `json:"volume,omitempty"`
 }
+
+type Symbol struct {
+	Name    string
+	FyToken string
+}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	fyers "github.com/sainipankaj15/All-In-One-Broker/Fyers"
 	tiqs "github.com/sainipankaj15/All-In-One-Broker/Tiqs"
 )
 
@@ -65,8 +66,8 @@ func main() {
 	// a, _ := fyers.MarginMktOrder_Fyers("NSE:ITC-EQ", 1, 1, fyers.ProductType.INTRADAY, "XP03754")
 	// fmt.Println(a.Data.MarginTotal)
 
-	a, _ := tiqs.LTPInPaisa_Tiqs(26009, "FB5650")
-	fmt.Println(a)
+	// a, _ := tiqs.LTPInPaisa_Tiqs(26009, "FB5650")
+	// fmt.Println(a)
 
 	// b, err := fyers.GetOptionChain_Fyers("NSE:NIFTYBANK-INDEX", 2, "XP03754")
 	// if err != nil {
@@ -74,11 +75,21 @@ func main() {
 	// }
 	// fmt.Printf("%+v", b.Data.OptionsChain)
 
+	c, err := fyers.GetOptionChainMap_Fyers("NSE:NIFTYBANK-INDEX", 10, "XP03754")
+	if err != nil {
+		fmt.Println(err)
+	}
+	// fmt.Printf("%+v", c)
+	// printOptionChainMap(c)
+	fyers.PrintOptionChainMap(c)
+
 	// c, err := fyers.QuotesAPI_Fyers("NSE:SEACOAST-EQ", "XP03754")
 	// if err != nil {
 	// 	fmt.Println(err)
 	// }
 	// fmt.Printf("%+v", c)
+
+	time.Sleep(50000 * time.Second)
 
 	d, err := tiqs.GetOptionChainMap_Tiqs(tiqs.Index.BANKNIFTY, "26009", "10")
 
@@ -91,3 +102,4 @@ func main() {
 	time.Sleep(50000 * time.Second)
 
 }
+
