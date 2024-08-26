@@ -430,12 +430,12 @@ func PlaceMktOrder_Fyers(symbolName string, qty int, whichSide int, productType 
 	return true, nil
 }
 
-func QuotesAPI_Fyers(symbolName, UserID_Fyers string) (QuoteAPI_Fyers, error) {
+func QuotesAPI_Fyers(symbolName, UserID_Fyers string) (QuoteAPIResp_Fyers, error) {
 
 	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
 	if err != nil {
 		log.Fatalf("Error while getting access token in Fyers")
-		return QuoteAPI_Fyers{}, err
+		return QuoteAPIResp_Fyers{}, err
 	}
 
 	url := fmt.Sprintf("https://api-t1.fyers.in/data/quotes?symbols=%s", symbolName)
@@ -443,7 +443,7 @@ func QuotesAPI_Fyers(symbolName, UserID_Fyers string) (QuoteAPI_Fyers, error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		log.Println("Error while making request in quotesFyersAPI")
-		return QuoteAPI_Fyers{}, err
+		return QuoteAPIResp_Fyers{}, err
 	}
 
 	// Add the Bearer token to the request header
@@ -454,7 +454,7 @@ func QuotesAPI_Fyers(symbolName, UserID_Fyers string) (QuoteAPI_Fyers, error) {
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println("Error while making request in quotesFyersAPI")
-		return QuoteAPI_Fyers{}, err
+		return QuoteAPIResp_Fyers{}, err
 	}
 	defer resp.Body.Close()
 
@@ -462,19 +462,19 @@ func QuotesAPI_Fyers(symbolName, UserID_Fyers string) (QuoteAPI_Fyers, error) {
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Println("Error while reading the body in byte array in quotesFyersAPI")
-		return QuoteAPI_Fyers{}, err
+		return QuoteAPIResp_Fyers{}, err
 	}
 
 	jsonBody := string(body)
 	log.Printf("Direct Response from Quotes API of fyers for %v is %v", symbolName, jsonBody)
 
 	// Converting into Response struct format
-	var qpr QuoteAPI_Fyers
+	var qpr QuoteAPIResp_Fyers
 
 	err = json.Unmarshal(body, &qpr)
 	if err != nil {
 		log.Println("Error while Unmarshaling the data in quotes Fyers API")
-		return QuoteAPI_Fyers{}, err
+		return QuoteAPIResp_Fyers{}, err
 	}
 
 	return qpr, nil
@@ -519,7 +519,7 @@ func SymbolNameToExchToken(symbolName, UserID_Fyers string) (string, error) {
 	log.Printf("Direct Response from Quotes API of fyers for %v is %v", symbolName, jsonBody)
 
 	// Converting into Response struct format
-	var qpr QuoteAPI_Fyers
+	var qpr QuoteAPIResp_Fyers
 
 	err = json.Unmarshal(body, &qpr)
 	if err != nil {

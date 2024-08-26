@@ -81,7 +81,7 @@ type StockData struct {
 	Ltp float64 `json:"ltp"`
 }
 
-type QuoteAPI_Fyers struct {
+type QuoteAPIResp_Fyers struct {
 	Code int          `json:"code"`
 	S    string       `json:"s"`
 	D    []StockEntry `json:"d"`
