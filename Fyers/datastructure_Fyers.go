@@ -186,3 +186,19 @@ type Symbol struct {
 	Name    string
 	FyToken string
 }
+
+// Struct to represent the History API response
+type HistoricalDataAPI_Resp struct {
+	Status  string          `json:"s"`
+	Candles [][]interface{} `json:"candles"`
+}
+
+// Struct to represent individual candle data
+type Candle struct {
+	EpochTime int64   // Current epoch time
+	Open      float64 // Open Value
+	High      float64 // Highest Value
+	Low       float64 // Lowest Value
+	Close     float64 // Close Value
+	Volume    int64   // Total traded quantity (volume)
+}

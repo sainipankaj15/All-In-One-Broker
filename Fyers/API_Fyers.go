@@ -8,6 +8,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
+	"time"
 )
 
 func PositionApi_Fyers(UserID_Fyers string) (PositionAPIResp_Fyers, error) {
@@ -664,4 +666,98 @@ func GetOptionChain_Fyers(Symbol string, StrikeCount int, UserID_Fyers string) (
 		return OptionChainAPIResponse{}, err
 	}
 	return response, nil
+}
+
+func GetHistoricalData_Fyers(symbol, resolution, dateFormat, rangeFrom, rangeTo, UserID_Fyers string) ([]Candle, error) {
+
+	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
+	if err != nil {
+		log.Fatalf("Error while getting access token in Fyers")
+		return []Candle{}, err
+	}
+	baseURL := "https://api-t1.fyers.in/data/history"
+
+	// Build the URL with query parameters
+	apiURL, err := url.Parse(baseURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Add query parameters
+	params := url.Values{}
+	params.Add("symbol", symbol)
+	params.Add("resolution", resolution)
+	params.Add("date_format", dateFormat)
+	params.Add("range_from", rangeFrom)
+	params.Add("range_to", rangeTo)
+	params.Add("cont_flag", "")
+
+	apiURL.RawQuery = params.Encode()
+
+	// Create HTTP client and set timeout
+	client := &http.Client{Timeout: 10 * time.Second}
+
+	// Prepare the GET request
+	req, err := http.NewRequest("GET", apiURL.String(), nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Add headers to the request
+	req.Header.Add("Authorization", AccessToken)
+
+	// Send the request
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+
+	// Check if response status is 200 OK
+	if resp.StatusCode != http.StatusOK {
+		log.Printf("Error: Status code %d", resp.StatusCode)
+	}
+
+	// Read the response body
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println(err)
+	}
+
+	// Unmarshal the response into the temporary structure
+	var rawData HistoricalDataAPI_Resp
+	err = json.Unmarshal(body, &rawData)
+	if err != nil {
+		log.Fatalf("Failed to unmarshal response: %v", err)
+	}
+
+	// Convert the raw candle data into the []Candle format
+	candles, err := convertToCandles(rawData.Candles)
+	if err != nil {
+		log.Fatalf("Failed to convert candle data: %v", err)
+	}
+
+	// Return the candles
+	return candles, nil
+}
+
+// Convert [][]interface{} to []Candle
+func convertToCandles(rawCandles [][]interface{}) ([]Candle, error) {
+	var candles []Candle
+	for _, rawCandle := range rawCandles {
+		if len(rawCandle) != 6 {
+			return nil, fmt.Errorf("invalid candle data length: expected 6, got %d", len(rawCandle))
+		}
+
+		candle := Candle{
+			EpochTime: int64(rawCandle[0].(float64)),
+			Open:      rawCandle[1].(float64),
+			High:      rawCandle[2].(float64),
+			Low:       rawCandle[3].(float64),
+			Close:     rawCandle[4].(float64),
+			Volume:    int64(rawCandle[5].(float64)),
+		}
+		candles = append(candles, candle)
+	}
+	return candles, nil
 }

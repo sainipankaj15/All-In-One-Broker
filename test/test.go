@@ -75,19 +75,27 @@ func main() {
 	// }
 	// fmt.Printf("%+v", b.Data.OptionsChain)
 
-	c, err := fyers.GetOptionChainMap_Fyers("NSE:NIFTYBANK-INDEX", 10, "XP03754")
-	if err != nil {
-		fmt.Println(err)
-	}
+	// c, err := fyers.GetOptionChainMap_Fyers("NSE:NIFTYBANK-INDEX", 10, "XP03754")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
 	// fmt.Printf("%+v", c)
 	// printOptionChainMap(c)
-	fyers.PrintOptionChainMap(c)
+	// fyers.PrintOptionChainMap(c)
 
 	// c, err := fyers.QuotesAPI_Fyers("NSE:SEACOAST-EQ", "XP03754")
 	// if err != nil {
 	// 	fmt.Println(err)
 	// }
 	// fmt.Printf("%+v", c)
+
+	c , err := fyers.GetHistoricalData_Fyers("NSE:ITC-EQ", "1D", "1", "2021-01-01", "2021-01-10", "XP03754")
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Printf("%+v", c)
 
 	time.Sleep(50000 * time.Second)
 
