@@ -2,9 +2,7 @@ package main
 
 import (
 	"fmt"
-	"time"
 
-	fyers "github.com/sainipankaj15/All-In-One-Broker/Fyers"
 	tiqs "github.com/sainipankaj15/All-In-One-Broker/Tiqs"
 )
 
@@ -89,25 +87,32 @@ func main() {
 	// }
 	// fmt.Printf("%+v", c)
 
-	c , err := fyers.GetHistoricalData_Fyers("NSE:ITC-EQ", "1D", "1", "2021-01-01", "2021-01-10", "XP03754")
+	// c, err := fyers.GetHistoricalData_Fyers("NSE:ITC-EQ", "1D", "1", "2021-01-01", "2021-01-10", "XP03754")
+
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
+
+	// fmt.Printf("%+v", c)
+
+	// time.Sleep(50000 * time.Second)
+
+	// d, err := tiqs.ClosestExpiryDate_Tiqs(tiqs.Index.BANKNIFTY, tiqs.ADMIN_TIQS)
+
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
+
+	// fmt.Printf("Date is %+v", d)
+
+	d, err := tiqs.NextExpiryDateOnExpiry_Tiqs(tiqs.Index.NIFTY, tiqs.ADMIN_TIQS)
 
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	fmt.Printf("%+v", c)
+	fmt.Printf(" date is %+v", d)
 
-	time.Sleep(50000 * time.Second)
-
-	d, err := tiqs.GetOptionChainMap_Tiqs(tiqs.Index.BANKNIFTY, "26009", "10")
-
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	fmt.Printf("%+v", d)
-
-	time.Sleep(50000 * time.Second)
+	// time.Sleep(50000 * time.Second)
 
 }
-

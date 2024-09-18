@@ -3,6 +3,8 @@ package tiqs
 import (
 	"encoding/json"
 	"io/ioutil"
+	"strings"
+	"time"
 
 	typeConversion "github.com/sainipankaj15/data-type-conversion"
 )
@@ -136,6 +138,24 @@ func ClosestExpiryDate_Tiqs(indexName string, UserId_Tiqs string) (string, error
 	allExpiryList := resp.Data[indexName]
 	lastExpiryDate := allExpiryList[0]
 	return lastExpiryDate, nil
+}
+
+func NextExpiryDateOnExpiry_Tiqs(indexName string, UserId_Tiqs string) (string, error) {
+
+	resp, _, err := GetExpiryList_Tiqs(UserId_Tiqs)
+
+	if err != nil {
+		return "", err
+	}
+
+	allExpiryList := resp.Data[indexName]
+
+	today := strings.ToUpper(time.Now().Format("2-Jan-2006"))
+	if allExpiryList[0] == today {
+		return allExpiryList[1], nil
+	}
+
+	return allExpiryList[0], nil
 }
 
 func GetOptionChainMap_Tiqs(TargetSymbol, TargetSymbolToken, OptionChainLength string) (map[string]map[string]Symbol, error) {
