@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	tiqs "github.com/sainipankaj15/All-In-One-Broker/Tiqs"
+	utils "github.com/sainipankaj15/All-In-One-Broker/commanUtilsAcrossBroker"
 )
 
 func main() {
@@ -112,6 +113,10 @@ func main() {
 	}
 
 	fmt.Printf(" date is %+v", d)
+
+	c := utils.RoundOff(52126 , 50)
+
+	fmt.Println("c is ", c)
 
 	// time.Sleep(50000 * time.Second)
 

@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"math"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -192,4 +193,20 @@ func ApplicationClosing(ClosingHour, ClosingMinutes, ClosingSeconds int, isWorkD
 		isWorkDone <- time.Now()
 		break
 	}
+}
+
+type Number interface {
+	int | int32 | int64 | float32 | float64
+}
+
+// RoundOff works with any Number type that satisfies the Number constraint
+func RoundOff[T Number](a, b T) T {
+	if b == 0 {
+		return a // Avoid division by zero
+	}
+
+	// Perform the rounding
+	rounded := T(math.Round(float64(a)/float64(b)) * float64(b))
+
+	return rounded
 }
