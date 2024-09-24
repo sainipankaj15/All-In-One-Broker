@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"time"
 
 	tiqs "github.com/sainipankaj15/All-In-One-Broker/Tiqs"
-	utils "github.com/sainipankaj15/All-In-One-Broker/commanUtilsAcrossBroker"
+	tiqsGreeksSocket "github.com/sainipankaj15/All-In-One-Broker/TiqsGreeks"
 )
 
 func main() {
@@ -106,18 +108,39 @@ func main() {
 
 	// fmt.Printf("Date is %+v", d)
 
-	d, err := tiqs.NextExpiryDateOnExpiry_Tiqs(tiqs.Index.NIFTY, tiqs.ADMIN_TIQS)
+	// d, err := tiqs.NextExpiryDateOnExpiry_Tiqs(tiqs.Index.NIFTY, tiqs.ADMIN_TIQS)
+
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
+
+	// fmt.Printf(" date is %+v", d)
+
+	// c := utils.RoundOff(52126 , 50)
+
+	// fmt.Println("c is ", c)
+
+	gs, err := tiqsGreeksSocket.NewTiqsGreeksSocket("tuQgdNy85AiC", "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJGQjU2NTAiLCJpc3MiOiJ0aXFzIiwic3ViIjoidHVRZ2ROeTg1QWlDIiwiZXhwIjoxNzI3MjAyNTk5LCJpYXQiOjE3MjcxNDUwMDF9.UBW5199-6E36iGf8VgxAO1chiPKtOew5wnlKsX5RgpbVg7XimnOLmg7LYjpSBT8vTAxi5E7Vk1tQ6VKzcpPFCg", true)
 
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	fmt.Printf(" date is %+v", d)
-
-	c := utils.RoundOff(52126 , 50)
-
-	fmt.Println("c is ", c)
+	gs.StartWebSocket(tiqs.Index.BANKNIFTY, tiqs.ExchangeToken.BANKNIFTY)
 
 	// time.Sleep(50000 * time.Second)
 
+	for {
+		time.Sleep(1 * time.Second)
+
+		price, err := gs.GetPrice(40508)
+		if err != nil {
+			log.Printf("Error getting price: %v\n", err)
+		} else {
+			log.Printf("Price for token 40508: %.2f\n", price)
+		}
+		// fmt.Println("Hello World!")
+	}
+
+	// select {}
 }
