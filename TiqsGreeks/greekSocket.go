@@ -14,10 +14,11 @@ import (
 
 func NewTiqsGreeksSocket(appID string, accessToken string, enableLog bool) (*TiqsGreeksClient, error) {
 	client := &TiqsGreeksClient{
-		appID:       appID,
-		accessToken: accessToken,
-		enableLog:   enableLog,
-		priceMap:    haxmap.New[int32, TickData](),
+		appID:                   appID,
+		accessToken:             accessToken,
+		enableLog:               enableLog,
+		priceMap:                haxmap.New[int32, TickData](), // token to tick data
+		strikeToSyntheticFuture: haxmap.New[int32, float64](),  // strike price to synthetic future price
 	}
 
 	if enableLog {
