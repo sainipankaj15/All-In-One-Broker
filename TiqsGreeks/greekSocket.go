@@ -87,12 +87,18 @@ func (t *TiqsGreeksClient) StartWebSocket(TargetSymbol string, TargetSymbolToken
 
 	// Subscribe to the option chain tokens
 	counter := 1
-	for _, strikes := range optionChain {
-		for _, symbol := range strikes {
+	for strike, tokens := range optionChain {
+
+		// Convert strike price to int32 and set into strikeToSyntheticFuture
+		t.strikeToSyntheticFuture.Set(typeConversion.StringToInt32(strike), 0)
+
+		for optionType, symbol := range tokens {
 			tokenInt := typeConversion.StringToInt(symbol.Token)
 			if tokenInt == 0 {
 				continue
 			}
+
+			go t.priceMap.Set(typeConversion.StringToInt32(symbol.Token), TickData{LTP: 0, Timestamp: 0, StrikePrice: int32(typeConversion.StringToInt(strike)), OptionType: optionType})
 
 			tiqsWs.AddSubscription(tokenInt)
 			t.logger(fmt.Sprintf("Subscribing to Symbol: %s, Token: %d, Total Symbols: %d", symbol.Name, tokenInt, counter))
