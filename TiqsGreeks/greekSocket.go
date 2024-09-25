@@ -64,6 +64,13 @@ func (t *TiqsGreeksClient) GetPrice(instrumentToken int32) (float64, error) {
 }
 
 func (t *TiqsGreeksClient) StartWebSocket(TargetSymbol string, TargetSymbolToken int) error {
+
+	// setting the time to expiry in Days
+	err := t.settingTimeToExpiry(TargetSymbol)
+	if err != nil {
+		return fmt.Errorf("error while setting time to expiry: %w", err)
+	}
+
 	tiqsWs, err := tiqsSocket.NewTiqsWebSocket(t.appID, t.accessToken, t.enableLog)
 	if err != nil {
 		return fmt.Errorf("error while connecting tiqs socket: %w", err)
@@ -181,4 +188,32 @@ func (t *TiqsGreeksClient) PrintSyntheticFutureMap() {
 		log.Println("--------------------")
 		return true
 	})
+}
+
+func (t *TiqsGreeksClient) settingTimeToExpiry(TargetSymbol string) error {
+	// First we will fetch closest expiry for that Index
+	closestExpiry, err := tiqs.ClosestExpiryDate_Tiqs(TargetSymbol, tiqs.ADMIN_TIQS)
+	if err != nil {
+		return fmt.Errorf("error while getting closest expiry: %w", err)
+	}
+
+	// Get today's date in the same format
+	today := time.Now().Format("2-Jan-2006")
+
+	// Parse both dates
+	expiryDate, err := time.Parse("2-Jan-2006", closestExpiry)
+	if err != nil {
+		return fmt.Errorf("error while parsing closestExpiry: %w", err)
+	}
+
+	todayDate, err := time.Parse("2-Jan-2006", today)
+	if err != nil {
+		return fmt.Errorf("error while parsing today's date: %w", err)
+	}
+
+	// Calculate the difference in days and add 1
+	diffDays := expiryDate.Sub(todayDate).Hours() / 24
+	t.timeToExpireInDays = int(diffDays) + 1
+
+	return nil
 }

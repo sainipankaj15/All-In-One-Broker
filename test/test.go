@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	tiqs "github.com/sainipankaj15/All-In-One-Broker/Tiqs"
@@ -128,9 +127,12 @@ func main() {
 		fmt.Println(err)
 	}
 
-	gs.StartWebSocket(tiqs.Index.BANKNIFTY, tiqs.ExchangeToken.BANKNIFTY)
+	gs.StartWebSocket(tiqs.Index.MIDCPNIFTY, tiqs.ExchangeToken.MIDCPNIFTY)
 
 	time.Sleep(5 * time.Second)
+
+	fmt.Printf("gs is %+v", gs)
+	time.Sleep(500 * time.Second)
 
 	gs.PrintSyntheticFutureMap()
 
@@ -146,17 +148,17 @@ func main() {
 
 	// gs.PrintPriceMap()
 
-	for {
-		time.Sleep(1 * time.Second)
+	// for {
+	// 	time.Sleep(1 * time.Second)
 
-		price, err := gs.GetPrice(40508)
-		if err != nil {
-			log.Printf("Error getting price: %v\n", err)
-		} else {
-			log.Printf("Price for token 40508: %.2f\n", price)
-		}
-		// fmt.Println("Hello World!")
-	}
+	// 	price, err := gs.GetPrice(40508)
+	// 	if err != nil {
+	// 		log.Printf("Error getting price: %v\n", err)
+	// 	} else {
+	// 		log.Printf("Price for token 40508: %.2f\n", price)
+	// 	}
+	// 	// fmt.Println("Hello World!")
+	// }
 
 	// select {}
 }
