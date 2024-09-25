@@ -9,6 +9,7 @@ type TiqsGreeksClient struct {
 	appID                   string
 	accessToken             string
 	enableLog               bool
+	timeToExpireInDays      int
 	priceMap                *haxmap.Map[int32, TickData]
 	optionChain             map[string]map[string]tiqs.Symbol
 	strikeToSyntheticFuture *haxmap.Map[int32, float64]

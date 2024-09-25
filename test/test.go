@@ -132,13 +132,19 @@ func main() {
 
 	time.Sleep(5 * time.Second)
 
-	gs.PrintPriceMap()
-	time.Sleep(5 * time.Second)
+	gs.PrintSyntheticFutureMap()
 
-	gs.PrintPriceMap()
-	time.Sleep(5 * time.Second)
+	// gs.PrintPriceMap()
+	time.Sleep(15 * time.Second)
 
-	gs.PrintPriceMap()
+	gs.PrintSyntheticFutureMap()
+
+	time.Sleep(15 * time.Second)
+
+	gs.PrintSyntheticFutureMap()
+	select {}
+
+	// gs.PrintPriceMap()
 
 	for {
 		time.Sleep(1 * time.Second)
