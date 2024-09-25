@@ -70,7 +70,11 @@ func (t *TiqsGreeksClient) StartWebSocket(TargetSymbol string, TargetSymbolToken
 
 	go func() {
 		for tick := range dataChannel {
-			go t.priceMap.Set(tick.Token, TickData{LTP: tick.LTP, Timestamp: tick.Time})
+			if val, ok := t.priceMap.Get(tick.Token); ok {
+				t.priceMap.Set(tick.Token, TickData{LTP: tick.LTP, Timestamp: tick.Time, StrikePrice: val.StrikePrice, OptionType: val.OptionType})
+			} else {
+				t.priceMap.Set(tick.Token, TickData{LTP: tick.LTP, Timestamp: tick.Time})
+			}
 		}
 	}()
 
@@ -82,6 +86,9 @@ func (t *TiqsGreeksClient) StartWebSocket(TargetSymbol string, TargetSymbolToken
 	if err != nil {
 		return fmt.Errorf("error while getting option chain: %w", err)
 	}
+
+	// Setting the optionChain in the TiqsGreeksClient
+	t.optionChain = optionChain
 
 	fmt.Println("optionChain: ", optionChain)
 
@@ -98,7 +105,7 @@ func (t *TiqsGreeksClient) StartWebSocket(TargetSymbol string, TargetSymbolToken
 				continue
 			}
 
-			go t.priceMap.Set(typeConversion.StringToInt32(symbol.Token), TickData{LTP: 0, Timestamp: 0, StrikePrice: int32(typeConversion.StringToInt(strike)), OptionType: optionType})
+			t.priceMap.Set(typeConversion.StringToInt32(symbol.Token), TickData{LTP: 0, Timestamp: 0, StrikePrice: int32(typeConversion.StringToInt(strike)), OptionType: optionType})
 
 			tiqsWs.AddSubscription(tokenInt)
 			t.logger(fmt.Sprintf("Subscribing to Symbol: %s, Token: %d, Total Symbols: %d", symbol.Name, tokenInt, counter))
@@ -110,4 +117,17 @@ func (t *TiqsGreeksClient) StartWebSocket(TargetSymbol string, TargetSymbolToken
 
 	t.logger("WebSocket started successfully")
 	return nil
+}
+
+func (t *TiqsGreeksClient) PrintPriceMap() {
+	fmt.Println("PriceMap Contents:")
+	t.priceMap.ForEach(func(key int32, value TickData) bool {
+		fmt.Printf("Token: %d\n", key)
+		fmt.Printf("  LTP: %d\n", value.LTP)
+		fmt.Printf("  Timestamp: %d\n", value.Timestamp)
+		fmt.Printf("  Strike Price: %d\n", value.StrikePrice)
+		fmt.Printf("  Option Type: %s\n", value.OptionType)
+		fmt.Println("--------------------")
+		return true
+	})
 }

@@ -120,7 +120,9 @@ func main() {
 
 	// fmt.Println("c is ", c)
 
-	gs, err := tiqsGreeksSocket.NewTiqsGreeksSocket("tuQgdNy85AiC", "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJGQjU2NTAiLCJpc3MiOiJ0aXFzIiwic3ViIjoidHVRZ2ROeTg1QWlDIiwiZXhwIjoxNzI3MjAyNTk5LCJpYXQiOjE3MjcxNDUwMDF9.UBW5199-6E36iGf8VgxAO1chiPKtOew5wnlKsX5RgpbVg7XimnOLmg7LYjpSBT8vTAxi5E7Vk1tQ6VKzcpPFCg", true)
+	tokenId, appId, _ := tiqs.ReadingAccessToken_Tiqs("FB5650")
+
+	gs, err := tiqsGreeksSocket.NewTiqsGreeksSocket(appId, tokenId, true)
 
 	if err != nil {
 		fmt.Println(err)
@@ -128,7 +130,15 @@ func main() {
 
 	gs.StartWebSocket(tiqs.Index.BANKNIFTY, tiqs.ExchangeToken.BANKNIFTY)
 
-	// time.Sleep(50000 * time.Second)
+	time.Sleep(5 * time.Second)
+
+	gs.PrintPriceMap()
+	time.Sleep(5 * time.Second)
+
+	gs.PrintPriceMap()
+	time.Sleep(5 * time.Second)
+
+	gs.PrintPriceMap()
 
 	for {
 		time.Sleep(1 * time.Second)
