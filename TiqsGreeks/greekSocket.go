@@ -81,7 +81,18 @@ func (t *TiqsGreeksClient) StartWebSocket(TargetSymbol string, TargetSymbolToken
 	go func() {
 		for tick := range dataChannel {
 			if val, ok := t.priceMap.Get(tick.Token); ok {
-				t.priceMap.Set(tick.Token, TickData{LTP: tick.LTP, Timestamp: tick.Time, StrikePrice: val.StrikePrice, OptionType: val.OptionType})
+
+				syntheticFuture, _ := t.strikeToSyntheticFuture.Get(val.StrikePrice)
+				// S := 23000 + 125.20 - 142.95 // Current stock price : Such that Synthetic Future value
+				K := float64(val.StrikePrice)                    // Strike price
+				T := calculateTimeToExpiry(t.timeToExpireInDays) // Time to expiration (in years)
+				r := 0.00                                        // Risk-free interest rate
+				price := tick.LTP                                // Option price
+				impliedVol := black76ImpliedVol(syntheticFuture, K, T, r, float64(price)/100)
+
+				delta, theta, gamma, vega := black76Greeks(syntheticFuture, K, T, r, impliedVol)
+
+				go t.priceMap.Set(tick.Token, TickData{LTP: tick.LTP, Timestamp: tick.Time, StrikePrice: val.StrikePrice, OptionType: val.OptionType, Delta: delta, Theta: theta, Vega: vega, Gamma: gamma, IV: impliedVol})
 			} else {
 				t.priceMap.Set(tick.Token, TickData{LTP: tick.LTP, Timestamp: tick.Time})
 			}
@@ -100,7 +111,7 @@ func (t *TiqsGreeksClient) StartWebSocket(TargetSymbol string, TargetSymbolToken
 	// Setting the optionChain in the TiqsGreeksClient
 	t.optionChain = optionChain
 
-	fmt.Println("optionChain: ", optionChain)
+	// fmt.Println("optionChain: ", optionChain)
 
 	// Subscribe to the option chain tokens
 	counter := 1
@@ -216,4 +227,28 @@ func (t *TiqsGreeksClient) settingTimeToExpiry(TargetSymbol string) error {
 	t.timeToExpireInDays = int(diffDays) + 1
 
 	return nil
+}
+
+// CalculateTimeToExpiry calculates the time to expiry in years based on the number of days
+// so if today is expiry then give daysToExpiry is 1
+func calculateTimeToExpiry(daysToExpiry int) float64 {
+	// Get current time
+	now := time.Now()
+
+	// Set the expiry time to 15:30 on the expiry day
+	expiry := time.Date(now.Year(), now.Month(), now.Day(), 15, 30, 0, 0, now.Location())
+
+	// Add the number of days to expiry
+	expiry = expiry.AddDate(0, 0, daysToExpiry-1)
+
+	// Calculate the time difference
+	timeDiff := expiry.Sub(now)
+
+	// Convert the time difference to days
+	daysFraction := timeDiff.Hours() / 24
+
+	// Convert days to years
+	years := daysFraction / 365
+
+	return years
 }

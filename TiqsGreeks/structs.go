@@ -20,4 +20,9 @@ type TickData struct {
 	Timestamp   int32
 	StrikePrice int32
 	OptionType  string
+	Delta       float64
+	Theta       float64
+	Vega        float64
+	Gamma       float64
+	IV          float64
 }
