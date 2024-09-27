@@ -2,6 +2,7 @@ package tiqs
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"strings"
 	"time"
@@ -156,6 +157,42 @@ func NextExpiryDateOnExpiry_Tiqs(indexName string, UserId_Tiqs string) (string, 
 	}
 
 	return allExpiryList[0], nil
+}
+
+func GetMonthlyExpiry_Tiqs(indexName string, UserId_Tiqs string) (string, error) {
+	resp, _, err := GetExpiryList_Tiqs(UserId_Tiqs)
+
+	if err != nil {
+		return "", err
+	}
+
+	allExpiryList := resp.Data[indexName]
+
+	if len(allExpiryList) < 2 {
+		return "", fmt.Errorf("not enough expiry dates for %s", indexName)
+	}
+
+	firstExpiryDate, err := time.Parse("2-Jan-2006", allExpiryList[0])
+	if err != nil {
+		return "", fmt.Errorf("error parsing first expiry date: %v", err)
+	}
+	currentMonth := firstExpiryDate.Month()
+
+	for i, expiryDate := range allExpiryList {
+		t, err := time.Parse("2-Jan-2006", expiryDate)
+		if err != nil {
+			return "", fmt.Errorf("error parsing expiry date: %v", err)
+		}
+
+		if t.Month() != currentMonth {
+			// Return the previous expiry date (which is the last one in the current month)
+			return allExpiryList[i-1], nil
+		}
+	}
+
+	// If we've gone through all dates and haven't found a month change,
+	// return the last date in the list
+	return allExpiryList[len(allExpiryList)-1], nil
 }
 
 func GetOptionChainMap_Tiqs(TargetSymbol, TargetSymbolToken, OptionChainLength string) (map[string]map[string]Symbol, error) {

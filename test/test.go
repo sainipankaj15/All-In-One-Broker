@@ -119,6 +119,15 @@ func main() {
 
 	// fmt.Println("c is ", c)
 
+	a, err := tiqs.GetMonthlyExpiry_Tiqs(tiqs.Index.BANKNIFTY, tiqs.ADMIN_TIQS)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println("a is ", a)
+	time.Sleep(5000 * time.Second)
+
 	tokenId, appId, _ := tiqs.ReadingAccessToken_Tiqs("FB5650")
 
 	gs, err := tiqsGreeksSocket.NewTiqsGreeksSocket(appId, tokenId, true)
