@@ -13,6 +13,7 @@ type TiqsGreeksClient struct {
 	priceMap                *haxmap.Map[int32, TickData]
 	optionChain             map[string]map[string]tiqs.Symbol
 	strikeToSyntheticFuture *haxmap.Map[int32, float64]
+	peTokenToCeToken        *haxmap.Map[int32, int32]
 }
 
 type TickData struct {

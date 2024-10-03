@@ -19,6 +19,7 @@ func NewTiqsGreeksSocket(appID string, accessToken string, enableLog bool) (*Tiq
 		enableLog:               enableLog,
 		priceMap:                haxmap.New[int32, TickData](), // token to tick data
 		strikeToSyntheticFuture: haxmap.New[int32, float64](),  // strike price to synthetic future price
+		peTokenToCeToken:        haxmap.New[int32, int32](),    // PE token to corresponding CE token
 	}
 
 	if enableLog {
@@ -82,15 +83,29 @@ func (t *TiqsGreeksClient) StartWebSocket(TargetSymbol string, TargetSymbolToken
 		for tick := range dataChannel {
 			if val, ok := t.priceMap.Get(tick.Token); ok {
 				if val.StrikePrice != 0 {
-					syntheticFuture, _ := t.strikeToSyntheticFuture.Get(val.StrikePrice)
-					// S := 23000 + 125.20 - 142.95 // Current stock price : Such that Synthetic Future value
-					K := float64(val.StrikePrice)                    // Strike price
-					T := calculateTimeToExpiry(t.timeToExpireInDays) // Time to expiration (in years)
-					r := 0.00                                        // Risk-free interest rate
-					price := tick.LTP                                // Option price
-					impliedVol := black76ImpliedVol(syntheticFuture, K, T, r, float64(price)/100)
 
-					delta, theta, gamma, vega := black76Greeks(syntheticFuture, K, T, r, impliedVol)
+					var delta, theta, gamma, vega, impliedVol float64
+
+					if val.OptionType == "CE" {
+						syntheticFuture, _ := t.strikeToSyntheticFuture.Get(val.StrikePrice)
+						K := float64(val.StrikePrice)                    // Strike price
+						T := calculateTimeToExpiry(t.timeToExpireInDays) // Time to expiration (in years)
+						r := 0.00                                        // Risk-free interest rate
+						price := tick.LTP                                // Option price
+						impliedVol = black76ImpliedVol(syntheticFuture, K, T, r, float64(price)/100)
+
+						delta, theta, gamma, vega = black76Greeks(syntheticFuture, K, T, r, impliedVol)
+					} else if val.OptionType == "PE" {
+						if ceToken, ok := t.peTokenToCeToken.Get(tick.Token); ok {
+							if ceTickData, ok := t.priceMap.Get(ceToken); ok {
+								delta = ceTickData.Delta - 1
+								theta = ceTickData.Theta
+								gamma = ceTickData.Gamma
+								vega = ceTickData.Vega
+								impliedVol = ceTickData.IV
+							}
+						}
+					}
 
 					go t.priceMap.Set(tick.Token, TickData{LTP: tick.LTP, Timestamp: tick.Time, StrikePrice: val.StrikePrice, OptionType: val.OptionType, Delta: delta, Theta: theta, Vega: vega, Gamma: gamma, IV: impliedVol})
 				} else {
@@ -116,8 +131,6 @@ func (t *TiqsGreeksClient) StartWebSocket(TargetSymbol string, TargetSymbolToken
 	// Setting the optionChain in the TiqsGreeksClient
 	t.optionChain = optionChain
 
-	// fmt.Println("optionChain: ", optionChain)
-
 	// Subscribe to the option chain tokens
 	counter := 1
 	for strike, tokens := range optionChain {
@@ -125,17 +138,30 @@ func (t *TiqsGreeksClient) StartWebSocket(TargetSymbol string, TargetSymbolToken
 		// Convert strike price to int32 and set into strikeToSyntheticFuture
 		t.strikeToSyntheticFuture.Set(typeConversion.StringToInt32(strike), 0)
 
+		var ceToken, peToken int32
 		for optionType, symbol := range tokens {
 			tokenInt := typeConversion.StringToInt(symbol.Token)
 			if tokenInt == 0 {
 				continue
 			}
 
-			t.priceMap.Set(typeConversion.StringToInt32(symbol.Token), TickData{LTP: 0, Timestamp: 0, StrikePrice: int32(typeConversion.StringToInt(strike)), OptionType: optionType})
+			token := typeConversion.StringToInt32(symbol.Token)
+			t.priceMap.Set(token, TickData{LTP: 0, Timestamp: 0, StrikePrice: int32(typeConversion.StringToInt(strike)), OptionType: optionType})
+
+			if optionType == "CE" {
+				ceToken = token
+			} else if optionType == "PE" {
+				peToken = token
+			}
 
 			tiqsWs.AddSubscription(tokenInt)
 			t.logger(fmt.Sprintf("Subscribing to Symbol: %s, Token: %d, Total Symbols: %d", symbol.Name, tokenInt, counter))
 			counter++
+		}
+
+		// Store the mapping of PE token to CE token
+		if peToken != 0 && ceToken != 0 {
+			t.peTokenToCeToken.Set(peToken, ceToken)
 		}
 	}
 
