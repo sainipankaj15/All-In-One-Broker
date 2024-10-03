@@ -81,19 +81,24 @@ func (t *TiqsGreeksClient) StartWebSocket(TargetSymbol string, TargetSymbolToken
 	go func() {
 		for tick := range dataChannel {
 			if val, ok := t.priceMap.Get(tick.Token); ok {
+				if val.StrikePrice != 0 {
+					syntheticFuture, _ := t.strikeToSyntheticFuture.Get(val.StrikePrice)
+					// S := 23000 + 125.20 - 142.95 // Current stock price : Such that Synthetic Future value
+					K := float64(val.StrikePrice)                    // Strike price
+					T := calculateTimeToExpiry(t.timeToExpireInDays) // Time to expiration (in years)
+					r := 0.00                                        // Risk-free interest rate
+					price := tick.LTP                                // Option price
+					impliedVol := black76ImpliedVol(syntheticFuture, K, T, r, float64(price)/100)
 
-				syntheticFuture, _ := t.strikeToSyntheticFuture.Get(val.StrikePrice)
-				// S := 23000 + 125.20 - 142.95 // Current stock price : Such that Synthetic Future value
-				K := float64(val.StrikePrice)                    // Strike price
-				T := calculateTimeToExpiry(t.timeToExpireInDays) // Time to expiration (in years)
-				r := 0.00                                        // Risk-free interest rate
-				price := tick.LTP                                // Option price
-				impliedVol := black76ImpliedVol(syntheticFuture, K, T, r, float64(price)/100)
+					delta, theta, gamma, vega := black76Greeks(syntheticFuture, K, T, r, impliedVol)
 
-				delta, theta, gamma, vega := black76Greeks(syntheticFuture, K, T, r, impliedVol)
-
-				go t.priceMap.Set(tick.Token, TickData{LTP: tick.LTP, Timestamp: tick.Time, StrikePrice: val.StrikePrice, OptionType: val.OptionType, Delta: delta, Theta: theta, Vega: vega, Gamma: gamma, IV: impliedVol})
+					go t.priceMap.Set(tick.Token, TickData{LTP: tick.LTP, Timestamp: tick.Time, StrikePrice: val.StrikePrice, OptionType: val.OptionType, Delta: delta, Theta: theta, Vega: vega, Gamma: gamma, IV: impliedVol})
+				} else {
+					// This is a normal token, not an option token
+					go t.priceMap.Set(tick.Token, TickData{LTP: tick.LTP, Timestamp: tick.Time})
+				}
 			} else {
+				// If the token is not in the map, add it
 				t.priceMap.Set(tick.Token, TickData{LTP: tick.LTP, Timestamp: tick.Time})
 			}
 		}
