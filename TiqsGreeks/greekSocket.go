@@ -12,6 +12,7 @@ import (
 	typeConversion "github.com/sainipankaj15/data-type-conversion"
 )
 
+// NewTiqsGreeksSocket initializes and returns a new TiqsGreeksClient
 func NewTiqsGreeksSocket(appID string, accessToken string, enableLog bool) (*TiqsGreeksClient, error) {
 	client := &TiqsGreeksClient{
 		appID:                   appID,
@@ -30,6 +31,7 @@ func NewTiqsGreeksSocket(appID string, accessToken string, enableLog bool) (*Tiq
 	return client, nil
 }
 
+// logger is a helper method to log messages if logging is enabled
 func (t *TiqsGreeksClient) logger(msg ...any) {
 	if t.enableLog {
 		log.Println(msg...)
@@ -38,6 +40,7 @@ func (t *TiqsGreeksClient) logger(msg ...any) {
 
 // GetTickData retrieves the full TickData for a given token
 func (t *TiqsGreeksClient) GetTickData(token int32) (TickData, error) {
+	// Check if the data is already in the cache
 	if tickData, ok := t.priceMap.Get(token); ok {
 		return tickData, nil
 	}
@@ -60,7 +63,6 @@ func (t *TiqsGreeksClient) GetTickData(token int32) (TickData, error) {
 	return newTickData, nil
 }
 
-
 // GetPriceMap returns the internal price map of the TiqsGreeksClient.
 // This map contains the latest tick data for each instrument token.
 func (t *TiqsGreeksClient) GetPriceMap() *haxmap.Map[int32, TickData] {
@@ -79,6 +81,7 @@ func (t *TiqsGreeksClient) GetSyntheticFutureMap() *haxmap.Map[int32, float64] {
 func (t *TiqsGreeksClient) GetPrice(instrumentToken int32) (float64, error) {
 	now := int32(time.Now().Unix())
 
+	// Check if we have recent data in the cache
 	if tickData, ok := t.priceMap.Get(instrumentToken); ok {
 		if now-tickData.Timestamp < 10 {
 			return float64(tickData.LTP) / 100, nil
@@ -97,14 +100,15 @@ func (t *TiqsGreeksClient) GetPrice(instrumentToken int32) (float64, error) {
 	return float64(ltp) / 100, nil
 }
 
+// StartWebSocket initializes and starts the WebSocket connection
 func (t *TiqsGreeksClient) StartWebSocket(TargetSymbol string, TargetSymbolToken int) error {
-
-	// setting the time to expiry in Days
+	// Setting the time to expiry in Days
 	err := t.settingTimeToExpiry(TargetSymbol)
 	if err != nil {
 		return fmt.Errorf("error while setting time to expiry: %w", err)
 	}
 
+	// Initialize the WebSocket connection
 	tiqsWs, err := tiqsSocket.NewTiqsWebSocket(t.appID, t.accessToken, t.enableLog)
 	if err != nil {
 		return fmt.Errorf("error while connecting tiqs socket: %w", err)
@@ -112,6 +116,7 @@ func (t *TiqsGreeksClient) StartWebSocket(TargetSymbol string, TargetSymbolToken
 
 	dataChannel := tiqsWs.GetDataChannel()
 
+	// Start a goroutine to handle incoming WebSocket data
 	go func() {
 		for tick := range dataChannel {
 			if val, ok := t.priceMap.Get(tick.Token); ok {
@@ -195,7 +200,6 @@ func (t *TiqsGreeksClient) StartWebSocket(TargetSymbol string, TargetSymbolToken
 	// Subscribe to the option chain tokens
 	counter := 1
 	for strike, tokens := range optionChain {
-
 		// Convert strike price to int32 and set into strikeToSyntheticFuture
 		t.strikeToSyntheticFuture.Set(typeConversion.StringToInt32(strike), 0)
 
@@ -227,7 +231,6 @@ func (t *TiqsGreeksClient) StartWebSocket(TargetSymbol string, TargetSymbolToken
 	}
 
 	t.logger(fmt.Sprintf("Total symbols subscribed: %d", counter-1))
-
 	t.logger("WebSocket started successfully")
 
 	// Setting synthetic future for each strike price in separate go routine
@@ -236,6 +239,7 @@ func (t *TiqsGreeksClient) StartWebSocket(TargetSymbol string, TargetSymbolToken
 	return nil
 }
 
+// PrintPriceMap prints the contents of the price map for debugging purposes
 func (t *TiqsGreeksClient) PrintPriceMap() {
 	fmt.Println("PriceMap Contents:")
 	t.priceMap.ForEach(func(key int32, value TickData) bool {
@@ -249,8 +253,8 @@ func (t *TiqsGreeksClient) PrintPriceMap() {
 	})
 }
 
+// settingSyntheticFuture calculates and updates the synthetic future prices
 func (t *TiqsGreeksClient) settingSyntheticFuture() {
-
 	// Setting synthetic future for each strike price
 	ticker := time.NewTicker(1 * time.Second)
 	go func() {
@@ -283,6 +287,7 @@ func (t *TiqsGreeksClient) settingSyntheticFuture() {
 	}()
 }
 
+// PrintSyntheticFutureMap prints the contents of the synthetic future map for debugging purposes
 func (t *TiqsGreeksClient) PrintSyntheticFutureMap() {
 	fmt.Println("Synthetic Future Map Contents:")
 	t.strikeToSyntheticFuture.ForEach(func(key int32, value float64) bool {
@@ -293,6 +298,7 @@ func (t *TiqsGreeksClient) PrintSyntheticFutureMap() {
 	})
 }
 
+// settingTimeToExpiry calculates and sets the time to expiry for the options
 func (t *TiqsGreeksClient) settingTimeToExpiry(TargetSymbol string) error {
 	// First we will fetch closest expiry for that Index
 	closestExpiry, err := tiqs.ClosestExpiryDate_Tiqs(TargetSymbol, tiqs.ADMIN_TIQS)
@@ -321,7 +327,7 @@ func (t *TiqsGreeksClient) settingTimeToExpiry(TargetSymbol string) error {
 	return nil
 }
 
-// CalculateTimeToExpiry calculates the time to expiry in years based on the number of days
+// calculateTimeToExpiry calculates the time to expiry in years based on the number of days
 // so if today is expiry then give daysToExpiry is 1
 func calculateTimeToExpiry(daysToExpiry int) float64 {
 	// Get current time
