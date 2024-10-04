@@ -36,6 +36,31 @@ func (t *TiqsGreeksClient) logger(msg ...any) {
 	}
 }
 
+// GetTickData retrieves the full TickData for a given token
+func (t *TiqsGreeksClient) GetTickData(token int32) (TickData, error) {
+	if tickData, ok := t.priceMap.Get(token); ok {
+		return tickData, nil
+	}
+	
+	// If not found in the map, fetch from API and update the map
+	ltpInPaisa, err := tiqs.LTPInPaisa_Tiqs(int(token), tiqs.ADMIN_TIQS)
+	if err != nil {
+		return TickData{}, fmt.Errorf("failed to get price from API: %v", err)
+	}
+
+	now := int32(time.Now().Unix())
+	newTickData := TickData{
+		LTP:       int32(ltpInPaisa),
+		Timestamp: now,
+		// Note: Other fields like StrikePrice are not set here
+		// as we don't have that information from just the LTP API call
+	}
+
+	t.priceMap.Set(token, newTickData)
+	return newTickData, nil
+}
+
+
 func (t *TiqsGreeksClient) GetPriceMap() *haxmap.Map[int32, TickData] {
 	return t.priceMap
 }

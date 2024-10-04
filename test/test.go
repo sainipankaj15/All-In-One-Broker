@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	tiqs "github.com/sainipankaj15/All-In-One-Broker/Tiqs"
@@ -141,18 +142,36 @@ func main() {
 	time.Sleep(5 * time.Second)
 
 	fmt.Printf("gs is %+v", gs)
-	time.Sleep(500 * time.Second)
 
-	gs.PrintSyntheticFutureMap()
+	ticker := time.NewTicker(10 * time.Second)
+	defer ticker.Stop()
 
-	// gs.PrintPriceMap()
-	time.Sleep(15 * time.Second)
+	go func() {
+		for range ticker.C {
+			tokens := []int32{41678, 41504}
+			for _, token := range tokens {
+				tickData, err := gs.GetTickData(token)
+				if err != nil {
+					log.Printf("Error getting tick data for token %d: %v", token, err)
+				} else {
+					log.Printf("Tick data for token %d: %+v", token, tickData)
+				}
+			}
+		}
+	}()
 
-	gs.PrintSyntheticFutureMap()
+	// time.Sleep(500 * time.Second)
 
-	time.Sleep(15 * time.Second)
+	// gs.PrintSyntheticFutureMap()
 
-	gs.PrintSyntheticFutureMap()
+	// // gs.PrintPriceMap()
+	// time.Sleep(15 * time.Second)
+
+	// gs.PrintSyntheticFutureMap()
+
+	// time.Sleep(15 * time.Second)
+
+	// gs.PrintSyntheticFutureMap()
 	select {}
 
 	// gs.PrintPriceMap()
