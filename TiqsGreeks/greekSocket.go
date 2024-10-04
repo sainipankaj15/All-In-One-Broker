@@ -61,13 +61,21 @@ func (t *TiqsGreeksClient) GetTickData(token int32) (TickData, error) {
 }
 
 
+// GetPriceMap returns the internal price map of the TiqsGreeksClient.
+// This map contains the latest tick data for each instrument token.
 func (t *TiqsGreeksClient) GetPriceMap() *haxmap.Map[int32, TickData] {
 	return t.priceMap
 }
+
+// GetSyntheticFutureMap returns the internal map of synthetic future prices.
+// This map contains the calculated synthetic future price for each strike price.
 func (t *TiqsGreeksClient) GetSyntheticFutureMap() *haxmap.Map[int32, float64] {
 	return t.strikeToSyntheticFuture
 }
 
+// GetPrice retrieves the latest price for a given instrument token.
+// It first checks the internal cache (priceMap) for recent data.
+// If recent data is not available, it falls back to fetching from the API.
 func (t *TiqsGreeksClient) GetPrice(instrumentToken int32) (float64, error) {
 	now := int32(time.Now().Unix())
 
@@ -107,15 +115,19 @@ func (t *TiqsGreeksClient) StartWebSocket(TargetSymbol string, TargetSymbolToken
 	go func() {
 		for tick := range dataChannel {
 			if val, ok := t.priceMap.Get(tick.Token); ok {
+				// If the token exists in the price map
 				if val.StrikePrice != 0 {
-
+					// If it's an option (has a strike price)
 					var delta, theta, gamma, vega, impliedVol float64
 
 					if val.OptionType == "CE" {
+						// For Call options
 						syntheticFuture, _ := t.strikeToSyntheticFuture.Get(val.StrikePrice)
 						if syntheticFuture == 0 {
+							// If synthetic future price is not available, set all Greeks to 0
 							delta, theta, gamma, vega, impliedVol = 0, 0, 0, 0, 0
 						} else {
+							// Calculate Greeks using Black-76 model
 							K := float64(val.StrikePrice)                    // Strike price
 							T := calculateTimeToExpiry(t.timeToExpireInDays) // Time to expiration (in years)
 							r := 0.00                                        // Risk-free interest rate
@@ -123,12 +135,13 @@ func (t *TiqsGreeksClient) StartWebSocket(TargetSymbol string, TargetSymbolToken
 							impliedVol = black76ImpliedVol(syntheticFuture, K, T, r, float64(price)/100)
 							
 							if impliedVol == 0 {
-								// Fetch Greeks from API if impliedVol is 0
+								// If implied volatility calculation fails, fetch Greeks from API
 								greeksData, err := tiqs.GetGreeks_Tiqs(int(tick.Token), tiqs.ADMIN_TIQS)
 								if err != nil {
 									log.Printf("Error fetching Greeks from API: %v", err)
 									delta, theta, gamma, vega = 0, 0, 0, 0
 								} else {
+									// Use Greeks from API
 									delta = greeksData.Delta
 									theta = greeksData.Theta
 									gamma = greeksData.Gamma
@@ -136,12 +149,15 @@ func (t *TiqsGreeksClient) StartWebSocket(TargetSymbol string, TargetSymbolToken
 									impliedVol = greeksData.IV
 								}
 							} else {
+								// Calculate Greeks using Black-76 model
 								delta, theta, gamma, vega = black76Greeks(syntheticFuture, K, T, r, impliedVol)
 							}
 						}
 					} else if val.OptionType == "PE" {
+						// For Put options
 						if ceToken, ok := t.peTokenToCeToken.Get(tick.Token); ok {
 							if ceTickData, ok := t.priceMap.Get(ceToken); ok {
+								// Derive Put option Greeks from corresponding Call option
 								delta = ceTickData.Delta - 1
 								theta = ceTickData.Theta
 								gamma = ceTickData.Gamma
@@ -151,13 +167,14 @@ func (t *TiqsGreeksClient) StartWebSocket(TargetSymbol string, TargetSymbolToken
 						}
 					}
 
+					// Update the price map with new tick data and calculated Greeks
 					go t.priceMap.Set(tick.Token, TickData{LTP: tick.LTP, Timestamp: tick.Time, StrikePrice: val.StrikePrice, OptionType: val.OptionType, Delta: delta, Theta: theta, Vega: vega, Gamma: gamma, IV: impliedVol})
 				} else {
-					// This is a normal token, not an option token
+					// If it's not an option (e.g., underlying asset), update only LTP and timestamp
 					go t.priceMap.Set(tick.Token, TickData{LTP: tick.LTP, Timestamp: tick.Time})
 				}
 			} else {
-				// If the token is not in the map, add it
+				// If the token is not in the map, add it with basic tick data
 				t.priceMap.Set(tick.Token, TickData{LTP: tick.LTP, Timestamp: tick.Time})
 			}
 		}
