@@ -9,13 +9,18 @@ const tThreshold = 1e-4 // Threshold for T (in years)
 
 func black76Call(S, K, T, r, sigma float64) float64 {
 	if T <= tThreshold {
+		// fmt.Println("returning from if conditon")
 		return math.Max(0, S-K)
 	}
+	// fmt.Println("came down")
 
+	// fmt.Println("returning from values from black76ccall", S, K, T, r, sigma)
 	d1 := (math.Log(S/K) + (0.5*sigma*sigma)*T) / (sigma * math.Sqrt(T))
 	d2 := d1 - sigma*math.Sqrt(T)
 	cdf := func(x float64) float64 { return 0.5 * (1 + math.Erf(x/math.Sqrt(2))) }
-	return S*cdf(d1) - K*math.Exp(-r*T)*cdf(d2)
+	finalAnswer := S*cdf(d1) - K*math.Exp(-r*T)*cdf(d2)
+	// fmt.Println("returning from black76Call", finalAnswer)
+	return finalAnswer
 }
 
 func black76ImpliedVol(S, K, T, r, price float64) float64 {
@@ -31,8 +36,18 @@ func black76ImpliedVol(S, K, T, r, price float64) float64 {
 		return black76Call(S, K, T, r, sigma)
 	}
 
+	// Initial values for a and b
+	a := 0.01
+	b := 2.0
+
+	// fa := black76CallPrice(a)
+	// fb := black76CallPrice(b)
+
+	// Add logging to check the signs of f(a) and f(b)
+	// log.Printf("Initial values: f(a) = %v, f(b) = %v", fa, fb)
+
 	// Use numerical optimization to find the implied volatility
-	impliedVol, err := bisection(func(x float64) float64 { return black76CallPrice(x) - price }, 0.01, 2, 1e-8)
+	impliedVol, err := bisection(func(x float64) float64 { return black76CallPrice(x) - price }, a, b, 1e-8)
 	if err != nil {
 		panic(err)
 	}

@@ -88,13 +88,17 @@ func (t *TiqsGreeksClient) StartWebSocket(TargetSymbol string, TargetSymbolToken
 
 					if val.OptionType == "CE" {
 						syntheticFuture, _ := t.strikeToSyntheticFuture.Get(val.StrikePrice)
-						K := float64(val.StrikePrice)                    // Strike price
-						T := calculateTimeToExpiry(t.timeToExpireInDays) // Time to expiration (in years)
-						r := 0.00                                        // Risk-free interest rate
-						price := tick.LTP                                // Option price
-						impliedVol = black76ImpliedVol(syntheticFuture, K, T, r, float64(price)/100)
+						if syntheticFuture == 0 {
+							delta, theta, gamma, vega, impliedVol = 0, 0, 0, 0, 0
+						} else {
+							K := float64(val.StrikePrice)                    // Strike price
+							T := calculateTimeToExpiry(t.timeToExpireInDays) // Time to expiration (in years)
+							r := 0.00                                        // Risk-free interest rate
+							price := tick.LTP                                // Option price
+							impliedVol = black76ImpliedVol(syntheticFuture, K, T, r, float64(price)/100)
 
-						delta, theta, gamma, vega = black76Greeks(syntheticFuture, K, T, r, impliedVol)
+							delta, theta, gamma, vega = black76Greeks(syntheticFuture, K, T, r, impliedVol)
+						}
 					} else if val.OptionType == "PE" {
 						if ceToken, ok := t.peTokenToCeToken.Get(tick.Token); ok {
 							if ceTickData, ok := t.priceMap.Get(ceToken); ok {
@@ -123,7 +127,7 @@ func (t *TiqsGreeksClient) StartWebSocket(TargetSymbol string, TargetSymbolToken
 	tiqsWs.AddSubscription(TargetSymbolToken)
 
 	// Subscribe to the option chain tokens : Strike Price Tokens
-	optionChain, err := tiqs.GetOptionChainMap_Tiqs(TargetSymbol, strconv.Itoa(TargetSymbolToken), "25")
+	optionChain, err := tiqs.GetOptionChainMap_Tiqs(TargetSymbol, strconv.Itoa(TargetSymbolToken), "20")
 	if err != nil {
 		return fmt.Errorf("error while getting option chain: %w", err)
 	}
