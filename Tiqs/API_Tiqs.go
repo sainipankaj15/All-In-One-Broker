@@ -384,3 +384,76 @@ func LTPInPaisa_Tiqs(tokenNumber int, UserID_Tiqs string) (int, error) {
 
 	return ltp, nil
 }
+
+func GetGreeks_Tiqs(tokenNumber int, UserID_Tiqs string) (GreeksData_Tiqs, error) {
+	// Reading accessToken and APPID for fetching the APIs
+	AccessToken, APPID, err := ReadingAccessToken_Tiqs(UserID_Tiqs)
+	if err != nil {
+		log.Println("Error while getting access token from file")
+		return GreeksData_Tiqs{}, err
+	}
+
+	url := "https://api.tiqs.trading/info/greeks"
+
+	// Create a slice with the token number
+	data := []int{tokenNumber}
+
+	// Convert the slice to JSON
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		log.Println("Error while marshaling data in GetGreeks_Tiqs")
+		return GreeksData_Tiqs{}, err
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		log.Println("Error while making request in GetGreeks_Tiqs")
+		return GreeksData_Tiqs{}, err
+	}
+
+	// Add the headers to the request
+	req.Header.Add("appId", APPID)
+	req.Header.Add("token", AccessToken)
+	req.Header.Set("Content-Type", "application/json")
+
+	// Make the request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println("Error while making request in GetGreeks_Tiqs API")
+
+		return GreeksData_Tiqs{}, err
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("Error while reading the body in GetGreeks_Tiqs API")
+		return GreeksData_Tiqs{}, err
+	}
+
+	jsonBody := string(body)
+	log.Printf("Direct Response from GetGreeks_Tiqs API: %v", jsonBody)
+
+	// Converting into Response struct format
+	var apiResp GreeksResp_Tiqs
+
+	err = json.Unmarshal(body, &apiResp)
+	if err != nil {
+		log.Println("Error while Unmarshaling the data in GetGreeks_Tiqs API")
+		return GreeksData_Tiqs{}, err
+	}
+
+	if apiResp.Status != "success" {
+		return GreeksData_Tiqs{}, fmt.Errorf("API returned non-success status: %s", apiResp.Status)
+	}
+
+	if len(apiResp.Data) == 0 {
+		return GreeksData_Tiqs{}, fmt.Errorf("no data returned for the given token")
+	}
+
+	greeksData := apiResp.Data[0]
+	greeksData.IV *= 100
+	return greeksData, nil
+}

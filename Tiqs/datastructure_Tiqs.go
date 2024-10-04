@@ -123,3 +123,18 @@ type Symbol struct {
 	Name  string
 	Token string
 }
+
+// Define GreeksData_Tiqs struct
+type GreeksData_Tiqs struct {
+	Delta float64 `json:"delta"`
+	Theta float64 `json:"theta"`
+	Gamma float64 `json:"gamma"`
+	Vega  float64 `json:"vega"`
+	IV    float64 `json:"iv"`
+}
+
+// Define GreeksResp_Tiqs struct
+type GreeksResp_Tiqs struct {
+	Data   []GreeksData_Tiqs `json:"data"`
+	Status string            `json:"status"`
+}
