@@ -49,7 +49,8 @@ func black76ImpliedVol(S, K, T, r, price float64) float64 {
 	// Use numerical optimization to find the implied volatility
 	impliedVol, err := bisection(func(x float64) float64 { return black76CallPrice(x) - price }, a, b, 1e-8)
 	if err != nil {
-		panic(err)
+		return 0 
+		// panic(err)
 	}
 	return impliedVol
 }

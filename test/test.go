@@ -120,14 +120,14 @@ func main() {
 
 	// fmt.Println("c is ", c)
 
-	a, err := tiqs.GetGreeks_Tiqs(41445, tiqs.ADMIN_TIQS)
+	// a, err := tiqs.GetGreeks_Tiqs(41445, tiqs.ADMIN_TIQS)
 
-	if err != nil {
-		fmt.Println(err)
-	}
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
 
-	fmt.Println("a is ", a)
-	time.Sleep(5000 * time.Second)
+	// fmt.Println("a is ", a)
+	// time.Sleep(5000 * time.Second)
 
 	tokenId, appId, _ := tiqs.ReadingAccessToken_Tiqs("FB5650")
 
@@ -143,7 +143,7 @@ func main() {
 
 	fmt.Printf("gs is %+v", gs)
 
-	ticker := time.NewTicker(10 * time.Second)
+	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
 
 	go func() {

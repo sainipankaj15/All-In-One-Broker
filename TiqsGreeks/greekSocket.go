@@ -121,8 +121,23 @@ func (t *TiqsGreeksClient) StartWebSocket(TargetSymbol string, TargetSymbolToken
 							r := 0.00                                        // Risk-free interest rate
 							price := tick.LTP                                // Option price
 							impliedVol = black76ImpliedVol(syntheticFuture, K, T, r, float64(price)/100)
-
-							delta, theta, gamma, vega = black76Greeks(syntheticFuture, K, T, r, impliedVol)
+							
+							if impliedVol == 0 {
+								// Fetch Greeks from API if impliedVol is 0
+								greeksData, err := tiqs.GetGreeks_Tiqs(int(tick.Token), tiqs.ADMIN_TIQS)
+								if err != nil {
+									log.Printf("Error fetching Greeks from API: %v", err)
+									delta, theta, gamma, vega = 0, 0, 0, 0
+								} else {
+									delta = greeksData.Delta
+									theta = greeksData.Theta
+									gamma = greeksData.Gamma
+									vega = greeksData.Vega
+									impliedVol = greeksData.IV
+								}
+							} else {
+								delta, theta, gamma, vega = black76Greeks(syntheticFuture, K, T, r, impliedVol)
+							}
 						}
 					} else if val.OptionType == "PE" {
 						if ceToken, ok := t.peTokenToCeToken.Get(tick.Token); ok {
