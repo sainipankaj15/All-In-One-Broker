@@ -138,3 +138,13 @@ type GreeksResp_Tiqs struct {
 	Data   []GreeksData_Tiqs `json:"data"`
 	Status string            `json:"status"`
 }
+
+type HolidaysData_Tiqs struct {
+	Holidays map[string]string `json:"holidays"`
+	// SpecialTradingDays map[string][]string `json:"specialTradingDays"` // Not requried as of now
+}
+
+type HolidaysAPIResp_Tiqs struct {
+	Data   HolidaysData_Tiqs `json:"data"`
+	Status string            `json:"status"`
+}

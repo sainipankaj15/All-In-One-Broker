@@ -457,3 +457,51 @@ func GetGreeks_Tiqs(tokenNumber int, UserID_Tiqs string) (GreeksData_Tiqs, error
 	greeksData.IV *= 100
 	return greeksData, nil
 }
+
+func GetHolidays_Tiqs(UserID_Tiqs string) (HolidaysAPIResp_Tiqs, error) {
+	// Reading accessToken and APPID for fetching the APIs
+	AccessToken, APPID, err := ReadingAccessToken_Tiqs(UserID_Tiqs)
+	if err != nil {
+		log.Println("Error while getting access token from file")
+		return HolidaysAPIResp_Tiqs{}, err
+	}
+
+	holidaysUrl := "https://api.tiqs.trading/info/holidays"
+
+	// Create a new request using http
+	req, err := http.NewRequest("GET", holidaysUrl, nil)
+	if err != nil {
+		log.Println("Error while making request in GetHolidays_Tiqs")
+		return HolidaysAPIResp_Tiqs{}, err
+	}
+
+	// Add the Bearer token to the request header
+	req.Header.Add("token", AccessToken)
+	req.Header.Add("appId", APPID)
+
+	// Make the request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println("Error while making request in GetHolidays_Tiqs")
+		return HolidaysAPIResp_Tiqs{}, err
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("Error while reading the body in GetHolidays_Tiqs")
+		return HolidaysAPIResp_Tiqs{}, err
+	}
+
+	// Converting into Response struct format
+	var holidaysResp HolidaysAPIResp_Tiqs
+	err = json.Unmarshal(body, &holidaysResp)
+	if err != nil {
+		log.Println("Error while Unmarshaling the data in GetHolidays_Tiqs")
+		return HolidaysAPIResp_Tiqs{}, err
+	}
+
+	return holidaysResp, nil
+}

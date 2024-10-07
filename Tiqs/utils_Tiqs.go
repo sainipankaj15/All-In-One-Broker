@@ -243,3 +243,21 @@ func GetOptionChainMap_Tiqs(TargetSymbol, TargetSymbolToken, OptionChainLength s
 	// Return the processed option chain
 	return newOptionChain, nil
 }
+
+func IsHoliday_Tiqs(UserID_Tiqs string) (bool, error) {
+	// Get today's date in the required format (DD-MM-YYYY)
+	today := time.Now().Format("02-01-2006")
+
+	// Call GetHolidays_Tiqs to fetch the holidays
+	holidaysResp, err := GetHolidays_Tiqs(UserID_Tiqs)
+	if err != nil {
+		return false, err
+	}
+
+	// Check if today's date is in the holidays map
+	if _, exists := holidaysResp.Data.Holidays[today]; exists {
+		return true, nil // Today is a holiday
+	}
+
+	return false, nil // Today is not a holiday
+}
