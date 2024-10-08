@@ -3,6 +3,7 @@ package tiqs_greeks_socket
 import (
 	"fmt"
 	"log"
+	"math"
 	"strconv"
 	"time"
 
@@ -189,7 +190,7 @@ func (t *TiqsGreeksClient) StartWebSocket(TargetSymbol string, TargetSymbolToken
 	tiqsWs.AddSubscription(TargetSymbolToken)
 
 	// Subscribe to the option chain tokens : Strike Price Tokens
-	optionChain, err := tiqs.GetOptionChainMap_Tiqs(TargetSymbol, strconv.Itoa(TargetSymbolToken), "20")
+	optionChain, err := tiqs.GetOptionChainMap_Tiqs(TargetSymbol, strconv.Itoa(TargetSymbolToken), "18")
 	if err != nil {
 		return fmt.Errorf("error while getting option chain: %w", err)
 	}
@@ -349,4 +350,48 @@ func calculateTimeToExpiry(daysToExpiry int) float64 {
 	years := daysFraction / 365
 
 	return years
+}
+
+// GetNearestCallToken returns the token number of the Call option with the nearest delta value
+func (t *TiqsGreeksClient) GetNearestCallToken(delta float64) (int32, error) {
+	nearestToken := int32(0)
+	nearestDeltaDiff := float64(1e9) // Start with a large number
+
+	t.priceMap.ForEach(func(key int32, value TickData) bool {
+		if value.OptionType == "CE" { // Check if it's a Call option
+			deltaDiff := math.Abs(float64(value.Delta) - delta)
+			if deltaDiff < nearestDeltaDiff {
+				nearestDeltaDiff = deltaDiff
+				nearestToken = key
+			}
+		}
+		return true
+	})
+
+	if nearestToken == 0 {
+		return 0, fmt.Errorf("no Call option found with a delta close to %f", delta)
+	}
+	return nearestToken, nil
+}
+
+// GetNearestPutToken returns the token number of the Put option with the nearest delta value
+func (t *TiqsGreeksClient) GetNearestPutToken(delta float64) (int32, error) {
+	nearestToken := int32(0)
+	nearestDeltaDiff := float64(1e9) // Start with a large number
+
+	t.priceMap.ForEach(func(key int32, value TickData) bool {
+		if value.OptionType == "PE" { // Check if it's a Put option
+			deltaDiff := math.Abs(float64(value.Delta) + delta) // Make delta positive for comparison
+			if deltaDiff < nearestDeltaDiff {
+				nearestDeltaDiff = deltaDiff
+				nearestToken = key
+			}
+		}
+		return true
+	})
+
+	if nearestToken == 0 {
+		return 0, fmt.Errorf("no Put option found with a delta close to %f", delta)
+	}
+	return nearestToken, nil
 }

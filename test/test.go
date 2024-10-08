@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	tiqs "github.com/sainipankaj15/All-In-One-Broker/Tiqs"
@@ -120,14 +119,14 @@ func main() {
 
 	// fmt.Println("c is ", c)
 
-	a, err := tiqs.IsHoliday_Tiqs(tiqs.ADMIN_TIQS)
+	// a, err := tiqs.IsHoliday_Tiqs(tiqs.ADMIN_TIQS)
 
-	if err != nil {
-		fmt.Println(err)
-	}
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
 
-	fmt.Println("a is ", a)
-	time.Sleep(5000 * time.Second)
+	// fmt.Println("a is ", a)
+	// time.Sleep(5000 * time.Second)
 
 	tokenId, appId, _ := tiqs.ReadingAccessToken_Tiqs("FB5650")
 
@@ -137,28 +136,50 @@ func main() {
 		fmt.Println(err)
 	}
 
-	gs.StartWebSocket(tiqs.Index.MIDCPNIFTY, tiqs.ExchangeToken.MIDCPNIFTY)
+	gs.StartWebSocket(tiqs.Index.NIFTY, tiqs.ExchangeToken.NIFTY50)
 
 	time.Sleep(5 * time.Second)
 
-	fmt.Printf("gs is %+v", gs)
+	deltas := []float64{0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0}
 
-	ticker := time.NewTicker(1 * time.Second)
-	defer ticker.Stop()
+	for _, delta := range deltas {
+		b, err := gs.GetNearestCallToken(delta)
 
-	go func() {
-		for range ticker.C {
-			tokens := []int32{41678, 41504}
-			for _, token := range tokens {
-				tickData, err := gs.GetTickData(token)
-				if err != nil {
-					log.Printf("Error getting tick data for token %d: %v", token, err)
-				} else {
-					log.Printf("Tick data for token %d: %+v", token, tickData)
-				}
-			}
+		if err != nil {
+			fmt.Println(err)
 		}
-	}()
+
+		fmt.Printf("For delta %f, nearest call token is %d\n", delta, b)
+	}
+
+	for _, delta := range deltas {
+		c, err := gs.GetNearestPutToken(delta)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		fmt.Printf("For delta %f, nearest put token is %d\n", delta, c)
+	}
+
+	// fmt.Printf("gs is %+v", gs)
+
+	// ticker := time.NewTicker(1 * time.Second)
+	// defer ticker.Stop()
+
+	// go func() {
+	// 	for range ticker.C {
+	// 		tokens := []int32{41678, 41504}
+	// 		for _, token := range tokens {
+	// 			tickData, err := gs.GetTickData(token)
+	// 			if err != nil {
+	// 				log.Printf("Error getting tick data for token %d: %v", token, err)
+	// 			} else {
+	// 				log.Printf("Tick data for token %d: %+v", token, tickData)
+	// 			}
+	// 		}
+	// 	}
+	// }()
 
 	// time.Sleep(500 * time.Second)
 
