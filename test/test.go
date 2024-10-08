@@ -162,6 +162,21 @@ func main() {
 		fmt.Printf("For delta %f, nearest put token is %d\n", delta, c)
 	}
 
+	ceToken, _ := gs.GetNearestCallToken(0.2)
+
+	peToken, _ := gs.GetNearestPutToken(0.2)
+
+	for {
+		a, b := gs.GetDeltaDifference(ceToken, peToken)
+
+		if b != nil {
+			fmt.Println(b)
+		}
+
+		fmt.Println(a)
+		time.Sleep(1 * time.Second)
+	}
+
 	// fmt.Printf("gs is %+v", gs)
 
 	// ticker := time.NewTicker(1 * time.Second)

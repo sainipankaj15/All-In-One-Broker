@@ -395,3 +395,26 @@ func (t *TiqsGreeksClient) GetNearestPutToken(delta float64) (int32, error) {
 	}
 	return nearestToken, nil
 }
+
+// GetDeltaDifference calculates the absolute difference between the deltas of two tokens
+func (t *TiqsGreeksClient) GetDeltaDifference(token1, token2 int32) (float64, error) {
+	// Retrieve TickData for both tokens
+	tickData1, ok1 := t.priceMap.Get(token1)
+	tickData2, ok2 := t.priceMap.Get(token2)
+
+	if !ok1 {
+		return 0, fmt.Errorf("token %d not found in price map", token1)
+	}
+	if !ok2 {
+		return 0, fmt.Errorf("token %d not found in price map", token2)
+	}
+
+	// Get absolute delta values
+	delta1 := math.Abs(float64(tickData1.Delta))
+	delta2 := math.Abs(float64(tickData2.Delta))
+
+	// Calculate the difference
+	deltaDifference := math.Abs(delta1 - delta2)
+
+	return deltaDifference, nil
+}
