@@ -19,9 +19,10 @@ func NewTiqsGreeksSocket(appID string, accessToken string, enableLog bool) (*Tiq
 		appID:                   appID,
 		accessToken:             accessToken,
 		enableLog:               enableLog,
-		priceMap:                haxmap.New[int32, TickData](), // token to tick data
-		strikeToSyntheticFuture: haxmap.New[int32, float64](),  // strike price to synthetic future price
-		peTokenToCeToken:        haxmap.New[int32, int32](),    // PE token to corresponding CE token
+		priceMap:                haxmap.New[int32, TickData](),           // token to tick data
+		strikeToSyntheticFuture: haxmap.New[int32, float64](),            // strike price to synthetic future price
+		peTokenToCeToken:        haxmap.New[int32, int32](),              // PE token to corresponding CE token
+		optionChain:             make(map[string]map[string]tiqs.Symbol), // option chain data
 	}
 
 	if enableLog {
@@ -45,7 +46,7 @@ func (t *TiqsGreeksClient) GetTickData(token int32) (TickData, error) {
 	if tickData, ok := t.priceMap.Get(token); ok {
 		return tickData, nil
 	}
-	
+
 	// If not found in the map, fetch from API and update the map
 	ltpInPaisa, err := tiqs.LTPInPaisa_Tiqs(int(token), tiqs.ADMIN_TIQS)
 	if err != nil {
@@ -101,6 +102,12 @@ func (t *TiqsGreeksClient) GetPrice(instrumentToken int32) (float64, error) {
 	return float64(ltp) / 100, nil
 }
 
+// GetOptionChainMap returns the internal map of option chain data.
+// This map contains the mapping of strike price to its corresponding CE and PE symbols.
+func (t *TiqsGreeksClient) GetOptionChainMap() map[string]map[string]tiqs.Symbol {
+	return t.optionChain
+}
+
 // StartWebSocket initializes and starts the WebSocket connection
 func (t *TiqsGreeksClient) StartWebSocket(TargetSymbol string, TargetSymbolToken int) error {
 	// Setting the time to expiry in Days
@@ -139,7 +146,7 @@ func (t *TiqsGreeksClient) StartWebSocket(TargetSymbol string, TargetSymbolToken
 							r := 0.00                                        // Risk-free interest rate
 							price := tick.LTP                                // Option price
 							impliedVol = black76ImpliedVol(syntheticFuture, K, T, r, float64(price)/100)
-							
+
 							if impliedVol == 0 {
 								// If implied volatility calculation fails, fetch Greeks from API
 								greeksData, err := tiqs.GetGreeks_Tiqs(int(tick.Token), tiqs.ADMIN_TIQS)
@@ -417,4 +424,16 @@ func (t *TiqsGreeksClient) GetDeltaDifference(token1, token2 int32) (float64, er
 	deltaDifference := math.Abs(delta1 - delta2)
 
 	return deltaDifference, nil
+}
+
+// GetDelta returns the absolute value of the delta for a given token
+func (t *TiqsGreeksClient) GetDelta(token int32) (float64, error) {
+	// Retrieve TickData for the token
+	tickData, ok := t.priceMap.Get(token)
+	if !ok {
+		return 0, fmt.Errorf("token %d not found in price map", token)
+	}
+
+	// Return the absolute value of the delta
+	return math.Abs(float64(tickData.Delta)), nil
 }

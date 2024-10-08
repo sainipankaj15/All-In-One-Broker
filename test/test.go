@@ -208,7 +208,7 @@ func main() {
 	// time.Sleep(15 * time.Second)
 
 	// gs.PrintSyntheticFutureMap()
-	select {}
+	// select {}
 
 	// gs.PrintPriceMap()
 
