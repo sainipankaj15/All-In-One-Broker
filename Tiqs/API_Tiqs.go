@@ -68,9 +68,7 @@ func OrderPlaceMarket_Tiqs(exchange, token, quantity, TransSide, productType, Us
 
 	accessTokenofUser, appIdOfUser, err := ReadingAccessToken_Tiqs(UserID_Tiqs)
 	if err != nil {
-		msg := fmt.Sprintf("Error while getting access token from file for %v User ", UserID_Tiqs)
-		log.Println(msg)
-		return err
+		return fmt.Errorf("error while getting access token from file for %v User: %w", UserID_Tiqs, err)
 	}
 
 	// orderPlacment URL
