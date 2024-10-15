@@ -27,6 +27,7 @@ func NewTiqsWebSocket(appID string, accessToken string, enableLog bool) (*TiqsWS
 
 	err := tiqsWSClient.connectSocket(wsURL)
 	if err != nil {
+		tiqsWSClient.logger(err)
 		return &tiqsWSClient, err
 	}
 
@@ -59,21 +60,26 @@ func (t *TiqsWSClient) connectSocket(url string) error {
 // It handles different types of messages, including PING messages
 func (t *TiqsWSClient) readMessages() {
 	for {
-		_, message, err := t.socket.ReadMessage()
+		t.socket.SetReadDeadline(time.Now().Add(60 * time.Second))
+		messageType, message, err := t.socket.ReadMessage()
 		if err != nil {
-			t.logger(ErrSocketConnectionClosed)
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				t.logger(fmt.Sprintf("Unexpected WebSocket close: %v", err))
+			} else {
+				t.logger(fmt.Sprintf("WebSocket read error: %v", err))
+			}
 			t.reconnect()
 			return
 		}
+
+		t.logger(fmt.Sprintf("Received message type: %d, length: %d", messageType, len(message)))
 
 		if string(message) == "PING" {
 			t.lastPingTS = time.Now()
 			t.emit("PONG", false)
 		} else {
 			// Handle binary messages here
-
 			msg := string(message)
-
 			// Handling order updates message
 			if containsOrderUpdate(msg) {
 				update, err := decodeOrderMessage(message)
@@ -83,11 +89,12 @@ func (t *TiqsWSClient) readMessages() {
 				}
 				t.orderChannel <- update
 			}
-
 			// Handling data update message : Parsing only Full tick length messages only
 			if len(message) == FULLTICK_LENGTH {
 				tick := t.parseTick(message)
 				t.dataChannel <- tick
+			} else {
+				t.logger(fmt.Sprintf("Received message with unexpected length: %d", len(message)))
 			}
 		}
 	}
@@ -254,6 +261,7 @@ func (t *TiqsWSClient) CloseConnection() error {
 	if t.socket != nil {
 		err := t.socket.Close()
 		if err != nil {
+			t.logger(ErrClosingConnection)
 			return ErrClosingConnection
 		}
 		t.socket = nil
