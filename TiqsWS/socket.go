@@ -74,6 +74,11 @@ func (t *TiqsWSClient) readMessages() {
 
 		t.logger(fmt.Sprintf("Received message type: %d, length: %d", messageType, len(message)))
 
+		if len(message) == 0 {
+			t.logger("Received zero-length message. Skipping processing.")
+			continue // Skip processing for zero-length messages
+		}
+
 		if string(message) == "PING" {
 			t.lastPingTS = time.Now()
 			t.emit("PONG", false)
