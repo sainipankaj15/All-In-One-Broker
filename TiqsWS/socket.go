@@ -3,6 +3,7 @@ package tiqs_socket
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"strconv"
 	"strings"
@@ -39,12 +40,19 @@ func NewTiqsWebSocket(appID string, accessToken string, enableLog bool) (*TiqsWS
 func (t *TiqsWSClient) connectSocket(url string) error {
 	t.wsURL = url // Store the URL
 	var err error
-	t.socket, _, err = websocket.DefaultDialer.Dial(url, nil)
+
+	dialer := websocket.DefaultDialer
+	dialer.ReadBufferSize = 8192  // Increase buffer size (adjust as needed)
+	dialer.WriteBufferSize = 8192 // Increase buffer size (adjust as needed)
+
+	t.socket, _, err = dialer.Dial(url, nil)
 	if err != nil {
 		t.logger(ErrSocketConnection, err)
 		t.reconnect()
 		return nil
 	}
+
+	t.socket.SetReadLimit(1024 * 1024) // Set max message size to 1MB (adjust as needed)
 
 	t.logger(INFO_CONNECTED_WEBSOCKET)
 	t.retryCount = 0
@@ -61,7 +69,7 @@ func (t *TiqsWSClient) connectSocket(url string) error {
 func (t *TiqsWSClient) readMessages() {
 	for {
 		t.socket.SetReadDeadline(time.Now().Add(60 * time.Second))
-		messageType, message, err := t.socket.ReadMessage()
+		messageType, reader, err := t.socket.NextReader()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				t.logger(fmt.Sprintf("Unexpected WebSocket close: %v", err))
@@ -72,11 +80,17 @@ func (t *TiqsWSClient) readMessages() {
 			return
 		}
 
+		message, err := io.ReadAll(reader)
+		if err != nil {
+			t.logger(fmt.Sprintf("Error reading message: %v", err))
+			continue
+		}
+
 		t.logger(fmt.Sprintf("Received message type: %d, length: %d", messageType, len(message)))
 
 		if len(message) == 0 {
 			t.logger("Received zero-length message. Skipping processing.")
-			continue // Skip processing for zero-length messages
+			continue
 		}
 
 		if string(message) == "PING" {
