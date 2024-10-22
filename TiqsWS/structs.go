@@ -1,7 +1,6 @@
 package tiqs_socket
 
 import (
-	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -9,17 +8,19 @@ import (
 
 // TiqsWSClient represents the tiqs Websocket client
 type TiqsWSClient struct {
-	appID            string
-	accessToken      string
-	socket           *websocket.Conn
-	pingCheckerTimer *time.Timer
-	lastPingTS       time.Time
-	pendingQueue     []interface{}
-	retryCount       int
-	reconnectTimer   *time.Timer
-	mu               sync.Mutex
-	wsURL            string
-	enableLog        bool
+	appID       string
+	accessToken string
+	socket      *websocket.Conn
+	// pingCheckerTimer    *time.Timer
+	lastPingTS   time.Time
+	pendingQueue []interface{}
+	// retryCount          int
+	// reconnectTimer      *time.Timer
+	// mu                  sync.Mutex
+	wsURL               string
+	enableLog           bool
+	stopReadMessagesSig chan bool
+	stopPingListenerSig chan bool
 
 	subscriptions map[int]struct{} // All active subscriptions
 	dataChannel   chan Tick        // data channel where data will come

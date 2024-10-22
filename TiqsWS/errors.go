@@ -12,4 +12,5 @@ var (
 	ErrClosingConnection      = errors.New("🔴 Error Closing WebSocket connection")
 	ErrInvalidByteSliceLength = errors.New("⛔ Invalid byte slice length")
 	ErrDecodingMessage        = errors.New("⛔ Error decoding message")
+	ErrReadingSocketMessage   = errors.New("😔 Error reading socket message")
 )

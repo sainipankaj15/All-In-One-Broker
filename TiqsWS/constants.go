@@ -24,6 +24,7 @@ const (
 	INFO_PROCCESSING_PREVIOUS_SUBSCRIPTION = "⏳ Processing previous subscriptions if any..."
 	INFO_CLOSED_WEBSOCKET                  = "🔴 WebSocket connection closed"
 	INFO_INVALID_TICK_DATA                 = "Invalid tick data length "
+	InfoSocketConnecting                   = "⏳ Connecting to socket..."
 )
 
 type OrderStatus string

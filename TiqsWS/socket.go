@@ -3,7 +3,6 @@ package tiqs_socket
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"strconv"
 	"strings"
@@ -16,17 +15,20 @@ import (
 // This function should be called from your main function
 func NewTiqsWebSocket(appID string, accessToken string, enableLog bool) (*TiqsWSClient, error) {
 	tiqsWSClient := TiqsWSClient{
-		appID:         appID,
-		accessToken:   accessToken,
-		subscriptions: make(map[int]struct{}),
-		dataChannel:   make(chan Tick, BUFFER_SIZE),
-		orderChannel:  make(chan OrderUpdate, BUFFER_SIZE),
-		enableLog:     enableLog,
+		appID:               appID,
+		accessToken:         accessToken,
+		subscriptions:       make(map[int]struct{}),
+		dataChannel:         make(chan Tick, BUFFER_SIZE),
+		orderChannel:        make(chan OrderUpdate, BUFFER_SIZE),
+		stopReadMessagesSig: make(chan bool),
+		stopPingListenerSig: make(chan bool),
+		enableLog:           enableLog,
+		wsURL:               fmt.Sprintf("%s?appId=%s&token=%s", SOCKET_URL, appID, accessToken),
 	}
 
-	wsURL := fmt.Sprintf("%s?appId=%s&token=%s", SOCKET_URL, appID, accessToken)
+	// wsURL := fmt.Sprintf("%s?appId=%s&token=%s", SOCKET_URL, appID, accessToken)
 
-	err := tiqsWSClient.connectSocket(wsURL)
+	err := tiqsWSClient.connectSocket()
 	if err != nil {
 		tiqsWSClient.logger(err)
 		return &tiqsWSClient, err
@@ -37,93 +39,107 @@ func NewTiqsWebSocket(appID string, accessToken string, enableLog bool) (*TiqsWS
 
 // connectSocket establishes a WebSocket connection to the given URL
 // It also initializes various processes like ping checking and subscription handling
-func (t *TiqsWSClient) connectSocket(url string) error {
-	t.wsURL = url // Store the URL
-	var err error
+func (t *TiqsWSClient) connectSocket() error {
+	// t.wsURL = wsURL
 
 	dialer := websocket.DefaultDialer
-	dialer.ReadBufferSize = 8192  // Increase buffer size (adjust as needed)
-	dialer.WriteBufferSize = 8192 // Increase buffer size (adjust as needed)
+	dialer.ReadBufferSize = 8192 // Increase buffer size (adjust as needed)
 
-	t.socket, _, err = dialer.Dial(url, nil)
-	if err != nil {
-		t.logger(ErrSocketConnection, err)
-		t.reconnect()
-		return nil
+	var err error
+	for i := 0; i < maxRetries; i++ {
+		t.logger(InfoSocketConnecting, ". attempt:", i+1)
+		t.socket, _, err = dialer.Dial(t.wsURL, nil)
+		if err != nil { // failed to dail
+			t.logger(ErrSocketConnection, ". reason:", err)
+
+			// max limit reached. exit
+			if i == maxRetries-1 {
+				t.logger(INFO_RECONNECT_LIMIT_REACHED)
+				close(t.orderChannel)
+				close(t.dataChannel)
+				return ErrSocketConnection
+			}
+
+			time.Sleep(3 * time.Second)
+		} else { // dial was successful, break from loop
+			break
+		}
 	}
 
-	t.socket.SetReadLimit(1024 * 1024) // Set max message size to 1MB (adjust as needed)
-
 	t.logger(INFO_CONNECTED_WEBSOCKET)
-	t.retryCount = 0
-	t.startPingChecker()
+	// process previous connections
 	t.subscribePreviousSubscriptions()
 	t.processPendingRequests()
-
+	t.socket.SetReadLimit(1024 * 1024) // Set max message size to 1MB (adjust as needed)
+	// ping checker
+	go t.startPingChecker()
+	// read messages
 	go t.readMessages()
+
 	return nil
 }
 
 // readMessages continuously reads messages from the WebSocket
 // It handles different types of messages, including PING messages
 func (t *TiqsWSClient) readMessages() {
+	t.logger("Starting read messages")
+	defer t.logger("Stopped read messages")
 	for {
-		t.socket.SetReadDeadline(time.Now().Add(60 * time.Second))
-		messageType, reader, err := t.socket.NextReader()
-		if err != nil {
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				t.logger(fmt.Sprintf("Unexpected WebSocket close: %v", err))
-			} else {
-				t.logger(fmt.Sprintf("WebSocket read error: %v", err))
-			}
-			t.reconnect()
+		select {
+		case <-t.stopReadMessagesSig:
 			return
-		}
+		default:
+			// read message ---------------------------------------------------------
+			_, message, err := t.socket.ReadMessage()
+			if err != nil {
+				if e, ok := err.(*websocket.CloseError); ok {
+					t.logger(ErrReadingSocketMessage, ". reason:", e.Error())
+				} else {
+					t.logger(ErrReadingSocketMessage, ". reason:", err)
+				}
+				// reconnect
+				t.closeAndReconnect()
+				continue
+			}
 
-		message, err := io.ReadAll(reader)
-		if err != nil {
-			t.logger(fmt.Sprintf("Error reading message: %v", err))
-			continue
-		}
+			// decode messages ------------------------------------------------------
+			if len(message) == 1 { // ping from server
+				t.lastPingTS = time.Now()
 
-		t.logger(fmt.Sprintf("Received message type: %d, length: %d", messageType, len(message)))
-
-		if len(message) == 0 {
-			t.logger("Received zero-length message. Skipping processing.")
-			continue
-		}
-
-		if string(message) == "PING" {
-			t.lastPingTS = time.Now()
-			t.emit("PONG", false)
-		} else {
-			// Handle binary messages here
-			msg := string(message)
-			// Handling order updates message
-			if containsOrderUpdate(msg) {
+			} else if isOrderUpdate(string(message)) { // order update
 				update, err := decodeOrderMessage(message)
 				if err != nil {
 					t.logger(ErrDecodingMessage)
 					continue
 				}
 				t.orderChannel <- update
-			}
-			// Handling data update message : Parsing only Full tick length messages only
-			if len(message) == FULLTICK_LENGTH {
+
+			} else if len(message) == FULLTICK_LENGTH { // tick update
 				tick := t.parseTick(message)
 				t.dataChannel <- tick
-			} else {
-				t.logger(fmt.Sprintf("Received message with unexpected length: %d", len(message)))
+
+			} else { // unknown message
+				t.logger(fmt.Sprintf("Received message with unexpected length: %d, message: %s", len(message), string(message[:min(50, len(message))])))
 			}
+
 		}
+
 	}
+}
+
+func (t *TiqsWSClient) closeAndReconnect() {
+	go func() {
+		// first stop reading messages
+		t.stopReadMessagesSig <- true
+		t.stopPingListenerSig <- true
+		t.CloseConnection()
+		t.connectSocket()
+	}()
 }
 
 // emit sends a message through the WebSocket
 // If the socket is not connected, it queues the message (unless volatile is true)
 func (t *TiqsWSClient) emit(message interface{}, volatile bool) {
-	t.mu.Lock()
-	defer t.mu.Unlock()
 
 	var msg []byte
 	var err error
@@ -142,7 +158,7 @@ func (t *TiqsWSClient) emit(message interface{}, volatile bool) {
 		return
 	}
 
-	if t.socket != nil {
+	if t.socket != nil { // server connected
 		err := t.socket.WriteMessage(websocket.TextMessage, msg)
 		if err != nil {
 			t.logger(ErrEmitingToSocket)
@@ -152,7 +168,7 @@ func (t *TiqsWSClient) emit(message interface{}, volatile bool) {
 		} //else {
 		// 	t.logger("⬆ Emitted to socket:", string(msg))
 		// }
-	} else {
+	} else { // server is not connected
 		t.logger(ErrSocketNotConnected)
 		if !volatile {
 			t.pendingQueue = append(t.pendingQueue, message)
@@ -160,59 +176,37 @@ func (t *TiqsWSClient) emit(message interface{}, volatile bool) {
 	}
 }
 
-// reconnect attempts to reestablish the WebSocket connection
-// It implements a retry mechanism with a maximum number of retries
-func (t *TiqsWSClient) reconnect() {
-	t.mu.Lock()
-	defer t.mu.Unlock()
-
-	if t.reconnectTimer != nil {
-		t.logger(INFO_RECONNECT_REQUEST_IGNORED)
-		return
-	}
-
-	if t.retryCount >= maxRetries {
-		t.logger(INFO_RECONNECT_LIMIT_REACHED)
-		return
-	}
-
-	t.retryCount++
-
-	t.reconnectTimer = time.AfterFunc(3*time.Second, func() {
-		t.mu.Lock()
-		t.reconnectTimer = nil
-		t.mu.Unlock()
-		t.connectSocket(t.wsURL)
-	})
-
-	msg := fmt.Sprintf(INFO_SOCKET_RECONNECTING+" in 3 Sec. Request id: %v", t.reconnectTimer)
-	t.logger(msg)
-}
-
 // startPingChecker initiates a periodic check to ensure the connection is alive
 // If no PING is received within 35 seconds, it triggers a reconnection
 func (t *TiqsWSClient) startPingChecker() {
-	if t.pingCheckerTimer != nil {
-		t.pingCheckerTimer.Stop()
-	}
+	t.logger("Starting ping checker")
+	defer t.logger("Stopped ping checker")
 
 	t.lastPingTS = time.Now()
-
-	t.pingCheckerTimer = time.AfterFunc(35*time.Second, func() {
-		diff := time.Since(t.lastPingTS)
-		if diff > 35*time.Second {
-			t.logger(INFO_SOCKET_PING_DIFFERENCE)
-			t.reconnect()
+	window := 10 * time.Second
+	ticker := time.NewTicker(window)
+	for {
+		select {
+		case <-t.stopPingListenerSig:
+			ticker.Stop()
+			return
+		case <-ticker.C:
+			diff := time.Since(t.lastPingTS)
+			if diff > window {
+				t.logger(INFO_SOCKET_PING_DIFFERENCE)
+				// close and reconnect connection
+				t.closeAndReconnect()
+			}
+		default:
+			time.Sleep(1 * time.Second)
 		}
-		t.startPingChecker()
-	})
+
+	}
 }
 
 // processPendingRequests sends any queued messages that couldn't be sent earlier
 // due to connection issues
 func (t *TiqsWSClient) processPendingRequests() {
-	t.mu.Lock()
-	defer t.mu.Unlock()
 
 	if len(t.pendingQueue) > 0 {
 		t.logger(INFO_PROCCESSING_PENDING_REQUESTS)
@@ -226,13 +220,15 @@ func (t *TiqsWSClient) processPendingRequests() {
 // subscribePreviousSubscriptions resubscribes to all previously subscribed topics
 // This is useful when reconnecting to ensure all subscriptions are maintained
 func (t *TiqsWSClient) subscribePreviousSubscriptions() {
-	t.logger(INFO_PROCCESSING_PREVIOUS_SUBSCRIPTION)
-	for token := range t.subscriptions {
-		t.emit(SocketMessage{
-			Code: CODE_SUB,
-			Mode: MODE_FULL,
-			Full: []int{token},
-		}, false)
+	if len(t.subscriptions) != 0 {
+		t.logger(INFO_PROCCESSING_PREVIOUS_SUBSCRIPTION)
+		for token := range t.subscriptions {
+			t.emit(SocketMessage{
+				Code: CODE_SUB,
+				Mode: MODE_FULL,
+				Full: []int{token},
+			}, false)
+		}
 	}
 }
 
@@ -273,37 +269,17 @@ func (t *TiqsWSClient) GetOrderChannel() <-chan OrderUpdate {
 }
 
 // CloseConnection closes the WebSocket connection
-func (t *TiqsWSClient) CloseConnection() error {
-	t.mu.Lock()
-	defer t.mu.Unlock()
-
-	if t.socket != nil {
-		err := t.socket.Close()
-		if err != nil {
-			t.logger(ErrClosingConnection)
-			return ErrClosingConnection
-		}
-		t.socket = nil
-		t.logger(INFO_CLOSED_WEBSOCKET)
+func (t *TiqsWSClient) CloseConnection() {
+	t.logger(INFO_CLOSED_WEBSOCKET)
+	if t.socket == nil {
+		return
 	}
 
-	// Stop timers
-	if t.pingCheckerTimer != nil {
-		t.pingCheckerTimer.Stop()
-		t.pingCheckerTimer = nil
-	}
-	if t.reconnectTimer != nil {
-		t.reconnectTimer.Stop()
-		t.reconnectTimer = nil
-	}
+	t.socket.Close()
+	t.socket = nil
 
 	// Clear pending queue
 	t.pendingQueue = nil
-
-	// Close the data channel
-	close(t.dataChannel)
-
-	return nil
 }
 
 // bytesToInt32 takes a byte slice as input and parses it into an int32
@@ -363,7 +339,7 @@ func (t *TiqsWSClient) logger(msg ...any) {
 }
 
 // Check if the keyword 'orderUpdate' exists in the given string
-func containsOrderUpdate(input string) bool {
+func isOrderUpdate(input string) bool {
 	// Use strings.Contains to check for the keyword
 	return strings.Contains(input, "orderUpdate")
 }
@@ -439,4 +415,11 @@ func decodeOrderMessage(message []byte) (OrderUpdate, error) {
 	}
 
 	return orderUpdate, nil
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
