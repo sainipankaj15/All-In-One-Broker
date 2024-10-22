@@ -128,12 +128,20 @@ func (t *TiqsWSClient) readMessages() {
 }
 
 func (t *TiqsWSClient) closeAndReconnect() {
+	// skip reconnect if already requested
+	if t.isReconnectRequested {
+		return
+	}
 	go func() {
+		t.isReconnectRequested = true
+
 		// first stop reading messages
 		t.stopReadMessagesSig <- true
 		t.stopPingListenerSig <- true
 		t.CloseConnection()
 		t.connectSocket()
+
+		t.isReconnectRequested = false
 	}()
 }
 

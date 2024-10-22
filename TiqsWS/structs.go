@@ -17,10 +17,11 @@ type TiqsWSClient struct {
 	// retryCount          int
 	// reconnectTimer      *time.Timer
 	// mu                  sync.Mutex
-	wsURL               string
-	enableLog           bool
-	stopReadMessagesSig chan bool
-	stopPingListenerSig chan bool
+	wsURL                string
+	enableLog            bool
+	stopReadMessagesSig  chan bool
+	stopPingListenerSig  chan bool
+	isReconnectRequested bool
 
 	subscriptions map[int]struct{} // All active subscriptions
 	dataChannel   chan Tick        // data channel where data will come
