@@ -49,6 +49,32 @@ func TelegramSend(botToken, chatID, text string) {
 	log.Println("Telegram Call Response Body:", string(body))
 }
 
+// SendSlackNotification sends a message to a Slack channel
+func SlackSend(webhookURL, message string) error {
+	slackMessage := struct {
+		Text string `json:"text"`
+	}{
+		Text: message,
+	}
+
+	payload, err := json.Marshal(slackMessage)
+	if err != nil {
+		return err
+	}
+
+	resp, err := http.Post(webhookURL, "application/json", bytes.NewBuffer(payload))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	return nil
+}
+
 func UploadFileToTelegram(botToken, chatID, filePath string) error {
 	// Telegram API endpoint for sending files
 	url := "https://api.telegram.org/bot" + botToken + "/sendDocument"
