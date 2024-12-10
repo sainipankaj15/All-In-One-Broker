@@ -84,11 +84,21 @@ func (t *TiqsWSClient) connectSocket() error {
 func (t *TiqsWSClient) readMessages() {
 	t.logger("Starting read messages")
 	defer t.logger("Stopped read messages")
+
+	// Check is socket is nil or not
+	if t.socket == nil {
+		return
+	}
+
 	for {
 		select {
 		case <-t.stopReadMessagesSig:
 			return
 		default:
+			// if Socket is nil then return immediately
+			if t.socket == nil {
+				return
+			}
 			// read message ---------------------------------------------------------
 			_, message, err := t.socket.ReadMessage()
 			if err != nil {
