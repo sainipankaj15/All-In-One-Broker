@@ -52,9 +52,6 @@ func PositionApi_Tiqs(UserID_Tiqs string) (PositionAPIResp_Tiqs, error) {
 		return PositionAPIResp_Tiqs{}, err
 	}
 
-	jsonBody := string(body)
-	log.Printf("Direct Response from Position API of Tiqs %v", jsonBody)
-
 	// Converting into Response struct format
 	var positionResp PositionAPIResp_Tiqs
 
@@ -69,7 +66,9 @@ func PositionApi_Tiqs(UserID_Tiqs string) (PositionAPIResp_Tiqs, error) {
 	return positionResp, nil
 }
 
-// This API is used to place market for Tiqs Broker
+// OrderPlaceMarket_Tiqs is used to place a market order for Tiqs Broker
+// It takes exchange, token, quantity, TransSide, productType and UserID_Tiqs as parameters
+// It returns an error if something goes wrong
 func OrderPlaceMarket_Tiqs(exchange, token, quantity, TransSide, productType, UserID_Tiqs string) error {
 
 	accessTokenofUser, appIdOfUser, err := ReadingAccessToken_Tiqs(UserID_Tiqs)
@@ -80,6 +79,7 @@ func OrderPlaceMarket_Tiqs(exchange, token, quantity, TransSide, productType, Us
 	// orderPlacment URL
 	url := "https://api.tiqs.in/oms/order/regular"
 
+	// Create the JSON to be sent in the body of the request
 	values := map[string]string{
 		"exchange":        exchange,
 		"token":           token,
@@ -91,8 +91,8 @@ func OrderPlaceMarket_Tiqs(exchange, token, quantity, TransSide, productType, Us
 		"price":           "0",
 		"validity":        "DAY",
 		"triggerPrice":    "0",
-		"tags":            "Bhai_Kal_se_Pakka_trade_Nahi_karunga",
-		"symbol":          "it_doesn't_matter",
+		"tags":            "Bhai_Kal_se_Pakka_trade_Nahi_karunga", // This is a tag that will be added to the order
+		"symbol":          "it_doesn't_matter",                    // This is a symbol that will be added to the order
 	}
 
 	jsonParameters, err := json.Marshal(values)
@@ -133,6 +133,7 @@ func OrderPlaceMarket_Tiqs(exchange, token, quantity, TransSide, productType, Us
 
 	jsonBody := string(body)
 
+	// Log the response
 	msg := fmt.Sprintf("For %v user , response status is %v and response is %v", UserID_Tiqs, resp.Status, jsonBody)
 	log.Println(msg)
 	return nil
@@ -182,8 +183,6 @@ func FetchQuotes_Tiqs(tokenSlice []int, UserID_Tiqs string) (QuotesAPIResp_Tiqs,
 		return QuotesAPIResp_Tiqs{}, fmt.Errorf("error reading response body: %v", err)
 	}
 
-	log.Println(string(body))
-
 	var apiResponse QuotesAPIResp_Tiqs
 	err = json.Unmarshal(body, &apiResponse)
 	if err != nil {
@@ -200,6 +199,8 @@ func FetchQuotes_Tiqs(tokenSlice []int, UserID_Tiqs string) (QuotesAPIResp_Tiqs,
 	return apiResponse, nil
 }
 
+// GetOptionChain_Tiqs fetches the option chain for a given token number, option chain length, and expiry day.
+// It returns the option chain response, the status code of the response, and any error encountered.
 func GetOptionChain_Tiqs(IndexTokenNumber, OptionChainLength, expiryDay, UserID_Tiqs string) (OptionChainResp_Tiqs, int, error) {
 
 	getOptionChainUrl := "https://api.tiqs.trading/info/option-chain"
@@ -261,41 +262,46 @@ func GetOptionChain_Tiqs(IndexTokenNumber, OptionChainLength, expiryDay, UserID_
 	log.Println(msg)
 	return Resp, resp.StatusCode, nil
 }
-func GetExpiryList_Tiqs(UserID_Tiqs string) (ExpiryResp_Tiqs, int, error) {
 
+// GetExpiryList_Tiqs fetches the list of expiry dates for options from the Tiqs API.
+// It takes a user ID as a parameter and returns the expiry response, status code, and any error encountered.
+func GetExpiryList_Tiqs(UserID_Tiqs string) (ExpiryResp_Tiqs, error) {
+	// URL for fetching expiry dates
 	expiryDayListUrl := "https://api.tiqs.trading/info/option-chain-symbols"
 
+	// Read access token and APPID for the user
 	accessTokenofUser, appIdOfUser, err := ReadingAccessToken_Tiqs(UserID_Tiqs)
 	if err != nil {
-		msg := fmt.Sprintf("Error while getting access token from file for %v User ", UserID_Tiqs)
-		log.Println(msg)
-		return ExpiryResp_Tiqs{}, 0, err
+		log.Printf("Error while getting access token from file for %v User", UserID_Tiqs)
+		return ExpiryResp_Tiqs{}, err
 	}
 
+	// Create an empty map to marshal into JSON for the request body
 	values := map[string]string{}
 	jsonParameters, err := json.Marshal(values)
 	if err != nil {
-		log.Println("Error marshaling JSON in GetExpiryList_Tiqs(): ", err)
-		return ExpiryResp_Tiqs{}, 0, err
+		log.Println("Error marshaling JSON in GetExpiryList_Tiqs():", err)
+		return ExpiryResp_Tiqs{}, err
 	}
 
+	// Create a new HTTP GET request
 	req, err := http.NewRequest("GET", expiryDayListUrl, bytes.NewBuffer(jsonParameters))
 	if err != nil {
 		log.Println("Error while making request in GetExpiryList_Tiqs()")
-		return ExpiryResp_Tiqs{}, 0, err
+		return ExpiryResp_Tiqs{}, err
 	}
 
-	// Add the Session and token to the request header : Here session will be APPID and Token will be token
+	// Add the Session and token to the request header: Here session will be APPID and Token will be token
 	req.Header.Add("appId", appIdOfUser)
 	req.Header.Add("token", accessTokenofUser)
 	req.Header.Set("Content-Type", "application/json")
 
-	// Make the request
+	// Send the request using the default HTTP client
 	client := http.DefaultClient
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println("Error while getting response in GetExpiryList_Tiqs()")
-		return ExpiryResp_Tiqs{}, resp.StatusCode, err
+		return ExpiryResp_Tiqs{}, err
 	}
 	defer resp.Body.Close()
 
@@ -303,36 +309,39 @@ func GetExpiryList_Tiqs(UserID_Tiqs string) (ExpiryResp_Tiqs, int, error) {
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Println("Error while reading the body in byte array in GetExpiryList_Tiqs()")
-		return ExpiryResp_Tiqs{}, resp.StatusCode, err
+		return ExpiryResp_Tiqs{}, err
 	}
 
+	// Convert the response body to a string for logging
 	jsonBody := string(body)
-	// Converting into Response struct format
-	var Resp ExpiryResp_Tiqs
-	err = json.Unmarshal(body, &Resp)
+	// Unmarshal the JSON response into the ExpiryResp_Tiqs struct
+	var response ExpiryResp_Tiqs
+	err = json.Unmarshal(body, &response)
 	if err != nil {
 		log.Println("Error while Unmarshaling the data in GetExpiryList_Tiqs()", err)
-		return ExpiryResp_Tiqs{}, resp.StatusCode, err
+		return ExpiryResp_Tiqs{}, err
 	}
 
-	msg := fmt.Sprintf("Direct Response in GetExpiryList_Tiqs() is %v", jsonBody)
-
+	// Check if the status code is not 200 (OK), indicating an error
 	if resp.StatusCode != 200 {
-		log.Println(msg)
-		err := errors.New("token Expired")
-		return ExpiryResp_Tiqs{}, resp.StatusCode, err
+		log.Printf("Error response in GetExpiryList_Tiqs(): %v", jsonBody)
+		return ExpiryResp_Tiqs{}, errors.New("token expired")
 	}
-	log.Println(msg)
-	return Resp, resp.StatusCode, nil
+
+	// Return the unmarshaled response and status code
+	return response, nil
 }
 
+// LTPInPaisa_Tiqs fetches the LTP of a given token number from the Tiqs API.
+// It takes the token number and the UserID of the user as parameters.
+// It returns the LTP of the token in paisa and an error if something goes wrong.
 func LTPInPaisa_Tiqs(tokenNumber int, UserID_Tiqs string) (int, error) {
 
 	// Reading accessToken and APPID for fetching the APIs
 	AccessToken, APPID, err := ReadingAccessToken_Tiqs(UserID_Tiqs)
 	if err != nil {
 		log.Println("Error while getting acces token from file")
-		panic(err)
+		return 0, err
 	}
 
 	url := "https://api.tiqs.trading/info/quote/ltp"
@@ -389,6 +398,8 @@ func LTPInPaisa_Tiqs(tokenNumber int, UserID_Tiqs string) (int, error) {
 	return ltp, nil
 }
 
+// GetGreeks_Tiqs fetches the Greeks (Delta, Gamma, Theta, and Vega) for a given token number.
+// It takes a token number and a UserID_Tiqs as parameters and returns the Greeks data and an error if something goes wrong.
 func GetGreeks_Tiqs(tokenNumber int, UserID_Tiqs string) (GreeksData_Tiqs, error) {
 	// Reading accessToken and APPID for fetching the APIs
 	AccessToken, APPID, err := ReadingAccessToken_Tiqs(UserID_Tiqs)
@@ -462,6 +473,8 @@ func GetGreeks_Tiqs(tokenNumber int, UserID_Tiqs string) (GreeksData_Tiqs, error
 	return greeksData, nil
 }
 
+// GetHolidays_Tiqs fetches the holidays from the Tiqs API.
+// It takes a UserID_Tiqs as a parameter and returns the response and an error if something goes wrong.
 func GetHolidays_Tiqs(UserID_Tiqs string) (HolidaysAPIResp_Tiqs, error) {
 	// Reading accessToken and APPID for fetching the APIs
 	AccessToken, APPID, err := ReadingAccessToken_Tiqs(UserID_Tiqs)

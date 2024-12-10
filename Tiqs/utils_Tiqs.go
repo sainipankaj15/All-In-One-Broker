@@ -10,8 +10,17 @@ import (
 	typeConversion "github.com/sainipankaj15/data-type-conversion"
 )
 
+// ReadingAccessToken_Tiqs reads the access token, session and APPID from a file.
+//
+// The file name is the userID_Tiqs + `.json`.
+// The file must contain a JSON object with the following fields:
+// - AccessToken: the access token.
+// - APPID: the APPID.
+//
+// If the file does not exist, or if there is an error reading the file,
+// or if the JSON object does not contain the required fields,
+// the function returns an error.
 func ReadingAccessToken_Tiqs(userID_Tiqs string) (string, string, error) {
-
 	fileName := userID_Tiqs + `.json`
 
 	fileContent, err := ioutil.ReadFile(fileName)
@@ -25,6 +34,7 @@ func ReadingAccessToken_Tiqs(userID_Tiqs string) (string, string, error) {
 	if err != nil {
 		return "", "", err
 	}
+
 	accessToken := fileData.AccessToken
 	APPID := fileData.APPID
 
@@ -128,9 +138,12 @@ func ExitByPositionID_Tiqs(symbolExchToken string, productType string, UserId_Ti
 	return nil
 }
 
+// ClosestExpiryDate_Tiqs retrieves the closest expiry date for a given index.
+// It fetches the list of expiry dates for the given user ID and returns the first
+// expiry date in the list.
 func ClosestExpiryDate_Tiqs(indexName string, UserId_Tiqs string) (string, error) {
 
-	resp, _, err := GetExpiryList_Tiqs(UserId_Tiqs)
+	resp, err := GetExpiryList_Tiqs(UserId_Tiqs)
 
 	if err != nil {
 		return "", err
@@ -141,9 +154,12 @@ func ClosestExpiryDate_Tiqs(indexName string, UserId_Tiqs string) (string, error
 	return lastExpiryDate, nil
 }
 
+// NextExpiryDateOnExpiry_Tiqs retrieves the next expiry date for a given index,
+// provided the current date is the expiry date of the first expiry in the list.
+// If the current date is not the expiry date of the first expiry, it will return
+// the first expiry date in the list.
 func NextExpiryDateOnExpiry_Tiqs(indexName string, UserId_Tiqs string) (string, error) {
-
-	resp, _, err := GetExpiryList_Tiqs(UserId_Tiqs)
+	resp, err := GetExpiryList_Tiqs(UserId_Tiqs)
 
 	if err != nil {
 		return "", err
@@ -152,69 +168,86 @@ func NextExpiryDateOnExpiry_Tiqs(indexName string, UserId_Tiqs string) (string, 
 	allExpiryList := resp.Data[indexName]
 
 	today := strings.ToUpper(time.Now().Format("2-Jan-2006"))
+
+	// Check if today is the expiry date of the first expiry in the list
 	if allExpiryList[0] == today {
+		// Return the next expiry date
 		return allExpiryList[1], nil
 	}
 
+	// Return the first expiry date in the list
 	return allExpiryList[0], nil
 }
 
+// GetMonthlyExpiry_Tiqs retrieves the monthly expiry date for a given index.
+// It checks the expiry dates and returns the last expiry date within the current month.
+// If there's no month change, it returns the last expiry date in the list.
 func GetMonthlyExpiry_Tiqs(indexName string, UserId_Tiqs string) (string, error) {
-	resp, _, err := GetExpiryList_Tiqs(UserId_Tiqs)
-
+	// Fetch the list of expiry dates for the given user ID
+	resp, err := GetExpiryList_Tiqs(UserId_Tiqs)
 	if err != nil {
 		return "", err
 	}
 
+	// Retrieve all expiry dates for the specified index
 	allExpiryList := resp.Data[indexName]
 
+	// Check if there are at least two expiry dates
 	if len(allExpiryList) < 2 {
 		return "", fmt.Errorf("not enough expiry dates for %s", indexName)
 	}
 
+	// Parse the first expiry date to determine the current month
 	firstExpiryDate, err := time.Parse("2-Jan-2006", allExpiryList[0])
 	if err != nil {
 		return "", fmt.Errorf("error parsing first expiry date: %v", err)
 	}
 	currentMonth := firstExpiryDate.Month()
 
+	// Iterate through the expiry dates
 	for i, expiryDate := range allExpiryList {
+		// Parse each expiry date
 		t, err := time.Parse("2-Jan-2006", expiryDate)
 		if err != nil {
 			return "", fmt.Errorf("error parsing expiry date: %v", err)
 		}
 
+		// Check if the month has changed
 		if t.Month() != currentMonth {
-			// Return the previous expiry date (which is the last one in the current month)
+			// Return the previous expiry date (last one in the current month)
 			return allExpiryList[i-1], nil
 		}
 	}
 
-	// If we've gone through all dates and haven't found a month change,
-	// return the last date in the list
+	// If no month change is found, return the last date in the list
 	return allExpiryList[len(allExpiryList)-1], nil
 }
 
+// GetOptionChainMap_Tiqs retrieves the option chain map for a given target symbol and its token.
+// It returns a nested map where the outer key is the strike price (rounded to the nearest integer)
+// and the inner map contains option types (CE or PE) as keys and their corresponding symbols.
 func GetOptionChainMap_Tiqs(TargetSymbol, TargetSymbolToken, OptionChainLength string) (map[string]map[string]Symbol, error) {
-	// First we will fetch closest expiry for that Index
+	// Fetch the closest expiry date for the given symbol
 	closestExpiry, err := ClosestExpiryDate_Tiqs(TargetSymbol, ADMIN_TIQS)
 	if err != nil {
 		return nil, err
 	}
 
-	// Now we will fetch option chain from Tiqs using that closestExpiry
+	// Fetch the option chain data for the target symbol using the closest expiry date
 	optionChainFromTiqs, _, err := GetOptionChain_Tiqs(TargetSymbolToken, OptionChainLength, closestExpiry, ADMIN_TIQS)
 	if err != nil {
 		return nil, err
 	}
 
-	// Create a local variable to store the option chain
+	// Initialize a map to store the option chain data
 	optionChain := make(map[string]map[string]Symbol)
 
+	// Populate the initial option chain map with strike prices
 	for _, data := range optionChainFromTiqs.Data {
 		optionChain[data.StrikePrice] = make(map[string]Symbol)
 	}
 
+	// Map each option type to its corresponding symbol for each strike price
 	for _, data := range optionChainFromTiqs.Data {
 		optionChain[data.StrikePrice][data.OptionType] = Symbol{
 			Name:  data.Symbol,
@@ -222,28 +255,34 @@ func GetOptionChainMap_Tiqs(TargetSymbol, TargetSymbolToken, OptionChainLength s
 		}
 	}
 
+	// Initialize a new map to store the processed option chain with rounded strike prices
 	newOptionChain := make(map[string]map[string]Symbol)
 
+	// Iterate over the option chain to round strike prices and populate the new map
 	for strike, innerMap := range optionChain {
 		strikeInFloat := typeConversion.StringToFloat64(strike)
 		strikeInInt := typeConversion.Float64ToInt(strikeInFloat)
 		strikeRounded := typeConversion.IntToString(strikeInInt)
 
-		// If the rounded strike doesn't exist in the new map, initialize it
+		// Ensure the new map has an entry for the rounded strike price
 		if _, exists := newOptionChain[strikeRounded]; !exists {
 			newOptionChain[strikeRounded] = make(map[string]Symbol)
 		}
 
-		// Copy CE and PE data to the rounded strike
+		// Copy option type and symbol data to the new map with the rounded strike price
 		for optionType, symbol := range innerMap {
 			newOptionChain[strikeRounded][optionType] = symbol
 		}
 	}
 
-	// Return the processed option chain
+	// Return the processed option chain map
 	return newOptionChain, nil
 }
 
+// IsHoliday_Tiqs checks if the current day is a holiday or not.
+// It uses the GetHolidays_Tiqs function to fetch the holidays and
+// checks if the current date is present in the holidays map.
+// It returns true if it's a holiday and false otherwise.
 func IsHoliday_Tiqs(UserID_Tiqs string) (bool, error) {
 	// Get today's date in the required format (DD-MM-YYYY)
 	today := time.Now().Format("02-01-2006")
