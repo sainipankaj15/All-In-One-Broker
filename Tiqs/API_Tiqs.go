@@ -10,20 +10,22 @@ import (
 	"net/http"
 )
 
-// This API returns the position API response
+// PositionApi_Tiqs returns the response of the position API. It takes the UserID of the user as an argument and returns the response and an error.
 func PositionApi_Tiqs(UserID_Tiqs string) (PositionAPIResp_Tiqs, error) {
 
 	// Reading accessToken and APPID for fetching the APIs
 	AccessToken, APPID, err := ReadingAccessToken_Tiqs(UserID_Tiqs)
 	if err != nil {
+		// Log the error and return an error
 		log.Println("Error while getting acces token from file")
-		panic(err)
+		return PositionAPIResp_Tiqs{}, err
 	}
 
 	positionUrl := "https://api.tiqs.in/oms/user/positions"
 
 	req, err := http.NewRequest("GET", positionUrl, nil)
 	if err != nil {
+		// Log the error and return an error
 		log.Println("Error while making request in Position API request")
 		return PositionAPIResp_Tiqs{}, err
 	}
@@ -33,9 +35,10 @@ func PositionApi_Tiqs(UserID_Tiqs string) (PositionAPIResp_Tiqs, error) {
 	req.Header.Add("appId", APPID)
 
 	// Make the request
-	client := &http.Client{}
+	client := http.DefaultClient
 	resp, err := client.Do(req)
 	if err != nil {
+		// Log the error and return an error
 		log.Println("Error while making request in Position API")
 		return PositionAPIResp_Tiqs{}, err
 	}
@@ -44,6 +47,7 @@ func PositionApi_Tiqs(UserID_Tiqs string) (PositionAPIResp_Tiqs, error) {
 	// Read the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		// Log the error and return an error
 		log.Println("Error while reading the body in byte array in Position API")
 		return PositionAPIResp_Tiqs{}, err
 	}
@@ -56,10 +60,12 @@ func PositionApi_Tiqs(UserID_Tiqs string) (PositionAPIResp_Tiqs, error) {
 
 	err = json.Unmarshal(body, &positionResp)
 	if err != nil {
+		// Log the error and return an error
 		log.Println("Error while Unmarshaling the data in Position API")
 		return PositionAPIResp_Tiqs{}, err
 	}
 
+	// Return the response and nil error
 	return positionResp, nil
 }
 
@@ -96,7 +102,7 @@ func OrderPlaceMarket_Tiqs(exchange, token, quantity, TransSide, productType, Us
 	}
 
 	// Create HTTP client
-	client := &http.Client{}
+	client := http.DefaultClient
 
 	// Create HTTP request
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonParameters))
@@ -163,7 +169,7 @@ func FetchQuotes_Tiqs(tokenSlice []int, UserID_Tiqs string) (QuotesAPIResp_Tiqs,
 	req.Header.Set("Content-Type", "application/json")
 
 	// Create an HTTP client and send the request
-	client := &http.Client{}
+	client := http.DefaultClient
 	resp, err := client.Do(req)
 	if err != nil {
 		return QuotesAPIResp_Tiqs{}, fmt.Errorf("error sending request: %v", err)
@@ -226,7 +232,7 @@ func GetOptionChain_Tiqs(IndexTokenNumber, OptionChainLength, expiryDay, UserID_
 	req.Header.Set("Content-Type", "application/json")
 
 	// Make the request
-	client := &http.Client{}
+	client := http.DefaultClient
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println("Error while getting response in GetOptionChain_Tiqs()")
@@ -285,7 +291,7 @@ func GetExpiryList_Tiqs(UserID_Tiqs string) (ExpiryResp_Tiqs, int, error) {
 	req.Header.Set("Content-Type", "application/json")
 
 	// Make the request
-	client := &http.Client{}
+	client := http.DefaultClient
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println("Error while getting response in GetExpiryList_Tiqs()")
@@ -351,7 +357,7 @@ func LTPInPaisa_Tiqs(tokenNumber int, UserID_Tiqs string) (int, error) {
 	req.Header.Set("Content-Type", "application/json")
 
 	// Make the request
-	client := &http.Client{}
+	client := http.DefaultClient
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println("Error while making request in LTPOfToken_Tiqs API")
@@ -415,7 +421,7 @@ func GetGreeks_Tiqs(tokenNumber int, UserID_Tiqs string) (GreeksData_Tiqs, error
 	req.Header.Set("Content-Type", "application/json")
 
 	// Make the request
-	client := &http.Client{}
+	client := http.DefaultClient
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println("Error while making request in GetGreeks_Tiqs API")
@@ -478,7 +484,7 @@ func GetHolidays_Tiqs(UserID_Tiqs string) (HolidaysAPIResp_Tiqs, error) {
 	req.Header.Add("appId", APPID)
 
 	// Make the request
-	client := &http.Client{}
+	client := http.DefaultClient
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println("Error while making request in GetHolidays_Tiqs")

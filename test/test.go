@@ -2,10 +2,8 @@ package main
 
 import (
 	"fmt"
-	"time"
 
 	tiqs "github.com/sainipankaj15/All-In-One-Broker/Tiqs"
-	tiqsGreeksSocket "github.com/sainipankaj15/All-In-One-Broker/TiqsGreeks"
 )
 
 func main() {
@@ -128,54 +126,59 @@ func main() {
 	// fmt.Println("a is ", a)
 	// time.Sleep(5000 * time.Second)
 
-	tokenId, appId, _ := tiqs.ReadingAccessToken_Tiqs("FB5650")
-
-	gs, err := tiqsGreeksSocket.NewTiqsGreeksSocket(appId, tokenId, true)
+	pos, err := tiqs.PositionApi_Tiqs("FB5650")
 
 	if err != nil {
 		fmt.Println(err)
 	}
+	fmt.Printf("%+v\n", pos)
 
-	gs.StartWebSocket(tiqs.Index.NIFTY, tiqs.ExchangeToken.NIFTY50)
+	// gs, err := tiqsGreeksSocket.NewTiqsGreeksSocket(appId, tokenId, true)
 
-	time.Sleep(5 * time.Second)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
 
-	deltas := []float64{0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0}
+	// gs.StartWebSocket(tiqs.Index.NIFTY, tiqs.ExchangeToken.NIFTY50)
 
-	for _, delta := range deltas {
-		b, err := gs.GetNearestCallToken(delta)
+	// time.Sleep(5 * time.Second)
 
-		if err != nil {
-			fmt.Println(err)
-		}
+	// deltas := []float64{0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0}
 
-		fmt.Printf("For delta %f, nearest call token is %d\n", delta, b)
-	}
+	// for _, delta := range deltas {
+	// 	b, err := gs.GetNearestCallToken(delta)
 
-	for _, delta := range deltas {
-		c, err := gs.GetNearestPutToken(delta)
+	// 	if err != nil {
+	// 		fmt.Println(err)
+	// 	}
 
-		if err != nil {
-			fmt.Println(err)
-		}
+	// 	fmt.Printf("For delta %f, nearest call token is %d\n", delta, b)
+	// }
 
-		fmt.Printf("For delta %f, nearest put token is %d\n", delta, c)
-	}
+	// for _, delta := range deltas {
+	// 	c, err := gs.GetNearestPutToken(delta)
 
-	ceToken, _ := gs.GetNearestCallToken(0.2)
+	// 	if err != nil {
+	// 		fmt.Println(err)
+	// 	}
 
-	peToken, _ := gs.GetNearestPutToken(0.2)
+	// 	fmt.Printf("For delta %f, nearest put token is %d\n", delta, c)
+	// }
 
-	for {
-		a, b := gs.GetDeltaDifference(ceToken, peToken)
+	// ceToken, _ := gs.GetNearestCallToken(0.2)
 
-		if b != nil {
-			fmt.Println(b)
-		}
+	// peToken, _ := gs.GetNearestPutToken(0.2)
 
-		fmt.Println(a)
-		time.Sleep(1 * time.Second)
-	}
+	// for {
+	// 	a, b := gs.GetDeltaDifference(ceToken, peToken)
+
+	// 	if b != nil {
+	// 		fmt.Println(b)
+	// 	}
+
+	// 	fmt.Println(a)
+	// 	time.Sleep(1 * time.Second)
+	// }
 
 	// fmt.Printf("gs is %+v", gs)
 
