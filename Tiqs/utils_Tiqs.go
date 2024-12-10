@@ -41,6 +41,14 @@ func ReadingAccessToken_Tiqs(userID_Tiqs string) (string, string, error) {
 	return accessToken, APPID, nil
 }
 
+// CurrentQtyForAnySymbol_Tiqs returns the current quantity for the given symbol.
+//
+// It takes a symbol, product type and a UserID_Tiqs as parameters.
+// It fetches the net position from the position API and iterates over all the positions
+// to find the current quantity for the given symbol and product type.
+// If the position is found, it returns the quantity in string format.
+// If the position is not found, it returns an empty string.
+// If there is an error, it returns an error.
 func CurrentQtyForAnySymbol_Tiqs(symbolExchToken string, productType string, UserId_Tiqs string) (string, error) {
 
 	PositionAPIResp_Tiqs, err := PositionApi_Tiqs(UserId_Tiqs)
@@ -62,32 +70,39 @@ func CurrentQtyForAnySymbol_Tiqs(symbolExchToken string, productType string, Use
 	return "", nil
 }
 
+// ExitAllPosition_Tiqs exits all open positions for a given user by placing market orders in the opposite direction.
+// It takes the UserID_Tiqs as a parameter and returns a success message and an error if something goes wrong.
 func ExitAllPosition_Tiqs(UserId_Tiqs string) (string, error) {
 
+	// Fetch current positions using the Position API
 	PositionAPIResp_Tiqs, err := PositionApi_Tiqs(UserId_Tiqs)
-
 	if err != nil {
 		return "failed", err
 	}
 
+	// Iterate over all net positions
 	for i := 0; i < len(PositionAPIResp_Tiqs.NetPosition_Tiqss); i++ {
 		position := PositionAPIResp_Tiqs.NetPosition_Tiqss[i]
 
+		// Use a goroutine to exit positions concurrently
 		go func(pos NetPosition_Tiqs) {
+			// Extract buy and sell quantities as strings
 			buyQtyInString := position.DayBuyQty
 			sellQtyInString := position.DaySellQty
 
+			// Convert quantities to integers
 			buyQty := typeConversion.StringToInt(buyQtyInString)
 			sellQty := typeConversion.StringToInt(sellQtyInString)
 
+			// Calculate the difference to determine net position
 			diff := buyQty - sellQty
 
 			if diff > 0 {
-				// it means long position : Have to cut it by opposite order
+				// Long position: place a sell order to exit
 				qtyInString := typeConversion.IntToString(diff)
 				go OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "S", position.Product, UserId_Tiqs)
 			} else if diff < 0 {
-				// it means short position : Have to cut it by opposite order
+				// Short position: place a buy order to exit
 				qtyInString := typeConversion.IntToString(diff)
 				go OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "B", position.Product, UserId_Tiqs)
 			}
@@ -98,36 +113,48 @@ func ExitAllPosition_Tiqs(UserId_Tiqs string) (string, error) {
 	return "success", nil
 }
 
+// ExitByPositionID_Tiqs exits a position by ID.
+// It takes a symbol exch token, product type and a UserID_Tiqs as parameters.
+// It fetches the current positions using the Position API and iterates over all the positions.
+// If the position is found, it places a market order in the opposite direction to exit the position.
+// If there is an error, it returns an error.
 func ExitByPositionID_Tiqs(symbolExchToken string, productType string, UserId_Tiqs string) error {
 
+	// Fetch current positions using the Position API
 	PositionAPIResp_Tiqs, err := PositionApi_Tiqs(UserId_Tiqs)
 
 	if err != nil {
 		return err
 	}
 
+	// Iterate over all net positions
 	for i := 0; i < len(PositionAPIResp_Tiqs.NetPosition_Tiqss); i++ {
 		position := PositionAPIResp_Tiqs.NetPosition_Tiqss[i]
 
+		// Use a goroutine to exit positions concurrently
 		go func(pos NetPosition_Tiqs) {
 
+			// Check if the position is the one we want to exit
 			if position.Token == symbolExchToken {
 				if position.Product == productType {
 
+					// Extract buy and sell quantities as strings
 					buyQtyInString := position.DayBuyQty
 					sellQtyInString := position.DaySellQty
 
+					// Convert quantities to integers
 					buyQty := typeConversion.StringToInt(buyQtyInString)
 					sellQty := typeConversion.StringToInt(sellQtyInString)
 
+					// Calculate the difference to determine net position
 					diff := buyQty - sellQty
 
 					if diff > 0 {
-						// it means long position : Have to cut it by opposite order
+						// Long position: place a sell order to exit
 						qtyInString := typeConversion.IntToString(diff)
 						OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "S", position.Product, UserId_Tiqs)
 					} else if diff < 0 {
-						// it means short position : Have to cut it by opposite order
+						// Short position: place a buy order to exit
 						qtyInString := typeConversion.IntToString(diff)
 						OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "B", position.Product, UserId_Tiqs)
 					}
