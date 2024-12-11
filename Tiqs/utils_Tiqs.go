@@ -28,7 +28,7 @@ func ReadingAccessToken_Tiqs(userID_Tiqs string) (string, string, error) {
 		return "", "", err
 	}
 
-	var fileData ReadDataJsonTiqs
+	var fileData readDataJsonTiqs
 
 	err = json.Unmarshal(fileContent, &fileData)
 	if err != nil {
@@ -51,14 +51,14 @@ func ReadingAccessToken_Tiqs(userID_Tiqs string) (string, string, error) {
 // If there is an error, it returns an error.
 func CurrentQtyForAnySymbol_Tiqs(symbolExchToken string, productType string, UserId_Tiqs string) (string, error) {
 
-	PositionAPIResp_Tiqs, err := PositionApi_Tiqs(UserId_Tiqs)
+	positionAPIResp_Tiqs, err := PositionApi_Tiqs(UserId_Tiqs)
 
 	if err != nil {
 		return "", err
 	}
 
-	for i := 0; i < len(PositionAPIResp_Tiqs.NetPosition_Tiqss); i++ {
-		position := PositionAPIResp_Tiqs.NetPosition_Tiqss[i]
+	for i := 0; i < len(positionAPIResp_Tiqs.NetPosition_Tiqss); i++ {
+		position := positionAPIResp_Tiqs.NetPosition_Tiqss[i]
 
 		if position.Token == symbolExchToken {
 			if position.Product == productType {
@@ -75,17 +75,17 @@ func CurrentQtyForAnySymbol_Tiqs(symbolExchToken string, productType string, Use
 func ExitAllPosition_Tiqs(UserId_Tiqs string) (string, error) {
 
 	// Fetch current positions using the Position API
-	PositionAPIResp_Tiqs, err := PositionApi_Tiqs(UserId_Tiqs)
+	positionAPIResp_Tiqs, err := PositionApi_Tiqs(UserId_Tiqs)
 	if err != nil {
 		return "failed", err
 	}
 
 	// Iterate over all net positions
-	for i := 0; i < len(PositionAPIResp_Tiqs.NetPosition_Tiqss); i++ {
-		position := PositionAPIResp_Tiqs.NetPosition_Tiqss[i]
+	for i := 0; i < len(positionAPIResp_Tiqs.NetPosition_Tiqss); i++ {
+		position := positionAPIResp_Tiqs.NetPosition_Tiqss[i]
 
 		// Use a goroutine to exit positions concurrently
-		go func(pos NetPosition_Tiqs) {
+		go func(pos netPosition_Tiqs) {
 			// Extract buy and sell quantities as strings
 			buyQtyInString := position.DayBuyQty
 			sellQtyInString := position.DaySellQty
@@ -121,18 +121,18 @@ func ExitAllPosition_Tiqs(UserId_Tiqs string) (string, error) {
 func ExitByPositionID_Tiqs(symbolExchToken string, productType string, UserId_Tiqs string) error {
 
 	// Fetch current positions using the Position API
-	PositionAPIResp_Tiqs, err := PositionApi_Tiqs(UserId_Tiqs)
+	positionAPIResp_Tiqs, err := PositionApi_Tiqs(UserId_Tiqs)
 
 	if err != nil {
 		return err
 	}
 
 	// Iterate over all net positions
-	for i := 0; i < len(PositionAPIResp_Tiqs.NetPosition_Tiqss); i++ {
-		position := PositionAPIResp_Tiqs.NetPosition_Tiqss[i]
+	for i := 0; i < len(positionAPIResp_Tiqs.NetPosition_Tiqss); i++ {
+		position := positionAPIResp_Tiqs.NetPosition_Tiqss[i]
 
 		// Use a goroutine to exit positions concurrently
-		go func(pos NetPosition_Tiqs) {
+		go func(pos netPosition_Tiqs) {
 
 			// Check if the position is the one we want to exit
 			if position.Token == symbolExchToken {

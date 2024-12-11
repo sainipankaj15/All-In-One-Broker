@@ -11,14 +11,14 @@ import (
 )
 
 // PositionApi_Tiqs returns the response of the position API. It takes the UserID of the user as an argument and returns the response and an error.
-func PositionApi_Tiqs(UserID_Tiqs string) (PositionAPIResp_Tiqs, error) {
+func PositionApi_Tiqs(UserID_Tiqs string) (positionAPIResp_Tiqs, error) {
 
 	// Reading accessToken and APPID for fetching the APIs
 	AccessToken, APPID, err := ReadingAccessToken_Tiqs(UserID_Tiqs)
 	if err != nil {
 		// Log the error and return an error
 		log.Println("Error while getting acces token from file")
-		return PositionAPIResp_Tiqs{}, err
+		return positionAPIResp_Tiqs{}, err
 	}
 
 	positionUrl := "https://api.tiqs.in/oms/user/positions"
@@ -27,7 +27,7 @@ func PositionApi_Tiqs(UserID_Tiqs string) (PositionAPIResp_Tiqs, error) {
 	if err != nil {
 		// Log the error and return an error
 		log.Println("Error while making request in Position API request")
-		return PositionAPIResp_Tiqs{}, err
+		return positionAPIResp_Tiqs{}, err
 	}
 
 	// Add the Bearer token to the request header
@@ -40,7 +40,7 @@ func PositionApi_Tiqs(UserID_Tiqs string) (PositionAPIResp_Tiqs, error) {
 	if err != nil {
 		// Log the error and return an error
 		log.Println("Error while making request in Position API")
-		return PositionAPIResp_Tiqs{}, err
+		return positionAPIResp_Tiqs{}, err
 	}
 	defer resp.Body.Close()
 
@@ -49,17 +49,17 @@ func PositionApi_Tiqs(UserID_Tiqs string) (PositionAPIResp_Tiqs, error) {
 	if err != nil {
 		// Log the error and return an error
 		log.Println("Error while reading the body in byte array in Position API")
-		return PositionAPIResp_Tiqs{}, err
+		return positionAPIResp_Tiqs{}, err
 	}
 
 	// Converting into Response struct format
-	var positionResp PositionAPIResp_Tiqs
+	var positionResp positionAPIResp_Tiqs
 
 	err = json.Unmarshal(body, &positionResp)
 	if err != nil {
 		// Log the error and return an error
 		log.Println("Error while Unmarshaling the data in Position API")
-		return PositionAPIResp_Tiqs{}, err
+		return positionAPIResp_Tiqs{}, err
 	}
 
 	// Return the response and nil error

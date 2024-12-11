@@ -1,13 +1,13 @@
 package tiqs
 
-type ReadDataJsonTiqs struct {
+type readDataJsonTiqs struct {
 	Date        string `json:"Date"`
 	AccessToken string `json:"token"`
 	Session     string `json:"session"`
 	APPID       string `json:"appId"`
 }
 
-type NetPosition_Tiqs struct {
+type netPosition_Tiqs struct {
 	AvgPrice                 string `json:"avgPrice"`
 	BreakEvenPrice           string `json:"breakEvenPrice"`
 	CarryForwarAvgPrice      string `json:"carryForwarAvgPrice"`
@@ -46,9 +46,9 @@ type NetPosition_Tiqs struct {
 	UploadPrice              string `json:"uploadPrice"`
 }
 
-type PositionAPIResp_Tiqs struct {
+type positionAPIResp_Tiqs struct {
 	S                 string             `json:"status"`
-	NetPosition_Tiqss []NetPosition_Tiqs `json:"data"`
+	NetPosition_Tiqss []netPosition_Tiqs `json:"data"`
 }
 
 type Order_Tiqs struct {
