@@ -148,3 +148,12 @@ type HolidaysAPIResp_Tiqs struct {
 	Data   HolidaysData_Tiqs `json:"data"`
 	Status string            `json:"status"`
 }
+
+type OrderResp_Tiqs struct {
+	Message string `json:"message"`
+	Data    struct {
+		OrderNo     string `json:"orderNo"`
+		RequestTime string `json:"requestTime"`
+	} `json:"data"`
+	Status string `json:"status"`
+}

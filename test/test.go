@@ -126,12 +126,12 @@ func main() {
 	// fmt.Println("a is ", a)
 	// time.Sleep(5000 * time.Second)
 
-	pos, err := tiqs.PositionApi_Tiqs("FB5650")
+	resp, err := tiqs.OrderPlaceMarket_Tiqs(tiqs.Exchange.NFO, "46121", "15", tiqs.OrderSide.BUY, string(tiqs.Product.INTRADAY), tiqs.ADMIN_TIQS)
 
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Printf("%+v\n", pos)
+	fmt.Printf("Normal msg : %+v\n", resp)
 
 	// gs, err := tiqsGreeksSocket.NewTiqsGreeksSocket(appId, tokenId, true)
 

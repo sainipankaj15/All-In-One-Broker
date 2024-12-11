@@ -86,3 +86,10 @@ var StrikeGap = struct {
 	MIDCPNIFTY: 25,
 	FINNIFTY:   50,
 }
+
+var apiResponseStatus = struct {
+	SUCCESS, FAILURE string
+}{
+	SUCCESS: "success",
+	FAILURE: "failure",
+}

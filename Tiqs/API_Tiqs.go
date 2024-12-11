@@ -69,11 +69,11 @@ func PositionApi_Tiqs(UserID_Tiqs string) (positionAPIResp_Tiqs, error) {
 // OrderPlaceMarket_Tiqs is used to place a market order for Tiqs Broker
 // It takes exchange, token, quantity, TransSide, productType and UserID_Tiqs as parameters
 // It returns an error if something goes wrong
-func OrderPlaceMarket_Tiqs(exchange, token, quantity, TransSide, productType, UserID_Tiqs string) error {
+func OrderPlaceMarket_Tiqs(exchange, token, quantity, TransSide, productType, UserID_Tiqs string) (OrderResp_Tiqs, error) {
 
 	accessTokenofUser, appIdOfUser, err := ReadingAccessToken_Tiqs(UserID_Tiqs)
 	if err != nil {
-		return fmt.Errorf("error while getting access token from file for %v User: %w", UserID_Tiqs, err)
+		return OrderResp_Tiqs{}, fmt.Errorf("error while getting access token from file for %v User: %w", UserID_Tiqs, err)
 	}
 
 	// orderPlacment URL
@@ -98,7 +98,7 @@ func OrderPlaceMarket_Tiqs(exchange, token, quantity, TransSide, productType, Us
 	jsonParameters, err := json.Marshal(values)
 	if err != nil {
 		log.Println("Error marshaling JSON in orderPlacement_Tiqs()", err)
-		return err
+		return OrderResp_Tiqs{}, err
 	}
 
 	// Create HTTP client
@@ -108,7 +108,7 @@ func OrderPlaceMarket_Tiqs(exchange, token, quantity, TransSide, productType, Us
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonParameters))
 	if err != nil {
 		log.Println("Error while making request for Order Placement API ")
-		return err
+		return OrderResp_Tiqs{}, err
 	}
 
 	// Add the Session and token to the request header
@@ -120,23 +120,21 @@ func OrderPlaceMarket_Tiqs(exchange, token, quantity, TransSide, productType, Us
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println("Error while getting response in orderPlacement_Tiqs()")
-		return err
+		return OrderResp_Tiqs{}, err
 	}
 	defer resp.Body.Close()
 
-	// Read the response body
-	body, err := ioutil.ReadAll(resp.Body)
+	var response OrderResp_Tiqs
+	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
-		log.Println("Error while reading the body in byte array in orderPlacement_Tiqs()")
-		return err
+		return OrderResp_Tiqs{}, err
 	}
 
-	jsonBody := string(body)
+	if response.Status != apiResponseStatus.SUCCESS {
+		return OrderResp_Tiqs{}, fmt.Errorf("%w, response: %+v", ErrOrderPlacementFailed, response)
+	}
 
-	// Log the response
-	msg := fmt.Sprintf("For %v user , response status is %v and response is %v", UserID_Tiqs, resp.Status, jsonBody)
-	log.Println(msg)
-	return nil
+	return response, nil
 }
 
 // fetchQuotes sends a POST request with the specified data and userID, then returns the response body as a string and any error encountered.
