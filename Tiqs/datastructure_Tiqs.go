@@ -51,16 +51,16 @@ type positionAPIResp_Tiqs struct {
 	NetPosition_Tiqss []netPosition_Tiqs `json:"data"`
 }
 
-type Order_Tiqs struct {
+type order_Tiqs struct {
 	Orders   int `json:"orders"`
 	Price    int `json:"price"`
 	Quantity int `json:"quantity"`
 }
 
-type QuotesData_Tiqs struct {
-	Asks         []Order_Tiqs `json:"asks"`
+type quotesData_Tiqs struct {
+	Asks         []order_Tiqs `json:"asks"`
 	AvgPrice     int          `json:"avgPrice"`
-	Bids         []Order_Tiqs `json:"bids"`
+	Bids         []order_Tiqs `json:"bids"`
 	Close        int          `json:"close"`
 	High         int          `json:"high"`
 	Low          int          `json:"low"`
@@ -82,10 +82,10 @@ type QuotesData_Tiqs struct {
 	UpperLimit   int          `json:"upperLimit"`
 	Volume       int          `json:"volume"`
 }
-type QuotesAPIResp_Tiqs struct {
-	Data      []QuotesData_Tiqs       `json:"data"`
+type quotesAPIResp_Tiqs struct {
+	Data      []quotesData_Tiqs       `json:"data"`
 	Status    string                  `json:"status"`
-	TokenData map[int]QuotesData_Tiqs `json:"-"`
+	TokenData map[int]quotesData_Tiqs `json:"-"`
 }
 
 type Option struct {
@@ -100,7 +100,7 @@ type Option struct {
 	OpeningOI      string `json:"openingOI"`
 }
 
-type OptionChainResp_Tiqs struct {
+type optionChainResp_Tiqs struct {
 	Data   []Option `json:"data"`
 	Status string   `json:"status"`
 }
@@ -110,7 +110,7 @@ type ExpiryResp_Tiqs struct {
 	Status string              `json:"status"`
 }
 
-type LTPofTokenResp_Tiqs struct {
+type ltpofTokenResp_Tiqs struct {
 	Data struct {
 		Close int `json:"close"`
 		LTP   int `json:"ltp"`
@@ -124,8 +124,8 @@ type Symbol struct {
 	Token string
 }
 
-// Define GreeksData_Tiqs struct
-type GreeksData_Tiqs struct {
+// Define greeksData_Tiqs struct
+type greeksData_Tiqs struct {
 	Delta float64 `json:"delta"`
 	Theta float64 `json:"theta"`
 	Gamma float64 `json:"gamma"`
@@ -133,23 +133,23 @@ type GreeksData_Tiqs struct {
 	IV    float64 `json:"iv"`
 }
 
-// Define GreeksResp_Tiqs struct
-type GreeksResp_Tiqs struct {
-	Data   []GreeksData_Tiqs `json:"data"`
+// Define greeksResp_Tiqs struct
+type greeksResp_Tiqs struct {
+	Data   []greeksData_Tiqs `json:"data"`
 	Status string            `json:"status"`
 }
 
-type HolidaysData_Tiqs struct {
+type holidaysData_Tiqs struct {
 	Holidays map[string]string `json:"holidays"`
 	// SpecialTradingDays map[string][]string `json:"specialTradingDays"` // Not requried as of now
 }
 
-type HolidaysAPIResp_Tiqs struct {
-	Data   HolidaysData_Tiqs `json:"data"`
+type holidaysAPIResp_Tiqs struct {
+	Data   holidaysData_Tiqs `json:"data"`
 	Status string            `json:"status"`
 }
 
-type OrderResp_Tiqs struct {
+type placeOrderResp_Tiqs struct {
 	Message string `json:"message"`
 	Data    struct {
 		OrderNo     string `json:"orderNo"`

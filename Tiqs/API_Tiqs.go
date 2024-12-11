@@ -69,11 +69,11 @@ func PositionApi_Tiqs(UserID_Tiqs string) (positionAPIResp_Tiqs, error) {
 // OrderPlaceMarket_Tiqs is used to place a market order for Tiqs Broker
 // It takes exchange, token, quantity, TransSide, productType and UserID_Tiqs as parameters
 // It returns an error if something goes wrong
-func OrderPlaceMarket_Tiqs(exchange, token, quantity, TransSide, productType, UserID_Tiqs string) (OrderResp_Tiqs, error) {
+func OrderPlaceMarket_Tiqs(exchange, token, quantity, TransSide, productType, UserID_Tiqs string) (placeOrderResp_Tiqs, error) {
 
 	accessTokenofUser, appIdOfUser, err := ReadingAccessToken_Tiqs(UserID_Tiqs)
 	if err != nil {
-		return OrderResp_Tiqs{}, fmt.Errorf("error while getting access token from file for %v User: %w", UserID_Tiqs, err)
+		return placeOrderResp_Tiqs{}, fmt.Errorf("error while getting access token from file for %v User: %w", UserID_Tiqs, err)
 	}
 
 	// orderPlacment URL
@@ -98,7 +98,7 @@ func OrderPlaceMarket_Tiqs(exchange, token, quantity, TransSide, productType, Us
 	jsonParameters, err := json.Marshal(values)
 	if err != nil {
 		log.Println("Error marshaling JSON in orderPlacement_Tiqs()", err)
-		return OrderResp_Tiqs{}, err
+		return placeOrderResp_Tiqs{}, err
 	}
 
 	// Create HTTP client
@@ -108,7 +108,7 @@ func OrderPlaceMarket_Tiqs(exchange, token, quantity, TransSide, productType, Us
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonParameters))
 	if err != nil {
 		log.Println("Error while making request for Order Placement API ")
-		return OrderResp_Tiqs{}, err
+		return placeOrderResp_Tiqs{}, err
 	}
 
 	// Add the Session and token to the request header
@@ -120,25 +120,25 @@ func OrderPlaceMarket_Tiqs(exchange, token, quantity, TransSide, productType, Us
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println("Error while getting response in orderPlacement_Tiqs()")
-		return OrderResp_Tiqs{}, err
+		return placeOrderResp_Tiqs{}, err
 	}
 	defer resp.Body.Close()
 
-	var response OrderResp_Tiqs
+	var response placeOrderResp_Tiqs
 	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
-		return OrderResp_Tiqs{}, err
+		return placeOrderResp_Tiqs{}, err
 	}
 
 	if response.Status != apiResponseStatus.SUCCESS {
-		return OrderResp_Tiqs{}, fmt.Errorf("%w, response: %+v", ErrOrderPlacementFailed, response)
+		return placeOrderResp_Tiqs{}, fmt.Errorf("%w, response: %+v", ErrOrderPlacementFailed, response)
 	}
 
 	return response, nil
 }
 
 // fetchQuotes sends a POST request with the specified data and userID, then returns the response body as a string and any error encountered.
-func FetchQuotes_Tiqs(tokenSlice []int, UserID_Tiqs string) (QuotesAPIResp_Tiqs, error) {
+func FetchQuotes_Tiqs(tokenSlice []int, UserID_Tiqs string) (quotesAPIResp_Tiqs, error) {
 
 	quotesUrl := "https://api.tiqs.trading/info/quotes/full"
 
@@ -146,20 +146,20 @@ func FetchQuotes_Tiqs(tokenSlice []int, UserID_Tiqs string) (QuotesAPIResp_Tiqs,
 	if err != nil {
 		msg := fmt.Sprintf("Error while getting access token from file for %v User ", UserID_Tiqs)
 		log.Println(msg)
-		return QuotesAPIResp_Tiqs{}, err
+		return quotesAPIResp_Tiqs{}, err
 	}
 
 	// Convert []int to []byte
 	jsonData, err := json.Marshal(tokenSlice)
 	if err != nil {
 		log.Println("Error while Marshalling token slice", err)
-		return QuotesAPIResp_Tiqs{}, err
+		return quotesAPIResp_Tiqs{}, err
 	}
 
 	// Create a new request using http
 	req, err := http.NewRequest("POST", quotesUrl, bytes.NewBuffer(jsonData))
 	if err != nil {
-		return QuotesAPIResp_Tiqs{}, fmt.Errorf("error creating request: %v", err)
+		return quotesAPIResp_Tiqs{}, fmt.Errorf("error creating request: %v", err)
 	}
 
 	// Add the Session and token to the request header
@@ -171,25 +171,25 @@ func FetchQuotes_Tiqs(tokenSlice []int, UserID_Tiqs string) (QuotesAPIResp_Tiqs,
 	client := http.DefaultClient
 	resp, err := client.Do(req)
 	if err != nil {
-		return QuotesAPIResp_Tiqs{}, fmt.Errorf("error sending request: %v", err)
+		return quotesAPIResp_Tiqs{}, fmt.Errorf("error sending request: %v", err)
 	}
 	defer resp.Body.Close()
 
 	// Read the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return QuotesAPIResp_Tiqs{}, fmt.Errorf("error reading response body: %v", err)
+		return quotesAPIResp_Tiqs{}, fmt.Errorf("error reading response body: %v", err)
 	}
 
-	var apiResponse QuotesAPIResp_Tiqs
+	var apiResponse quotesAPIResp_Tiqs
 	err = json.Unmarshal(body, &apiResponse)
 	if err != nil {
 		fmt.Println("Error while unmarshaling JSON of Tiqs Quotes API", err)
-		return QuotesAPIResp_Tiqs{}, err
+		return quotesAPIResp_Tiqs{}, err
 	}
 
 	// Populate the map
-	apiResponse.TokenData = make(map[int]QuotesData_Tiqs)
+	apiResponse.TokenData = make(map[int]quotesData_Tiqs)
 	for _, data := range apiResponse.Data {
 		apiResponse.TokenData[data.Token] = data
 	}
@@ -199,7 +199,7 @@ func FetchQuotes_Tiqs(tokenSlice []int, UserID_Tiqs string) (QuotesAPIResp_Tiqs,
 
 // GetOptionChain_Tiqs fetches the option chain for a given token number, option chain length, and expiry day.
 // It returns the option chain response, the status code of the response, and any error encountered.
-func GetOptionChain_Tiqs(IndexTokenNumber, OptionChainLength, expiryDay, UserID_Tiqs string) (OptionChainResp_Tiqs, int, error) {
+func GetOptionChain_Tiqs(IndexTokenNumber, OptionChainLength, expiryDay, UserID_Tiqs string) (optionChainResp_Tiqs, int, error) {
 
 	getOptionChainUrl := "https://api.tiqs.trading/info/option-chain"
 
@@ -209,20 +209,20 @@ func GetOptionChain_Tiqs(IndexTokenNumber, OptionChainLength, expiryDay, UserID_
 	if err != nil {
 		msg := fmt.Sprintf("Error while getting access token from file for %v User ", UserID_Tiqs)
 		log.Println(msg)
-		return OptionChainResp_Tiqs{}, 0, err
+		return optionChainResp_Tiqs{}, 0, err
 	}
 
 	values := map[string]string{"token": IndexTokenNumber, "exchange": "INDEX", "count": OptionChainLength, "expiry": expiryDay}
 	jsonParameters, err := json.Marshal(values)
 	if err != nil {
 		log.Println("Error marshaling JSON in GetOptionChain_Tiqs(): ", err)
-		return OptionChainResp_Tiqs{}, 0, err
+		return optionChainResp_Tiqs{}, 0, err
 	}
 
 	req, err := http.NewRequest("POST", getOptionChainUrl, bytes.NewBuffer(jsonParameters))
 	if err != nil {
 		log.Println("Error while making request in GetOptionChain_Tiqs()")
-		return OptionChainResp_Tiqs{}, 0, err
+		return optionChainResp_Tiqs{}, 0, err
 	}
 
 	// Add the Session and token to the request header : Here session will be APPID and Token will be token
@@ -235,7 +235,7 @@ func GetOptionChain_Tiqs(IndexTokenNumber, OptionChainLength, expiryDay, UserID_
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println("Error while getting response in GetOptionChain_Tiqs()")
-		return OptionChainResp_Tiqs{}, resp.StatusCode, err
+		return optionChainResp_Tiqs{}, resp.StatusCode, err
 	}
 	defer resp.Body.Close()
 
@@ -243,16 +243,16 @@ func GetOptionChain_Tiqs(IndexTokenNumber, OptionChainLength, expiryDay, UserID_
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Println("Error while reading the body in byte array in GetOptionChain_Tiqs()")
-		return OptionChainResp_Tiqs{}, resp.StatusCode, err
+		return optionChainResp_Tiqs{}, resp.StatusCode, err
 	}
 
 	jsonBody := string(body)
 	// Converting into Response struct format
-	var Resp OptionChainResp_Tiqs
+	var Resp optionChainResp_Tiqs
 	err = json.Unmarshal(body, &Resp)
 	if err != nil {
 		log.Println("Error while Unmarshaling the data in GetOptionChain_Tiqs()", err)
-		return OptionChainResp_Tiqs{}, resp.StatusCode, err
+		return optionChainResp_Tiqs{}, resp.StatusCode, err
 	}
 
 	msg := fmt.Sprintf("Direct Response in GetOptionChain_Tiqs() is %v", jsonBody)
@@ -383,7 +383,7 @@ func LTPInPaisa_Tiqs(tokenNumber int, UserID_Tiqs string) (int, error) {
 	log.Printf("Direct Response from LTPOfToken_Tiqs API of Tiqs %v", jsonBody)
 
 	// Converting into Response struct format
-	var apiResp LTPofTokenResp_Tiqs
+	var apiResp ltpofTokenResp_Tiqs
 
 	err = json.Unmarshal(body, &apiResp)
 	if err != nil {
@@ -398,12 +398,12 @@ func LTPInPaisa_Tiqs(tokenNumber int, UserID_Tiqs string) (int, error) {
 
 // GetGreeks_Tiqs fetches the Greeks (Delta, Gamma, Theta, and Vega) for a given token number.
 // It takes a token number and a UserID_Tiqs as parameters and returns the Greeks data and an error if something goes wrong.
-func GetGreeks_Tiqs(tokenNumber int, UserID_Tiqs string) (GreeksData_Tiqs, error) {
+func GetGreeks_Tiqs(tokenNumber int, UserID_Tiqs string) (greeksData_Tiqs, error) {
 	// Reading accessToken and APPID for fetching the APIs
 	AccessToken, APPID, err := ReadingAccessToken_Tiqs(UserID_Tiqs)
 	if err != nil {
 		log.Println("Error while getting access token from file")
-		return GreeksData_Tiqs{}, err
+		return greeksData_Tiqs{}, err
 	}
 
 	url := "https://api.tiqs.trading/info/greeks"
@@ -415,13 +415,13 @@ func GetGreeks_Tiqs(tokenNumber int, UserID_Tiqs string) (GreeksData_Tiqs, error
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		log.Println("Error while marshaling data in GetGreeks_Tiqs")
-		return GreeksData_Tiqs{}, err
+		return greeksData_Tiqs{}, err
 	}
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		log.Println("Error while making request in GetGreeks_Tiqs")
-		return GreeksData_Tiqs{}, err
+		return greeksData_Tiqs{}, err
 	}
 
 	// Add the headers to the request
@@ -435,7 +435,7 @@ func GetGreeks_Tiqs(tokenNumber int, UserID_Tiqs string) (GreeksData_Tiqs, error
 	if err != nil {
 		log.Println("Error while making request in GetGreeks_Tiqs API")
 
-		return GreeksData_Tiqs{}, err
+		return greeksData_Tiqs{}, err
 	}
 	defer resp.Body.Close()
 
@@ -443,27 +443,27 @@ func GetGreeks_Tiqs(tokenNumber int, UserID_Tiqs string) (GreeksData_Tiqs, error
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Println("Error while reading the body in GetGreeks_Tiqs API")
-		return GreeksData_Tiqs{}, err
+		return greeksData_Tiqs{}, err
 	}
 
 	jsonBody := string(body)
 	log.Printf("Direct Response from GetGreeks_Tiqs API: %v", jsonBody)
 
 	// Converting into Response struct format
-	var apiResp GreeksResp_Tiqs
+	var apiResp greeksResp_Tiqs
 
 	err = json.Unmarshal(body, &apiResp)
 	if err != nil {
 		log.Println("Error while Unmarshaling the data in GetGreeks_Tiqs API")
-		return GreeksData_Tiqs{}, err
+		return greeksData_Tiqs{}, err
 	}
 
 	if apiResp.Status != "success" {
-		return GreeksData_Tiqs{}, fmt.Errorf("API returned non-success status: %s", apiResp.Status)
+		return greeksData_Tiqs{}, fmt.Errorf("API returned non-success status: %s", apiResp.Status)
 	}
 
 	if len(apiResp.Data) == 0 {
-		return GreeksData_Tiqs{}, fmt.Errorf("no data returned for the given token")
+		return greeksData_Tiqs{}, fmt.Errorf("no data returned for the given token")
 	}
 
 	greeksData := apiResp.Data[0]
@@ -473,12 +473,12 @@ func GetGreeks_Tiqs(tokenNumber int, UserID_Tiqs string) (GreeksData_Tiqs, error
 
 // GetHolidays_Tiqs fetches the holidays from the Tiqs API.
 // It takes a UserID_Tiqs as a parameter and returns the response and an error if something goes wrong.
-func GetHolidays_Tiqs(UserID_Tiqs string) (HolidaysAPIResp_Tiqs, error) {
+func GetHolidays_Tiqs(UserID_Tiqs string) (holidaysAPIResp_Tiqs, error) {
 	// Reading accessToken and APPID for fetching the APIs
 	AccessToken, APPID, err := ReadingAccessToken_Tiqs(UserID_Tiqs)
 	if err != nil {
 		log.Println("Error while getting access token from file")
-		return HolidaysAPIResp_Tiqs{}, err
+		return holidaysAPIResp_Tiqs{}, err
 	}
 
 	holidaysUrl := "https://api.tiqs.trading/info/holidays"
@@ -487,7 +487,7 @@ func GetHolidays_Tiqs(UserID_Tiqs string) (HolidaysAPIResp_Tiqs, error) {
 	req, err := http.NewRequest("GET", holidaysUrl, nil)
 	if err != nil {
 		log.Println("Error while making request in GetHolidays_Tiqs")
-		return HolidaysAPIResp_Tiqs{}, err
+		return holidaysAPIResp_Tiqs{}, err
 	}
 
 	// Add the Bearer token to the request header
@@ -499,7 +499,7 @@ func GetHolidays_Tiqs(UserID_Tiqs string) (HolidaysAPIResp_Tiqs, error) {
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println("Error while making request in GetHolidays_Tiqs")
-		return HolidaysAPIResp_Tiqs{}, err
+		return holidaysAPIResp_Tiqs{}, err
 	}
 	defer resp.Body.Close()
 
@@ -507,15 +507,15 @@ func GetHolidays_Tiqs(UserID_Tiqs string) (HolidaysAPIResp_Tiqs, error) {
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Println("Error while reading the body in GetHolidays_Tiqs")
-		return HolidaysAPIResp_Tiqs{}, err
+		return holidaysAPIResp_Tiqs{}, err
 	}
 
 	// Converting into Response struct format
-	var holidaysResp HolidaysAPIResp_Tiqs
+	var holidaysResp holidaysAPIResp_Tiqs
 	err = json.Unmarshal(body, &holidaysResp)
 	if err != nil {
 		log.Println("Error while Unmarshaling the data in GetHolidays_Tiqs")
-		return HolidaysAPIResp_Tiqs{}, err
+		return holidaysAPIResp_Tiqs{}, err
 	}
 
 	return holidaysResp, nil
