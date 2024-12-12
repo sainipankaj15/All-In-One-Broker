@@ -21,8 +21,6 @@ func PositionApi_Tiqs(UserID_Tiqs string) (positionAPIResp_Tiqs, error) {
 		return positionAPIResp_Tiqs{}, err
 	}
 
-	positionUrl := "https://api.tiqs.in/oms/user/positions"
-
 	req, err := http.NewRequest("GET", positionUrl, nil)
 	if err != nil {
 		// Log the error and return an error
@@ -76,9 +74,6 @@ func OrderPlaceMarket_Tiqs(exchange, token, quantity, TransSide, productType, Us
 		return placeOrderResp_Tiqs{}, fmt.Errorf("error while getting access token from file for %v User: %w", UserID_Tiqs, err)
 	}
 
-	// orderPlacment URL
-	url := "https://api.tiqs.in/oms/order/regular"
-
 	// Create the JSON to be sent in the body of the request
 	values := map[string]string{
 		"exchange":        exchange,
@@ -105,7 +100,7 @@ func OrderPlaceMarket_Tiqs(exchange, token, quantity, TransSide, productType, Us
 	client := http.DefaultClient
 
 	// Create HTTP request
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonParameters))
+	req, err := http.NewRequest("POST", placeOrderUrl, bytes.NewBuffer(jsonParameters))
 	if err != nil {
 		log.Println("Error while making request for Order Placement API ")
 		return placeOrderResp_Tiqs{}, err
@@ -139,8 +134,6 @@ func OrderPlaceMarket_Tiqs(exchange, token, quantity, TransSide, productType, Us
 
 // fetchQuotes sends a POST request with the specified data and userID, then returns the response body as a string and any error encountered.
 func FetchQuotes_Tiqs(tokenSlice []int, UserID_Tiqs string) (quotesAPIResp_Tiqs, error) {
-
-	quotesUrl := "https://api.tiqs.trading/info/quotes/full"
 
 	accessTokenofUser, appIdOfUser, err := ReadingAccessToken_Tiqs(UserID_Tiqs)
 	if err != nil {
@@ -200,8 +193,6 @@ func FetchQuotes_Tiqs(tokenSlice []int, UserID_Tiqs string) (quotesAPIResp_Tiqs,
 // GetOptionChain_Tiqs fetches the option chain for a given token number, option chain length, and expiry day.
 // It returns the option chain response, the status code of the response, and any error encountered.
 func GetOptionChain_Tiqs(IndexTokenNumber, OptionChainLength, expiryDay, UserID_Tiqs string) (optionChainResp_Tiqs, int, error) {
-
-	getOptionChainUrl := "https://api.tiqs.trading/info/option-chain"
 
 	log.Printf("GetOptionChain_Tiqs API for %v token , option chain length is %v and expiryDay is %v ", IndexTokenNumber, OptionChainLength, expiryDay)
 
@@ -264,8 +255,6 @@ func GetOptionChain_Tiqs(IndexTokenNumber, OptionChainLength, expiryDay, UserID_
 // GetExpiryList_Tiqs fetches the list of expiry dates for options from the Tiqs API.
 // It takes a user ID as a parameter and returns the expiry response, status code, and any error encountered.
 func GetExpiryList_Tiqs(UserID_Tiqs string) (ExpiryResp_Tiqs, error) {
-	// URL for fetching expiry dates
-	expiryDayListUrl := "https://api.tiqs.trading/info/option-chain-symbols"
 
 	// Read access token and APPID for the user
 	accessTokenofUser, appIdOfUser, err := ReadingAccessToken_Tiqs(UserID_Tiqs)
@@ -342,8 +331,6 @@ func LTPInPaisa_Tiqs(tokenNumber int, UserID_Tiqs string) (int, error) {
 		return 0, err
 	}
 
-	url := "https://api.tiqs.trading/info/quote/ltp"
-
 	// Create a map for the JSON data
 	data := map[string]int{
 		"token": tokenNumber,
@@ -352,7 +339,7 @@ func LTPInPaisa_Tiqs(tokenNumber int, UserID_Tiqs string) (int, error) {
 	// Convert the map to JSON
 	jsonData, _ := json.Marshal(data)
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest("POST", ltpUrl, bytes.NewBuffer(jsonData))
 	if err != nil {
 		log.Println("Error while making request in LTPOfToken_Tiqs request")
 		return 0, err
@@ -406,8 +393,6 @@ func GetGreeks_Tiqs(tokenNumber int, UserID_Tiqs string) (greeksData_Tiqs, error
 		return greeksData_Tiqs{}, err
 	}
 
-	url := "https://api.tiqs.trading/info/greeks"
-
 	// Create a slice with the token number
 	data := []int{tokenNumber}
 
@@ -418,7 +403,7 @@ func GetGreeks_Tiqs(tokenNumber int, UserID_Tiqs string) (greeksData_Tiqs, error
 		return greeksData_Tiqs{}, err
 	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest("POST", greeksUrl, bytes.NewBuffer(jsonData))
 	if err != nil {
 		log.Println("Error while making request in GetGreeks_Tiqs")
 		return greeksData_Tiqs{}, err
@@ -480,8 +465,6 @@ func GetHolidays_Tiqs(UserID_Tiqs string) (holidaysAPIResp_Tiqs, error) {
 		log.Println("Error while getting access token from file")
 		return holidaysAPIResp_Tiqs{}, err
 	}
-
-	holidaysUrl := "https://api.tiqs.trading/info/holidays"
 
 	// Create a new request using http
 	req, err := http.NewRequest("GET", holidaysUrl, nil)

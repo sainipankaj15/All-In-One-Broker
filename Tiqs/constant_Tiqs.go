@@ -93,3 +93,15 @@ var apiResponseStatus = struct {
 	SUCCESS: "success",
 	FAILURE: "failure",
 }
+
+// Tiqs Base URL
+var baseURL = "https://api.tiqs.trading"
+
+var quotesUrl = baseURL + "/info/quotes/full"
+var positionUrl = baseURL + "/user/positions"
+var placeOrderUrl = baseURL + "/order/regular"
+var getOptionChainUrl = baseURL + "/info/option-chain"
+var expiryDayListUrl = baseURL + "/info/option-chain-symbols"
+var ltpUrl = baseURL + "/info/quote/ltp"
+var greeksUrl = baseURL + "/info/greeks"
+var holidaysUrl = baseURL + "/info/holidays"
