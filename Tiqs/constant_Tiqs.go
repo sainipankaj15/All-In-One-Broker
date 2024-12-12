@@ -99,9 +99,22 @@ var baseURL = "https://api.tiqs.trading"
 
 var quotesUrl = baseURL + "/info/quotes/full"
 var positionUrl = baseURL + "/user/positions"
+var orderBookURL = baseURL + "/order"
 var placeOrderUrl = baseURL + "/order/regular"
 var getOptionChainUrl = baseURL + "/info/option-chain"
 var expiryDayListUrl = baseURL + "/info/option-chain-symbols"
 var ltpUrl = baseURL + "/info/quote/ltp"
 var greeksUrl = baseURL + "/info/greeks"
 var holidaysUrl = baseURL + "/info/holidays"
+
+type orderStatus string
+
+var OrderStatues = struct {
+	OPEN, CANCELED, COMPLETE, REJECTED, PENDING orderStatus
+}{
+	OPEN:     "OPEN",
+	CANCELED: "CANCELED",
+	COMPLETE: "COMPLETE",
+	REJECTED: "REJECTED",
+	PENDING:  "PENDING",
+}

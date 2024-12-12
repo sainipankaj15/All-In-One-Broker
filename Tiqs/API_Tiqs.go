@@ -503,3 +503,69 @@ func GetHolidays_Tiqs(UserID_Tiqs string) (holidaysAPIResp_Tiqs, error) {
 
 	return holidaysResp, nil
 }
+
+// GetOrderStatus_Tiqs fetches the status of an order from the Tiqs API.
+// It takes the order ID and the UserID of the user as parameters.
+// It returns the status of the order and an error if something goes wrong.
+func GetOrderStatus_Tiqs(orderID string, UserID_Tiqs string) (string, error) {
+
+	// Reading accessToken and APPID for fetching the APIs
+	AccessToken, APPID, err := ReadingAccessToken_Tiqs(UserID_Tiqs)
+	if err != nil {
+		// Log the error and return an error
+		log.Println("Error while getting acces token from file")
+		return "", err
+	}
+
+	// Create the URL for the API request
+	url := orderBookURL + "/" + orderID
+
+	// Create a new request using http
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		// Log the error and return an error
+		log.Println("Error while making request in GetOrderStatus_Tiqs request")
+		return "", err
+	}
+
+	// Add the Bearer token to the request header
+	req.Header.Add("token", AccessToken)
+	req.Header.Add("appId", APPID)
+
+	// Make the request
+	client := http.DefaultClient
+	resp, err := client.Do(req)
+	if err != nil {
+		// Log the error and return an error
+		log.Println("Error while making request in GetOrderStatus_Tiqs API")
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		// Log the error and return an error
+		log.Println("Error while reading the body in byte array in GetOrderStatus_Tiqs API")
+		return "", err
+	}
+
+	// Converting into Response struct format
+	var orderBookResp orderBookAPIResp_Tiqs
+
+	err = json.Unmarshal(body, &orderBookResp)
+	if err != nil {
+		// Log the error and return an error
+		log.Println("Error while Unmarshaling the data in GetOrderStatus_Tiqs API")
+		return "", err
+	}
+
+	if orderBookResp.Status != apiResponseStatus.SUCCESS {
+		// If the API returned non-success status, return an error
+		return "", errors.New("API returned non-success status")
+	}
+
+	// Return the status of the order
+	status := orderBookResp.OrderBook[0].OrderStatus
+	return status, nil
+}

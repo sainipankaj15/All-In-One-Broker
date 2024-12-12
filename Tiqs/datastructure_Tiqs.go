@@ -51,6 +51,58 @@ type positionAPIResp_Tiqs struct {
 	NetPosition_Tiqss []netPosition_Tiqs `json:"data"`
 }
 
+type orderBookAPIResp_Tiqs struct {
+	OrderBook []struct {
+		Status                   string `json:"status"`
+		UserID                   string `json:"userID"`
+		AccountID                string `json:"accountID"`
+		Exchange                 string `json:"exchange"`
+		Symbol                   string `json:"symbol"`
+		ID                       string `json:"id"`
+		RejectReason             string `json:"rejectReason"`
+		Price                    string `json:"price"`
+		Quantity                 string `json:"quantity"`
+		MarketProtection         string `json:"marketProtection"`
+		Product                  string `json:"product"`
+		OrderStatus              string `json:"orderStatus"`
+		TransactionType          string `json:"transactionType"`
+		Order                    string `json:"order"`
+		FillShares               string `json:"fillShares"`
+		AveragePrice             string `json:"averagePrice"`
+		ExchangeOrderID          string `json:"exchangeOrderID"`
+		CancelQuantity           string `json:"cancelQuantity"`
+		Tags                     string `json:"tags"`
+		DisclosedQuantity        string `json:"disclosedQuantity"`
+		OrderTriggerPrice        string `json:"orderTriggerPrice"`
+		Retention                string `json:"retention"`
+		BookProfitPrice          string `json:"bookProfitPrice"`
+		BookLossPrice            string `json:"bookLossPrice"`
+		TrailingPrice            string `json:"trailingPrice"`
+		Amo                      string `json:"amo"`
+		PricePrecision           string `json:"pricePrecision"`
+		TickSize                 string `json:"tickSize"`
+		LotSize                  string `json:"lotSize"`
+		Token                    string `json:"token"`
+		TimeStamp                string `json:"timeStamp"`
+		OrderTime                string `json:"orderTime"`
+		ExchangeUpdateTime       string `json:"exchangeUpdateTime"`
+		SnoOrderDirection        string `json:"snoOrderDirection"`
+		SnoOrderID               string `json:"snoOrderID"`
+		PriceFactor              string `json:"priceFactor"`
+		Multiplier               string `json:"multiplier"`
+		DisplayName              string `json:"displayName"`
+		RequiredQuantity         string `json:"requiredQuantity"`
+		RequiredPrice            string `json:"requiredPrice"`
+		RequiredTriggerPrice     string `json:"requiredTriggerPrice"`
+		RequiredBookLossPrice    string `json:"requiredBookLossPrice"`
+		RequiredOriginalQuantity string `json:"requiredOriginalQuantity"`
+		RequiredOriginalPrice    string `json:"requiredOriginalPrice"`
+		OriginalTriggerPrice     string `json:"originalTriggerPrice"`
+		OriginalBookLossPrice    string `json:"originalBookLossPrice"`
+	} `json:"data"`
+	Status string `json:"status"`
+}
+
 type order_Tiqs struct {
 	Orders   int `json:"orders"`
 	Price    int `json:"price"`
