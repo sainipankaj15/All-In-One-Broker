@@ -72,10 +72,10 @@ var ExchangeToken = struct {
 var Lotsize = struct {
 	BANKNIFTY, NIFTY50, MIDCPNIFTY, FINNIFTY int
 }{
-	BANKNIFTY:  15,
-	NIFTY50:    25,
-	MIDCPNIFTY: 50,
-	FINNIFTY:   25,
+	BANKNIFTY:  30,
+	NIFTY50:    75,
+	MIDCPNIFTY: 120,
+	FINNIFTY:   65,
 }
 
 var StrikeGap = struct {
