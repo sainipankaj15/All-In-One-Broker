@@ -7,7 +7,7 @@ type readDataJsonTiqs struct {
 	APPID       string `json:"appId"`
 }
 
-type netPosition_Tiqs struct {
+type NetPosition_Tiqs struct {
 	AvgPrice                 string `json:"avgPrice"`
 	BreakEvenPrice           string `json:"breakEvenPrice"`
 	CarryForwarAvgPrice      string `json:"carryForwarAvgPrice"`
@@ -47,9 +47,9 @@ type netPosition_Tiqs struct {
 	UploadPrice              string `json:"uploadPrice"`
 }
 
-type positionAPIResp_Tiqs struct {
+type PositionAPIResp_Tiqs struct {
 	S                 string             `json:"status"`
-	NetPosition_Tiqss []netPosition_Tiqs `json:"data"`
+	NetPosition_Tiqss []NetPosition_Tiqs `json:"data"`
 }
 
 type orderBookAPIResp_Tiqs struct {

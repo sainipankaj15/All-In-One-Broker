@@ -85,7 +85,7 @@ func ExitAllPosition_Tiqs(UserId_Tiqs string) (string, error) {
 		position := positionAPIResp_Tiqs.NetPosition_Tiqss[i]
 
 		// Use a goroutine to exit positions concurrently
-		go func(pos netPosition_Tiqs) {
+		go func(pos NetPosition_Tiqs) {
 			// Extract buy and sell quantities as strings
 			buyQtyInString := position.DayBuyQty
 			sellQtyInString := position.DaySellQty
@@ -132,7 +132,7 @@ func ExitByPositionID_Tiqs(symbolExchToken string, productType string, UserId_Ti
 		position := positionAPIResp_Tiqs.NetPosition_Tiqss[i]
 
 		// Use a goroutine to exit positions concurrently
-		go func(pos netPosition_Tiqs) {
+		go func(pos NetPosition_Tiqs) {
 
 			// Check if the position is the one we want to exit
 			if position.Token == symbolExchToken {
