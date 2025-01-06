@@ -39,6 +39,7 @@ type netPosition_Tiqs struct {
 	Product                  string `json:"product"`
 	Qty                      string `json:"qty"`
 	RealisedPnL              string `json:"realisedPnL"`
+	UnRealisedPnL            string `json:"unRealisedPnl"`
 	Symbol                   string `json:"symbol"`
 	TickSize                 string `json:"tickSize"`
 	Token                    string `json:"token"`
