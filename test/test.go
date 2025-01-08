@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	tiqs "github.com/sainipankaj15/All-In-One-Broker/Tiqs"
+	utils "github.com/sainipankaj15/All-In-One-Broker/commanUtilsAcrossBroker"
 )
 
 func main() {
@@ -125,6 +126,9 @@ func main() {
 
 	// fmt.Println("a is ", a)
 	// time.Sleep(5000 * time.Second)
+
+	s := utils.GetCurrentISOTimeIST()
+	fmt.Println("s is ", s)
 
 	resp, err := tiqs.GetOrderStatus_Tiqs("24121200001162", tiqs.ADMIN_TIQS)
 

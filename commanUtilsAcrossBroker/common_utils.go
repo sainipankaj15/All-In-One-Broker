@@ -236,3 +236,18 @@ func RoundOff[T Number](a, b T) T {
 
 	return rounded
 }
+
+// GetCurrentISOTimeIST returns the current time in ISO 8601 format in IST
+func GetCurrentISOTimeIST() string {
+	// Load IST time zone (UTC+5:30)
+	istLocation, err := time.LoadLocation("Asia/Kolkata")
+	if err != nil {
+		panic("Failed to load IST time zone")
+	}
+
+	// Get the current time in IST
+	currentTimeIST := time.Now().In(istLocation)
+
+	// Format the time in ISO 8601 format
+	return currentTimeIST.Format("2006-01-02T15:04:05.000Z")
+}
