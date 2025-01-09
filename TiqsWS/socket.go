@@ -124,7 +124,7 @@ func (t *TiqsWSClient) readMessages() {
 				}
 				t.orderChannel <- update
 
-			} else if len(message) == FULLTICK_LENGTH { // tick update
+			} else if len(message) == ONLYLTPTICK_LENGTH { // tick update
 				tick := t.parseTick(message)
 				t.dataChannel <- tick
 
@@ -243,8 +243,8 @@ func (t *TiqsWSClient) subscribePreviousSubscriptions() {
 		for token := range t.subscriptions {
 			t.emit(SocketMessage{
 				Code: CODE_SUB,
-				Mode: MODE_FULL,
-				Full: []int{token},
+				Mode: MODE_LTP,
+				Ltp:  []int{token},
 			}, false)
 		}
 	}
@@ -256,8 +256,8 @@ func (t *TiqsWSClient) AddSubscription(token int) {
 	// subscribePreviousSubscriptions()
 	t.emit(SocketMessage{
 		Code: CODE_SUB,
-		Mode: MODE_FULL,
-		Full: []int{token},
+		Mode: MODE_LTP,
+		Ltp:  []int{token},
 	}, false)
 }
 
@@ -266,8 +266,8 @@ func (t *TiqsWSClient) RemoveSubscription(token int) {
 	delete(t.subscriptions, token)
 	t.emit(SocketMessage{
 		Code: CODE_UNSUB,
-		Mode: MODE_FULL,
-		Full: []int{token},
+		Mode: MODE_LTP,
+		Ltp:  []int{token},
 	}, false)
 }
 
@@ -324,26 +324,29 @@ func (t *TiqsWSClient) parseTick(data []byte) Tick {
 
 	// Create a new Tick struct and fill it with data from the byte slice
 	var tick = Tick{
-		Token:              bytesToInt32(data[0:4]),               // Token
-		LTP:                bytesToInt32(data[4:8]),               // Last traded price
-		NetChangeIndicator: int32(data[8]),                        // Net change indicator
-		NetChange:          bytesToInt32(data[9:13]),              // Net change
-		LTQ:                bytesToInt32(data[13:17]),             // Last traded quantity
-		AvgPrice:           bytesToInt32(data[17:21]),             // Average traded price
-		TotalBuyQuantity:   bytesToInt32(data[21:25]),             // Total buy quantity
-		TotalSellQuantity:  bytesToInt32(data[25:29]),             // Total sell quantity
-		Open:               bytesToInt32(data[29:33]),             // Open price
-		High:               bytesToInt32(data[33:37]),             // High price
-		Close:              bytesToInt32(data[37:41]),             // Close price
-		Low:                bytesToInt32(data[41:45]),             // Low price
-		Volume:             bytesToInt32(data[45:49]),             // Volume
-		LTT:                bytesToInt32(data[49:53]),             // Last traded time
-		Time:               bytesToInt32(data[53:57]) + 315513000, // Time
-		OI:                 bytesToInt32(data[57:61]),             // Open interest
-		OIDayHigh:          bytesToInt32(data[61:65]),             // Open interest day high
-		OIDayLow:           bytesToInt32(data[65:69]),             // Open interest day low
-		LowerLimit:         bytesToInt32(data[69:73]),             // Lower limit
-		UpperLimit:         bytesToInt32(data[73:77]),             // Upper limit
+		Token: bytesToInt32(data[0:4]), // Token
+		LTP:   bytesToInt32(data[4:8]), // Last traded price
+		/*
+			NetChangeIndicator: int32(data[8]),                        // Net change indicator
+			NetChange:          bytesToInt32(data[9:13]),              // Net change
+			LTQ:                bytesToInt32(data[13:17]),             // Last traded quantity
+			AvgPrice:           bytesToInt32(data[17:21]),             // Average traded price
+			TotalBuyQuantity:   bytesToInt32(data[21:25]),             // Total buy quantity
+			TotalSellQuantity:  bytesToInt32(data[25:29]),             // Total sell quantity
+			Open:               bytesToInt32(data[29:33]),             // Open price
+			High:               bytesToInt32(data[33:37]),             // High price
+			Close:              bytesToInt32(data[37:41]),             // Close price
+			Low:                bytesToInt32(data[41:45]),             // Low price
+			Volume:             bytesToInt32(data[45:49]),             // Volume
+			LTT:                bytesToInt32(data[49:53]),             // Last traded time
+
+			OI:                 bytesToInt32(data[57:61]),             // Open interest
+			OIDayHigh:          bytesToInt32(data[61:65]),             // Open interest day high
+			OIDayLow:           bytesToInt32(data[65:69]),             // Open interest day low
+			LowerLimit:         bytesToInt32(data[69:73]),             // Lower limit
+			UpperLimit:         bytesToInt32(data[73:77]),             // Upper limit
+		*/
+		Time: getCurrentUnixTimestamp(), // Time
 	}
 
 	// Return a Tick
@@ -440,4 +443,8 @@ func min(a, b int) int {
 		return a
 	}
 	return b
+}
+
+func getCurrentUnixTimestamp() int32 {
+	return int32(time.Now().Unix())
 }

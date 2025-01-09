@@ -35,49 +35,53 @@ type Tick struct {
 	Token int32
 	// Last traded price
 	LTP int32
-	// Net change indicator
-	NetChangeIndicator int32
-	// Net change
-	NetChange int32
-	// Last traded quantity
-	LTQ int32
-	// Average traded price
-	AvgPrice int32
-	// Total buy quantity
-	TotalBuyQuantity int32
-	// Total sell quantity
-	TotalSellQuantity int32
-	// Open price
-	Open int32
-	// High price
-	High int32
-	// Close price
-	Close int32
-	// Low price
-	Low int32
-	// Volume
-	Volume int32
-	// Last traded time
-	LTT int32
+
+	/*
+		// Net change indicator
+		NetChangeIndicator int32
+		// Net change
+		NetChange int32
+		// Last traded quantity
+		LTQ int32
+		// Average traded price
+		AvgPrice int32
+		// Total buy quantity
+		TotalBuyQuantity int32
+		// Total sell quantity
+		TotalSellQuantity int32
+		// Open price
+		Open int32
+		// High price
+		High int32
+		// Close price
+		Close int32
+		// Low price
+		Low int32
+		// Volume
+		Volume int32
+		// Last traded time
+		LTT int32
+
+		// Open interest
+		OI int32
+		// Open interest day high
+		OIDayHigh int32
+		// Open interest day low
+		OIDayLow int32
+		// Lower limit
+		LowerLimit int32
+		// Upper limit
+		UpperLimit int32
+	*/
 	// Time
 	Time int32
-	// Open interest
-	OI int32
-	// Open interest day high
-	OIDayHigh int32
-	// Open interest day low
-	OIDayLow int32
-	// Lower limit
-	LowerLimit int32
-	// Upper limit
-	UpperLimit int32
 }
 
 // SocketMessage represents the structure of a socket message : which we are going to send to the websocket
 type SocketMessage struct {
 	Code string `json:"code"`
 	Mode string `json:"mode"`
-	Full []int  `json:"full"`
+	Ltp  []int  `json:"ltp"`
 }
 
 // Define the structure to match the incoming JSON message

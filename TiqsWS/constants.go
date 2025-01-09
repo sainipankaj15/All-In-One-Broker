@@ -2,12 +2,14 @@ package tiqs_socket
 
 // Constants
 const (
-	CODE_SUB        = "sub"
-	CODE_UNSUB      = "unsub"
-	MODE_FULL       = "full"
-	maxRetries      = 20
-	BUFFER_SIZE     = 100000
-	FULLTICK_LENGTH = 197
+	CODE_SUB           = "sub"
+	CODE_UNSUB         = "unsub"
+	MODE_FULL          = "full"
+	MODE_LTP           = "ltp"
+	maxRetries         = 20
+	BUFFER_SIZE        = 100000
+	FULLTICK_LENGTH    = 197
+	ONLYLTPTICK_LENGTH = 13
 )
 
 // EndPoints
