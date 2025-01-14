@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"time"
 
 	tiqs "github.com/sainipankaj15/All-In-One-Broker/Tiqs"
 	tiqsSocket "github.com/sainipankaj15/All-In-One-Broker/TiqsWS"
@@ -144,18 +143,29 @@ func main() {
 
 	go func() {
 		for tick := range dataChannel {
-			fmt.Println(tick.LTP, tick.Token , tick.Time)
+			fmt.Println(tick.LTP, tick.Token, tick.Time)
 			// go priceMap.Set(tick.Token, TickData{LTP: tick.LTP, Timestamp: tick.Time})
 		}
 	}()
 
 	s := utils.GetCurrentISOTimeIST()
 	fmt.Println("s is ", s)
-	tiqsWs.AddSubscription(26009)
+	// tiqsWs.AddSubscription(tiqs.ExchangeToken.SENSEX)
+	tiqsWs.AddSubscription(824106)
+	tiqsWs.AddSubscription(824085)
+
 	// tiqsWs.AddSubscription(26010)
-	tiqsWs.AddSubscription(26000)
-	time.Sleep(5 * time.Second)
-	tiqsWs.RemoveSubscription(26000)
+	// tiqsWs.AddSubscription(26000)
+	// time.Sleep(5 * time.Second)
+	// tiqsWs.RemoveSubscription(26000)
+
+	optionChain, err := tiqs.GetOptionChainMap_Tiqs(tiqs.Index.SENSEX, "999001", "10")
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	PrintOptionChainCompact(optionChain)
 
 	select {}
 	// resp, err := tiqs.GetOrderStatus_Tiqs("24121200001162", tiqs.ADMIN_TIQS)
@@ -260,4 +270,22 @@ func main() {
 	// }
 
 	// select {}
+}
+
+func PrintOptionChainCompact(OptionChain map[string]map[string]tiqs.Symbol) {
+	log.Println("Strike Price | CE Name | CE Token | PE Name | PE Token")
+	log.Println("-------------|---------|----------|---------|----------")
+	for strikePrice, options := range OptionChain {
+		ceName, ceToken := "-", "-"
+		peName, peToken := "-", "-"
+
+		if ce, exists := options["CE"]; exists {
+			ceName, ceToken = ce.Name, ce.Token
+		}
+		if pe, exists := options["PE"]; exists {
+			peName, peToken = pe.Name, pe.Token
+		}
+
+		log.Println("Options Data", strikePrice, ceName, ceToken, peName, peToken)
+	}
 }
