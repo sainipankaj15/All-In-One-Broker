@@ -13,13 +13,14 @@ var Product = struct {
 }
 
 var Index = struct {
-	BANKNIFTY, NIFTY, MIDCPNIFTY, FINNIFTY, NIFTYNXT string
+	BANKNIFTY, NIFTY, MIDCPNIFTY, FINNIFTY, NIFTYNXT, SENSEX string
 }{
 	BANKNIFTY:  "BANKNIFTY",
 	NIFTY:      "NIFTY",
 	MIDCPNIFTY: "MIDCPNIFTY",
 	FINNIFTY:   "FINNIFTY",
 	NIFTYNXT:   "NIFTYNXT50",
+	SENSEX:     "SENSEX",
 }
 
 var OptionTypes = struct {
@@ -53,38 +54,42 @@ var OrderType = struct {
 }
 
 var Exchange = struct {
-	NSE, NFO string
+	NSE, NFO, BFO string
 }{
 	NSE: "NSE",
 	NFO: "NFO",
+	BFO: "BFO",
 }
 
 var ExchangeToken = struct {
-	BANKNIFTY, NIFTY50, MIDCPNIFTY, FINNIFTY, NIFTYNXT int
+	BANKNIFTY, NIFTY50, MIDCPNIFTY, FINNIFTY, NIFTYNXT, SENSEX int
 }{
 	BANKNIFTY:  26009,
 	NIFTY50:    26000,
 	MIDCPNIFTY: 26074,
 	FINNIFTY:   26037,
 	NIFTYNXT:   26013,
+	SENSEX:     999001,
 }
 
 var Lotsize = struct {
-	BANKNIFTY, NIFTY50, MIDCPNIFTY, FINNIFTY int
+	BANKNIFTY, NIFTY50, MIDCPNIFTY, FINNIFTY, SENSEX int
 }{
 	BANKNIFTY:  30,
 	NIFTY50:    75,
 	MIDCPNIFTY: 120,
 	FINNIFTY:   65,
+	SENSEX:     20,
 }
 
 var StrikeGap = struct {
-	BANKNIFTY, NIFTY50, MIDCPNIFTY, FINNIFTY int
+	BANKNIFTY, NIFTY50, MIDCPNIFTY, FINNIFTY, SENSEX int
 }{
 	BANKNIFTY:  100,
 	NIFTY50:    50,
 	MIDCPNIFTY: 25,
 	FINNIFTY:   50,
+	SENSEX:     100,
 }
 
 var apiResponseStatus = struct {
