@@ -129,6 +129,18 @@ func main() {
 	// fmt.Println("a is ", a)
 	// time.Sleep(5000 * time.Second)
 
+	date, err := tiqs.ClosestExpiryDate_Tiqs(tiqs.Index.BANKNIFTY, tiqs.ADMIN_TIQS)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println("a is ", date)
+
+	osp, _, _ := tiqs.GetOptionChain_Tiqs("26009", "10", date, tiqs.ADMIN_TIQS)
+	fmt.Println("%v", osp)
+	select {}
+
 	accessToken, appId, err := tiqs.ReadingAccessToken_Tiqs(tiqs.ADMIN_TIQS)
 	if err != nil {
 		log.Fatal("Error while reading access token")

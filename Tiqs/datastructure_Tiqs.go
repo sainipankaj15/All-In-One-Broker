@@ -210,3 +210,9 @@ type placeOrderResp_Tiqs struct {
 	} `json:"data"`
 	Status string `json:"status"`
 }
+
+type nseOptionChainResp struct {
+	Records struct {
+		ExpiryDates []string `json:"expiryDates"`
+	} `json:"records"`
+}

@@ -3,7 +3,9 @@ package tiqs
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"net/http"
 	"strings"
 	"time"
 
@@ -170,15 +172,30 @@ func ExitByPositionID_Tiqs(symbolExchToken string, productType string, UserId_Ti
 // expiry date in the list.
 func ClosestExpiryDate_Tiqs(indexName string, UserId_Tiqs string) (string, error) {
 
+	tiqsExpireDate := ""
+
 	resp, err := GetExpiryList_Tiqs(UserId_Tiqs)
 
-	if err != nil {
-		return "", err
+	// if err != nil {
+	// 	return "", err
+	// }
+	if err == nil && len(resp.Data[indexName]) != 0 {
+		tiqsExpireDate = resp.Data[indexName][0]
 	}
 
-	allExpiryList := resp.Data[indexName]
-	lastExpiryDate := allExpiryList[0]
-	return lastExpiryDate, nil
+	// allExpiryList := resp.Data[indexName]
+	// lastExpiryDate := allExpiryList[0]
+
+	dates, err := nseOptionChainFromNSE(indexName)
+	if err != nil {
+		fmt.Println("Error from NSE otpion chain")
+		return tiqsExpireDate, nil
+	}
+
+	// if dates[0] == allExpiryList[0] {
+	// 	return lastExpiryDate, nil
+	// }
+	return dates[0], nil
 }
 
 // NextExpiryDateOnExpiry_Tiqs retrieves the next expiry date for a given index,
@@ -326,4 +343,65 @@ func IsHoliday_Tiqs(UserID_Tiqs string) (bool, error) {
 	}
 
 	return false, nil // Today is not a holiday
+}
+
+func nseOptionChainFromNSE(symbol string) ([]string, error) {
+	// Create a new HTTP client
+	client := &http.Client{}
+
+	endpoint := fmt.Sprintf("https://www.nseindia.com/api/option-chain-indices?symbol=%v", symbol)
+	// Create a new request
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error creating request: %v", err)
+	}
+
+	req.Header.Add("authority", "www.nseindia.com")
+	req.Header.Add("accept", "*/*")
+	req.Header.Add("accept-language", "en-US,en;q=0.9")
+	req.Header.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+
+	// Make the request
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("error making request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading response body: %v", err)
+	}
+
+	// Create a variable of the response struct
+	var optionChainResp nseOptionChainResp
+
+	// Unmarshal the JSON response into the struct
+	err = json.Unmarshal(body, &optionChainResp)
+	if err != nil {
+		return nil, fmt.Errorf("error unmarshaling response: %v", err)
+	}
+
+	// Format all dates to have uppercase months
+	formattedDates := make([]string, len(optionChainResp.Records.ExpiryDates))
+	for i, date := range optionChainResp.Records.ExpiryDates {
+		formattedDates[i] = formatDateString(date)
+	}
+
+	return formattedDates, nil
+}
+
+func formatDateString(date string) string {
+	// Split the date string by "-"
+	parts := strings.Split(date, "-")
+	if len(parts) != 3 {
+		return date
+	}
+
+	// Capitalize the month part (parts[1])
+	month := strings.ToUpper(parts[1])
+
+	// Reconstruct the date string with uppercase month
+	return fmt.Sprintf("%s-%s-%s", parts[0], month, parts[2])
 }
