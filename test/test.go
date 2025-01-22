@@ -129,7 +129,7 @@ func main() {
 	// fmt.Println("a is ", a)
 	// time.Sleep(5000 * time.Second)
 
-	date, err := tiqs.ClosestExpiryDate_Tiqs(tiqs.Index.BANKNIFTY, tiqs.ADMIN_TIQS)
+	date, err := tiqs.ClosestExpiryDate_Tiqs(tiqs.Index.NIFTY, tiqs.ADMIN_TIQS)
 
 	if err != nil {
 		fmt.Println(err)

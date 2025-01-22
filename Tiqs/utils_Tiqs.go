@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -172,30 +173,41 @@ func ExitByPositionID_Tiqs(symbolExchToken string, productType string, UserId_Ti
 // expiry date in the list.
 func ClosestExpiryDate_Tiqs(indexName string, UserId_Tiqs string) (string, error) {
 
-	tiqsExpireDate := ""
+	// tiqsExpireDate := ""
 
 	resp, err := GetExpiryList_Tiqs(UserId_Tiqs)
 
-	// if err != nil {
-	// 	return "", err
-	// }
-	if err == nil && len(resp.Data[indexName]) != 0 {
-		tiqsExpireDate = resp.Data[indexName][0]
-	}
-
-	// allExpiryList := resp.Data[indexName]
-	// lastExpiryDate := allExpiryList[0]
-
-	dates, err := nseOptionChainFromNSE(indexName)
 	if err != nil {
-		fmt.Println("Error from NSE otpion chain")
-		return tiqsExpireDate, nil
+		return "", err
 	}
+	// if err == nil && len(resp.Data[indexName]) != 0 {
+	// 	tiqsExpireDate = resp.Data[indexName][0]
+	// }
+
+	allExpiryList := resp.Data[indexName]
+	lastExpiryDate := allExpiryList[0]
+
+	valid, err := isValidExpiryDate(lastExpiryDate)
+
+	if err != nil {
+		log.Println(err)
+		lastExpiryDate = allExpiryList[1]
+	}
+
+	if !valid {
+		log.Println("Invalid expiry date")
+		lastExpiryDate = allExpiryList[1]
+	}
+	// dates, err := nseOptionChainFromNSE(indexName)
+	// if err != nil {
+	// 	fmt.Println("Error from NSE otpion chain")
+	// 	return tiqsExpireDate, nil
+	// }
 
 	// if dates[0] == allExpiryList[0] {
 	// 	return lastExpiryDate, nil
 	// }
-	return dates[0], nil
+	return lastExpiryDate, nil
 }
 
 // NextExpiryDateOnExpiry_Tiqs retrieves the next expiry date for a given index,
@@ -404,4 +416,28 @@ func formatDateString(date string) string {
 
 	// Reconstruct the date string with uppercase month
 	return fmt.Sprintf("%s-%s-%s", parts[0], month, parts[2])
+}
+
+// isValidExpiryDate checks if the input date is a valid expiry date.
+// It returns a boolean indicating if the date is valid and an error if the date
+// is invalid. A valid expiry date is one that is not in the past.
+func isValidExpiryDate(inputDate string) (bool, error) {
+	// Parse the input date
+	date, err := time.Parse("02-Jan-2006", inputDate)
+	if err != nil {
+		return false, fmt.Errorf("invalid date format: %v", err)
+	}
+
+	// Get today's date
+	today := time.Now()
+
+	// Set today to beginning of day for accurate comparison
+	today = time.Date(today.Year(), today.Month(), today.Day(), 0, 0, 0, 0, today.Location())
+
+	// Compare dates
+	if date.Before(today) {
+		return false, nil
+	}
+
+	return true, nil
 }
