@@ -149,6 +149,7 @@ func (t *TiqsWSClient) closeAndReconnect() {
 		t.stopReadMessagesSig <- true
 		t.stopPingListenerSig <- true
 		t.CloseConnection()
+		time.Sleep(1 * time.Second)
 		t.connectSocket()
 
 		t.isReconnectRequested = false
@@ -293,7 +294,10 @@ func (t *TiqsWSClient) CloseConnection() {
 		return
 	}
 
-	t.socket.Close()
+	err := t.socket.Close()
+	if err != nil {
+		t.logger(ErrClosingConnection, err)
+	}
 	t.socket = nil
 
 	// Clear pending queue
