@@ -3,10 +3,9 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 
 	tiqs "github.com/sainipankaj15/All-In-One-Broker/Tiqs"
-	tiqsSocket "github.com/sainipankaj15/All-In-One-Broker/TiqsWS"
-	utils "github.com/sainipankaj15/All-In-One-Broker/commanUtilsAcrossBroker"
 )
 
 func main() {
@@ -129,55 +128,73 @@ func main() {
 	// fmt.Println("a is ", a)
 	// time.Sleep(5000 * time.Second)
 
-	date, err := tiqs.ClosestExpiryDate_Tiqs(tiqs.Index.NIFTY, tiqs.ADMIN_TIQS)
+	status, err := tiqs.ExitAllShortPosition_Tiqs("MP0007")
 
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	fmt.Println("a is ", date)
+	time.Sleep(5 * time.Second)
 
-	osp, _, _ := tiqs.GetOptionChain_Tiqs("26009", "10", date, tiqs.ADMIN_TIQS)
-	fmt.Println("%v", osp)
-	select {}
+	fmt.Println("status For Short is ", status)
 
-	accessToken, appId, err := tiqs.ReadingAccessToken_Tiqs(tiqs.ADMIN_TIQS)
-	if err != nil {
-		log.Fatal("Error while reading access token")
-	}
-
-	tiqsWs, err := tiqsSocket.NewTiqsWebSocket(appId, accessToken, true)
-	if err != nil {
-		log.Fatal("Error while connecting tiqs socket")
-	}
-
-	dataChannel := tiqsWs.GetDataChannel()
-
-	go func() {
-		for tick := range dataChannel {
-			fmt.Println(tick.LTP, tick.Token, tick.Time)
-			// go priceMap.Set(tick.Token, TickData{LTP: tick.LTP, Timestamp: tick.Time})
-		}
-	}()
-
-	s := utils.GetCurrentISOTimeIST()
-	fmt.Println("s is ", s)
-	// tiqsWs.AddSubscription(tiqs.ExchangeToken.SENSEX)
-	tiqsWs.AddSubscription(824106)
-	tiqsWs.AddSubscription(824085)
-
-	// tiqsWs.AddSubscription(26010)
-	// tiqsWs.AddSubscription(26000)
-	// time.Sleep(5 * time.Second)
-	// tiqsWs.RemoveSubscription(26000)
-
-	optionChain, err := tiqs.GetOptionChainMap_Tiqs(tiqs.Index.SENSEX, "999001", "10")
+	status, err = tiqs.ExitAllLongPosition_Tiqs("MP0007")
 
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	PrintOptionChainCompact(optionChain)
+	fmt.Println("status for long is ", status)
+
+	// date, err := tiqs.ClosestExpiryDate_Tiqs(tiqs.Index.NIFTY, tiqs.ADMIN_TIQS)
+
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
+
+	// fmt.Println("a is ", date)
+
+	// osp, _, _ := tiqs.GetOptionChain_Tiqs("26009", "10", date, tiqs.ADMIN_TIQS)
+	// fmt.Println("%v", osp)
+	// select {}
+
+	// accessToken, appId, err := tiqs.ReadingAccessToken_Tiqs(tiqs.ADMIN_TIQS)
+	// if err != nil {
+	// 	log.Fatal("Error while reading access token")
+	// }
+
+	// tiqsWs, err := tiqsSocket.NewTiqsWebSocket(appId, accessToken, true)
+	// if err != nil {
+	// 	log.Fatal("Error while connecting tiqs socket")
+	// }
+
+	// dataChannel := tiqsWs.GetDataChannel()
+
+	// go func() {
+	// 	for tick := range dataChannel {
+	// 		fmt.Println(tick.LTP, tick.Token, tick.Time)
+	// 		// go priceMap.Set(tick.Token, TickData{LTP: tick.LTP, Timestamp: tick.Time})
+	// 	}
+	// }()
+
+	// s := utils.GetCurrentISOTimeIST()
+	// fmt.Println("s is ", s)
+	// // tiqsWs.AddSubscription(tiqs.ExchangeToken.SENSEX)
+	// tiqsWs.AddSubscription(824106)
+	// tiqsWs.AddSubscription(824085)
+
+	// // tiqsWs.AddSubscription(26010)
+	// // tiqsWs.AddSubscription(26000)
+	// // time.Sleep(5 * time.Second)
+	// // tiqsWs.RemoveSubscription(26000)
+
+	// optionChain, err := tiqs.GetOptionChainMap_Tiqs(tiqs.Index.SENSEX, "999001", "10")
+
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
+
+	// PrintOptionChainCompact(optionChain)
 
 	select {}
 	// resp, err := tiqs.GetOrderStatus_Tiqs("24121200001162", tiqs.ADMIN_TIQS)

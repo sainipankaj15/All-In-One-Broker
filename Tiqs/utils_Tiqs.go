@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"math"
 	"net/http"
 	"strings"
 	"time"
@@ -103,11 +104,21 @@ func ExitAllPosition_Tiqs(UserId_Tiqs string) (string, error) {
 			if diff > 0 {
 				// Long position: place a sell order to exit
 				qtyInString := typeConversion.IntToString(diff)
-				go OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "S", position.Product, UserId_Tiqs)
+				_, err := OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "S", position.Product, UserId_Tiqs)
+				if err != nil {
+					log.Println(err)
+				}
 			} else if diff < 0 {
+				// Make Qty postive because qty cannot be negative
+				// we do only in negative qty case
+				diff = int(math.Abs(float64(diff)))
+
 				// Short position: place a buy order to exit
 				qtyInString := typeConversion.IntToString(diff)
-				go OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "B", position.Product, UserId_Tiqs)
+				_, err := OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "B", position.Product, UserId_Tiqs)
+				if err != nil {
+					log.Println(err)
+				}
 			}
 
 		}(position)
@@ -155,11 +166,26 @@ func ExitByPositionID_Tiqs(symbolExchToken string, productType string, UserId_Ti
 					if diff > 0 {
 						// Long position: place a sell order to exit
 						qtyInString := typeConversion.IntToString(diff)
-						OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "S", position.Product, UserId_Tiqs)
+						_, err := OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "S", position.Product, UserId_Tiqs)
+						if err != nil {
+							log.Println(err)
+						}
+
 					} else if diff < 0 {
+
+						// Make Qty postive because qty cannot be negative
+						// we do only in negative qty case
+						diff = int(math.Abs(float64(diff)))
+
 						// Short position: place a buy order to exit
 						qtyInString := typeConversion.IntToString(diff)
-						OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "B", position.Product, UserId_Tiqs)
+
+						_, err := OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "B", position.Product, UserId_Tiqs)
+
+						if err != nil {
+							log.Println(err)
+						}
+
 					}
 				}
 			}
@@ -440,4 +466,92 @@ func isValidExpiryDate(inputDate string) (bool, error) {
 	}
 
 	return true, nil
+}
+
+// ExitAllShortPosition_Tiqs exits all open short positions for a given user by placing market orders in the opposite direction.
+// It takes the UserID_Tiqs as a parameter and returns a success message and an error if something goes wrong.
+func ExitAllShortPosition_Tiqs(UserId_Tiqs string) (string, error) {
+
+	// Fetch current positions using the Position API
+	positionAPIResp_Tiqs, err := PositionApi_Tiqs(UserId_Tiqs)
+	if err != nil {
+		return "failed", err
+	}
+
+	// Iterate over all net positions
+	for i := 0; i < len(positionAPIResp_Tiqs.NetPosition_Tiqss); i++ {
+		position := positionAPIResp_Tiqs.NetPosition_Tiqss[i]
+
+		// Use a goroutine to exit positions concurrently
+		go func(pos NetPosition_Tiqs) {
+			// Extract buy and sell quantities as strings
+			buyQtyInString := position.DayBuyQty
+			sellQtyInString := position.DaySellQty
+
+			// Convert quantities to integers
+			buyQty := typeConversion.StringToInt(buyQtyInString)
+			sellQty := typeConversion.StringToInt(sellQtyInString)
+
+			// Calculate the difference to determine net position
+			diff := buyQty - sellQty
+
+			if diff < 0 {
+
+				// Make Qty postive because qty cannot be negative
+				// we do only in negative qty case
+				diff = int(math.Abs(float64(diff)))
+
+				// Short position: place a buy order to exit
+				qtyInString := typeConversion.IntToString(diff)
+				_, err := OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "B", position.Product, UserId_Tiqs)
+				if err != nil {
+					fmt.Println("Error in exiting short position", err)
+				}
+			}
+
+		}(position)
+	}
+
+	return "success", nil
+}
+
+// ExitAllLongPosition_Tiqs exits all open Long positions for a given user by placing market orders in the opposite direction.
+// It takes the UserID_Tiqs as a parameter and returns a success message and an error if something goes wrong.
+func ExitAllLongPosition_Tiqs(UserId_Tiqs string) (string, error) {
+
+	// Fetch current positions using the Position API
+	positionAPIResp_Tiqs, err := PositionApi_Tiqs(UserId_Tiqs)
+	if err != nil {
+		return "failed", err
+	}
+
+	// Iterate over all net positions
+	for i := 0; i < len(positionAPIResp_Tiqs.NetPosition_Tiqss); i++ {
+		position := positionAPIResp_Tiqs.NetPosition_Tiqss[i]
+
+		// Use a goroutine to exit positions concurrently
+		go func(pos NetPosition_Tiqs) {
+			// Extract buy and sell quantities as strings
+			buyQtyInString := position.DayBuyQty
+			sellQtyInString := position.DaySellQty
+
+			// Convert quantities to integers
+			buyQty := typeConversion.StringToInt(buyQtyInString)
+			sellQty := typeConversion.StringToInt(sellQtyInString)
+
+			// Calculate the difference to determine net position
+			diff := buyQty - sellQty
+
+			if diff > 0 {
+				// Long position: place a sell order to exit
+				qtyInString := typeConversion.IntToString(diff)
+				_, err := OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "S", position.Product, UserId_Tiqs)
+				if err != nil {
+					fmt.Println("Error in exiting long position", err)
+				}
+			}
+		}(position)
+	}
+
+	return "success", nil
 }
