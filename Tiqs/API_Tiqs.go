@@ -551,7 +551,7 @@ func GetOrderStatus_Tiqs(orderID string, UserID_Tiqs string) (string, error) {
 	}
 
 	// Converting into Response struct format
-	var orderBookResp orderBookAPIResp_Tiqs
+	var orderBookResp OrderBookAPIResp_Tiqs
 
 	err = json.Unmarshal(body, &orderBookResp)
 	if err != nil {
@@ -568,4 +568,58 @@ func GetOrderStatus_Tiqs(orderID string, UserID_Tiqs string) (string, error) {
 	// Return the status of the order
 	status := orderBookResp.OrderBook[0].OrderStatus
 	return status, nil
+}
+
+// OrderBookApi_Tiqs returns the response of the OrderBook API. It takes the UserID of the user as an argument and returns the response and an error.
+func OrderBookApi_Tiqs(UserID_Tiqs string) (OrderBookAPIResp_Tiqs, error) {
+
+	// Reading accessToken and APPID for fetching the APIs
+	AccessToken, APPID, err := ReadingAccessToken_Tiqs(UserID_Tiqs)
+	if err != nil {
+		// Log the error and return an error
+		log.Println("Error while getting acces token from file")
+		return OrderBookAPIResp_Tiqs{}, err
+	}
+
+	req, err := http.NewRequest("GET", orderBookURL, nil)
+	if err != nil {
+		// Log the error and return an error
+		log.Println("Error while making request in OrderBook API request")
+		return OrderBookAPIResp_Tiqs{}, err
+	}
+
+	// Add the Bearer token to the request header
+	req.Header.Add("token", AccessToken)
+	req.Header.Add("appId", APPID)
+
+	// Make the request
+	client := http.DefaultClient
+	resp, err := client.Do(req)
+	if err != nil {
+		// Log the error and return an error
+		log.Println("Error while making request in OrderBook API")
+		return OrderBookAPIResp_Tiqs{}, err
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		// Log the error and return an error
+		log.Println("Error while reading the body in byte array in OrderBook API")
+		return OrderBookAPIResp_Tiqs{}, err
+	}
+
+	// Converting into Response struct format
+	var orderBookResp OrderBookAPIResp_Tiqs
+
+	err = json.Unmarshal(body, &orderBookResp)
+	if err != nil {
+		// Log the error and return an error
+		log.Println("Error while Unmarshaling the data in Position API")
+		return OrderBookAPIResp_Tiqs{}, err
+	}
+
+	// Return the response and nil error
+	return orderBookResp, nil
 }

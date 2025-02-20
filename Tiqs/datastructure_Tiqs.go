@@ -52,7 +52,7 @@ type PositionAPIResp_Tiqs struct {
 	NetPosition_Tiqss []NetPosition_Tiqs `json:"data"`
 }
 
-type orderBookAPIResp_Tiqs struct {
+type OrderBookAPIResp_Tiqs struct {
 	OrderBook []struct {
 		Status                   string `json:"status"`
 		UserID                   string `json:"userID"`

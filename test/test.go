@@ -128,23 +128,25 @@ func main() {
 	// fmt.Println("a is ", a)
 	// time.Sleep(5000 * time.Second)
 
-	status, err := tiqs.ExitAllShortPosition_Tiqs("MP0007")
+	status, err := tiqs.OrderBookApi_Tiqs("FB5650")
 
 	if err != nil {
 		fmt.Println(err)
 	}
+
+	fmt.Printf("status is %+v", status)
 
 	time.Sleep(5 * time.Second)
 
-	fmt.Println("status For Short is ", status)
+	// fmt.Println("status For Short is ", status)
 
-	status, err = tiqs.ExitAllLongPosition_Tiqs("MP0007")
+	// status, err = tiqs.ExitAllLongPosition_Tiqs("MP0007")
 
-	if err != nil {
-		fmt.Println(err)
-	}
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
 
-	fmt.Println("status for long is ", status)
+	// fmt.Println("status for long is ", status)
 
 	// date, err := tiqs.ClosestExpiryDate_Tiqs(tiqs.Index.NIFTY, tiqs.ADMIN_TIQS)
 
