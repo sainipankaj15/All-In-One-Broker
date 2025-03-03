@@ -1,12 +1,13 @@
 package jainam
 
-type placeOrderResp_Jainam []struct {
+type placeOrderResp_Jainam struct {
 	Status  string `json:"status"`
 	Message string `json:"message"`
 	Result  []struct {
 		RequestTime string `json:"requestTime"`
 		OrderNo     string `json:"orderNo"`
 	} `json:"result"`
+	InfoMessage any `json:"infoMessage"`
 }
 
 type placeOrderReq_Jainam struct {

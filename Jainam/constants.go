@@ -95,21 +95,21 @@ var StrikeGap = struct {
 var apiResponseStatus = struct {
 	SUCCESS, FAILURE string
 }{
-	SUCCESS: "success",
+	SUCCESS: "Ok",
 	FAILURE: "failure",
 }
 
 // Tiqs Base URL
 var baseURL = "https://protrade.jainam.in"
 
-var positionUrl = baseURL + "/api/po-rest/positions	"
-var orderBookURL = baseURL + "/api/od-rest/info/orderbook	"
-var tradeBookURL = baseURL + "/api/od-rest/info/tradebook	"
+var positionUrl = baseURL + "/api/po-rest/positions"
+var orderBookURL = baseURL + "/api/od-rest/info/orderbook"
+var tradeBookURL = baseURL + "/api/od-rest/info/tradebook"
 var placeOrderUrl = baseURL + "/api/od-rest/orders/execute"
 
 type orderStatus string
 
-var OrderStatues = struct {
+var OrderStatuses = struct {
 	OPEN, CANCELED, COMPLETE, REJECTED, PENDING orderStatus
 }{
 	OPEN:     "OPEN",

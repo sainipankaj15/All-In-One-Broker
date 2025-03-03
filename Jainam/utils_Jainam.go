@@ -2,6 +2,7 @@ package jainam
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 )
 
@@ -17,6 +18,7 @@ func ReadingAccessToken_Jainam(userID_Jainam string) (string, string, error) {
 
 	err = json.Unmarshal(fileContent, &fileData)
 	if err != nil {
+		fmt.Println("Error while unmarshalling JSON in ReadingAccessToken_Jainam()")
 		return "", "", err
 	}
 
