@@ -33,8 +33,8 @@ var OptionTypes = struct {
 var OrderSide = struct {
 	BUY, SELL string
 }{
-	BUY:  "B",
-	SELL: "S",
+	BUY:  "BUY",
+	SELL: "SELL",
 }
 
 var PositionSide = struct {
@@ -44,7 +44,7 @@ var PositionSide = struct {
 	SHORT: -1,
 }
 
-var OrderType = struct {
+var PriceType = struct {
 	LIMIT, MARKET, STOP, STOP_LIMIT string
 }{
 	LIMIT:      "L",
@@ -117,4 +117,13 @@ var OrderStatuses = struct {
 	COMPLETE: "COMPLETE",
 	REJECTED: "REJECTED",
 	PENDING:  "PENDING",
+}
+
+var OrderType = struct {
+	REGULAR, BO, CO, AMO string
+}{
+	REGULAR: "Regular",
+	BO:      "Bracket",
+	CO:      "Cover",
+	AMO:     "AMO",
 }

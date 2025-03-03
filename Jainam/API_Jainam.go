@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-func OrderPlaceMarket_Jainam(exchange, token, quantity, transSide, productType, userID_Jainam string) (placeOrderResp_Jainam, error) {
+func OrderPlaceMarket_Jainam(exchange, token, quantity, priceType, orderType, transSide, productType, userID_Jainam string) (placeOrderResp_Jainam, error) {
 	// Get access token
 	_, accessTokenofUser, err := ReadingAccessToken_Jainam(userID_Jainam)
 	if err != nil {
@@ -23,14 +23,14 @@ func OrderPlaceMarket_Jainam(exchange, token, quantity, transSide, productType, 
 		Price:         "",
 		Product:       productType,
 		TransType:     transSide,
-		PriceType:     "MKT", // Changed from OrderType.MARKET to "MKT"
+		PriceType:     priceType, // Changed from OrderType.MARKET to "MKT"
 		TriggerPrice:  0,
 		Ret:           "DAY",
 		DisclosedQty:  0,
 		MktProtection: "",
 		Target:        0,
 		StopLoss:      0,
-		OrderType:     "Regular",
+		OrderType:     orderType,
 		Token:         token,
 	}
 

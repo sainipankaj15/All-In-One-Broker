@@ -20,9 +20,11 @@ func main() {
 		resp, err := jainam.OrderPlaceMarket_Jainam(
 			jainam.Exchange.BFO,
 			token,
-			"20",
-			"SELL",
-			"NRML",
+			"40",
+			jainam.PriceType.MARKET,
+			jainam.OrderType.REGULAR,
+			jainam.OrderSide.BUY,
+			string(jainam.Product.MARGIN),
 			"DK2100311",
 		)
 
