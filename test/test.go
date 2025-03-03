@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
-	"time"
 
+	jainam "github.com/sainipankaj15/All-In-One-Broker/Jainam"
 	tiqs "github.com/sainipankaj15/All-In-One-Broker/Tiqs"
 )
 
@@ -13,6 +13,27 @@ func main() {
 	// time.Sleep(5 * time.Second)
 
 	// allInOneBroker.ExitAllPosition_Tiqs("ABCD12")
+
+	tokenList := []string{"857608"}
+
+	for _, token := range tokenList {
+		resp, err := jainam.OrderPlaceMarket_Jainam(
+			jainam.Exchange.BFO,
+			token,
+			"40",
+			jainam.PriceType.MARKET,
+			jainam.OrderType.REGULAR,
+			jainam.OrderSide.BUY,
+			string(jainam.Product.MARGIN),
+			"DK2100311",
+		)
+
+		if err != nil {
+			log.Println("Error while placing order")
+			log.Println(err)
+		}
+		fmt.Println(resp)
+	}
 
 	// token := []int{1, 36605}
 
@@ -128,15 +149,15 @@ func main() {
 	// fmt.Println("a is ", a)
 	// time.Sleep(5000 * time.Second)
 
-	status, err := tiqs.OrderBookApi_Tiqs("FB5650")
+	//	status, err := tiqs.OrderBookApi_Tiqs("FB5650")
 
-	if err != nil {
-		fmt.Println(err)
-	}
+	//	if err != nil {
+	//		fmt.Println(err)
+	//	}
 
-	fmt.Printf("status is %+v", status)
+	//	fmt.Printf("status is %+v", status)
 
-	time.Sleep(5 * time.Second)
+	//	time.Sleep(5 * time.Second)
 
 	// fmt.Println("status For Short is ", status)
 
