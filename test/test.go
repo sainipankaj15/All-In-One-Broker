@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	jainam "github.com/sainipankaj15/All-In-One-Broker/Jainam"
 	tiqs "github.com/sainipankaj15/All-In-One-Broker/Tiqs"
+	xts "github.com/sainipankaj15/All-In-One-Broker/XTS"
 )
 
 func main() {
@@ -14,18 +14,17 @@ func main() {
 
 	// allInOneBroker.ExitAllPosition_Tiqs("ABCD12")
 
-	tokenList := []string{"857608"}
+	tokenList := []string{"50122"}
 
 	for _, token := range tokenList {
-		resp, err := jainam.OrderPlaceMarket_Jainam(
-			jainam.Exchange.BFO,
+		resp, err := xts.OrderPlaceMarket_XTS(
+			xts.Exchange.NSEFO,
 			token,
-			"40",
-			jainam.PriceType.MARKET,
-			jainam.OrderType.REGULAR,
-			jainam.OrderSide.BUY,
-			string(jainam.Product.MARGIN),
-			"DK2100311",
+			"75",
+			xts.PriceType.MARKET,
+			xts.OrderSide.BUY,
+			string(xts.Product.MARGIN),
+			xts.ADMIN_XTS,
 		)
 
 		if err != nil {
