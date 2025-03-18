@@ -53,9 +53,9 @@ func ReadingAccessToken_Tiqs(userID_Tiqs string) (string, string, error) {
 // If the position is found, it returns the quantity in string format.
 // If the position is not found, it returns an empty string.
 // If there is an error, it returns an error.
-func CurrentQtyForAnySymbol_Tiqs(symbolExchToken string, productType string, UserId_Tiqs string) (string, error) {
+func CurrentQtyForAnySymbol_Tiqs(symbolExchToken string, productType string, UserId_Tiqs string, Variety int) (string, error) {
 
-	positionAPIResp_Tiqs, err := PositionApi_Tiqs(UserId_Tiqs)
+	positionAPIResp_Tiqs, err := PositionApi_Tiqs(UserId_Tiqs, Variety)
 
 	if err != nil {
 		return "", err
@@ -76,10 +76,10 @@ func CurrentQtyForAnySymbol_Tiqs(symbolExchToken string, productType string, Use
 
 // ExitAllPosition_Tiqs exits all open positions for a given user by placing market orders in the opposite direction.
 // It takes the UserID_Tiqs as a parameter and returns a success message and an error if something goes wrong.
-func ExitAllPosition_Tiqs(UserId_Tiqs string) (string, error) {
+func ExitAllPosition_Tiqs(UserId_Tiqs string, Variety int) (string, error) {
 
 	// Fetch current positions using the Position API
-	positionAPIResp_Tiqs, err := PositionApi_Tiqs(UserId_Tiqs)
+	positionAPIResp_Tiqs, err := PositionApi_Tiqs(UserId_Tiqs, Variety)
 	if err != nil {
 		return "failed", err
 	}
@@ -132,10 +132,9 @@ func ExitAllPosition_Tiqs(UserId_Tiqs string) (string, error) {
 // It fetches the current positions using the Position API and iterates over all the positions.
 // If the position is found, it places a market order in the opposite direction to exit the position.
 // If there is an error, it returns an error.
-func ExitByPositionID_Tiqs(symbolExchToken string, productType string, UserId_Tiqs string) error {
-
+func ExitByPositionID_Tiqs(symbolExchToken string, productType string, UserId_Tiqs string, Variety int) error {
 	// Fetch current positions using the Position API
-	positionAPIResp_Tiqs, err := PositionApi_Tiqs(UserId_Tiqs)
+	positionAPIResp_Tiqs, err := PositionApi_Tiqs(UserId_Tiqs, Variety)
 
 	if err != nil {
 		return err
@@ -470,10 +469,10 @@ func isValidExpiryDate(inputDate string) (bool, error) {
 
 // ExitAllShortPosition_Tiqs exits all open short positions for a given user by placing market orders in the opposite direction.
 // It takes the UserID_Tiqs as a parameter and returns a success message and an error if something goes wrong.
-func ExitAllShortPosition_Tiqs(UserId_Tiqs string) (string, error) {
+func ExitAllShortPosition_Tiqs(UserId_Tiqs string, Variety int) (string, error) {
 
 	// Fetch current positions using the Position API
-	positionAPIResp_Tiqs, err := PositionApi_Tiqs(UserId_Tiqs)
+	positionAPIResp_Tiqs, err := PositionApi_Tiqs(UserId_Tiqs, Variety)
 	if err != nil {
 		return "failed", err
 	}
@@ -517,10 +516,10 @@ func ExitAllShortPosition_Tiqs(UserId_Tiqs string) (string, error) {
 
 // ExitAllLongPosition_Tiqs exits all open Long positions for a given user by placing market orders in the opposite direction.
 // It takes the UserID_Tiqs as a parameter and returns a success message and an error if something goes wrong.
-func ExitAllLongPosition_Tiqs(UserId_Tiqs string) (string, error) {
+func ExitAllLongPosition_Tiqs(UserId_Tiqs string, Variety int) (string, error) {
 
 	// Fetch current positions using the Position API
-	positionAPIResp_Tiqs, err := PositionApi_Tiqs(UserId_Tiqs)
+	positionAPIResp_Tiqs, err := PositionApi_Tiqs(UserId_Tiqs, Variety)
 	if err != nil {
 		return "failed", err
 	}
@@ -562,16 +561,38 @@ func ExitAllLongPosition_Tiqs(UserId_Tiqs string) (string, error) {
 // 2 - Prop orders
 //
 // The returned endpoint is a string that can be used to make a POST request for placing orders.
-func placeOrderEndPoint(OrderVariety int) string {
-	switch OrderVariety {
-	case 1:
-		// 1 is for normal orders
+func placeOrderEndPoint(Variety int) string {
+	switch Variety {
+	case OrderVariety.COMMON:
+		// 1 is for normal user
 		return placeOrderUrl
-	case 2:
-		// 2 is for prop orders
+	case OrderVariety.PROP:
+		// 2 is for prop user
 		return basePropURL + "/order/regular"
 	default:
 		// Default to normal orders if OrderVariety is not recognized
 		return placeOrderUrl
+	}
+}
+
+// positionApiEndPoint returns the correct endpoint for fetching positions based on the given Variety.
+// Variety is an integer that can be one of the following values:
+// 1 - Normal users
+// 2 - Prop users
+//
+// The returned endpoint is a string that can be used to make a POST request for fetching positions.
+func positionApiEndPoint(Variety int) string {
+
+	// Switch on the given variety to return the correct endpoint
+	switch Variety {
+	case OrderVariety.COMMON:
+		// 1 is for normal user
+		return positionUrl
+	case OrderVariety.PROP:
+		// 2 is for prop users
+		return basePropURL + "/user/position"
+	default:
+		// Default to normal users if variety is not recognized
+		return positionUrl
 	}
 }

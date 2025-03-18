@@ -11,7 +11,7 @@ import (
 )
 
 // PositionApi_Tiqs returns the response of the position API. It takes the UserID of the user as an argument and returns the response and an error.
-func PositionApi_Tiqs(UserID_Tiqs string) (PositionAPIResp_Tiqs, error) {
+func PositionApi_Tiqs(UserID_Tiqs string, PositionVariety int) (PositionAPIResp_Tiqs, error) {
 
 	// Reading accessToken and APPID for fetching the APIs
 	AccessToken, APPID, err := ReadingAccessToken_Tiqs(UserID_Tiqs)
@@ -21,7 +21,9 @@ func PositionApi_Tiqs(UserID_Tiqs string) (PositionAPIResp_Tiqs, error) {
 		return PositionAPIResp_Tiqs{}, err
 	}
 
-	req, err := http.NewRequest("GET", positionUrl, nil)
+	url := positionApiEndPoint(PositionVariety)
+
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		// Log the error and return an error
 		log.Println("Error while making request in Position API request")

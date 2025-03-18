@@ -5,7 +5,6 @@ import (
 	"log"
 
 	tiqs "github.com/sainipankaj15/All-In-One-Broker/Tiqs"
-	xts "github.com/sainipankaj15/All-In-One-Broker/XTS"
 )
 
 func main() {
@@ -14,25 +13,34 @@ func main() {
 
 	// allInOneBroker.ExitAllPosition_Tiqs("ABCD12")
 
-	tokenList := []string{"50122"}
+	a, err := tiqs.PositionApi_Tiqs("90292", 2)
 
-	for _, token := range tokenList {
-		resp, err := xts.OrderPlaceMarket_XTS(
-			xts.Exchange.NSEFO,
-			token,
-			"75",
-			xts.PriceType.MARKET,
-			xts.OrderSide.BUY,
-			string(xts.Product.MARGIN),
-			xts.ADMIN_XTS,
-		)
-
-		if err != nil {
-			log.Println("Error while placing order")
-			log.Println(err)
-		}
-		fmt.Println(resp)
+	if err != nil {
+		log.Println("Error while getting position API response")
+		log.Println(err)
 	}
+
+	fmt.Println(a)
+
+	// tokenList := []string{"50122"}
+
+	// for _, token := range tokenList {
+	// 	resp, err := xts.OrderPlaceMarket_XTS(
+	// 		xts.Exchange.NSEFO,
+	// 		token,
+	// 		"75",
+	// 		xts.PriceType.MARKET,
+	// 		xts.OrderSide.BUY,
+	// 		string(xts.Product.MARGIN),
+	// 		xts.ADMIN_XTS,
+	// 	)
+
+	// 	if err != nil {
+	// 		log.Println("Error while placing order")
+	// 		log.Println(err)
+	// 	}
+	// 	fmt.Println(resp)
+	// }
 
 	// token := []int{1, 36605}
 
