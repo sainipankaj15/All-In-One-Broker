@@ -104,7 +104,7 @@ func ExitAllPosition_Tiqs(UserId_Tiqs string) (string, error) {
 			if diff > 0 {
 				// Long position: place a sell order to exit
 				qtyInString := typeConversion.IntToString(diff)
-				_, err := OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "S", position.Product, UserId_Tiqs)
+				_, err := OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "S", position.Product, UserId_Tiqs, OrderVariety.COMMON)
 				if err != nil {
 					log.Println(err)
 				}
@@ -115,7 +115,7 @@ func ExitAllPosition_Tiqs(UserId_Tiqs string) (string, error) {
 
 				// Short position: place a buy order to exit
 				qtyInString := typeConversion.IntToString(diff)
-				_, err := OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "B", position.Product, UserId_Tiqs)
+				_, err := OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "B", position.Product, UserId_Tiqs, OrderVariety.COMMON)
 				if err != nil {
 					log.Println(err)
 				}
@@ -166,7 +166,7 @@ func ExitByPositionID_Tiqs(symbolExchToken string, productType string, UserId_Ti
 					if diff > 0 {
 						// Long position: place a sell order to exit
 						qtyInString := typeConversion.IntToString(diff)
-						_, err := OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "S", position.Product, UserId_Tiqs)
+						_, err := OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "S", position.Product, UserId_Tiqs, OrderVariety.COMMON)
 						if err != nil {
 							log.Println(err)
 						}
@@ -180,7 +180,7 @@ func ExitByPositionID_Tiqs(symbolExchToken string, productType string, UserId_Ti
 						// Short position: place a buy order to exit
 						qtyInString := typeConversion.IntToString(diff)
 
-						_, err := OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "B", position.Product, UserId_Tiqs)
+						_, err := OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "B", position.Product, UserId_Tiqs, OrderVariety.COMMON)
 
 						if err != nil {
 							log.Println(err)
@@ -503,7 +503,7 @@ func ExitAllShortPosition_Tiqs(UserId_Tiqs string) (string, error) {
 
 				// Short position: place a buy order to exit
 				qtyInString := typeConversion.IntToString(diff)
-				_, err := OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "B", position.Product, UserId_Tiqs)
+				_, err := OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "B", position.Product, UserId_Tiqs, OrderVariety.COMMON)
 				if err != nil {
 					fmt.Println("Error in exiting short position", err)
 				}
@@ -545,7 +545,7 @@ func ExitAllLongPosition_Tiqs(UserId_Tiqs string) (string, error) {
 			if diff > 0 {
 				// Long position: place a sell order to exit
 				qtyInString := typeConversion.IntToString(diff)
-				_, err := OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "S", position.Product, UserId_Tiqs)
+				_, err := OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "S", position.Product, UserId_Tiqs, OrderVariety.COMMON)
 				if err != nil {
 					fmt.Println("Error in exiting long position", err)
 				}
@@ -554,4 +554,24 @@ func ExitAllLongPosition_Tiqs(UserId_Tiqs string) (string, error) {
 	}
 
 	return "success", nil
+}
+
+// placeOrderEndPoint returns the correct endpoint for placing orders based on the given OrderVariety.
+// OrderVariety is an integer that can be one of the following values:
+// 1 - Normal orders
+// 2 - Prop orders
+//
+// The returned endpoint is a string that can be used to make a POST request for placing orders.
+func placeOrderEndPoint(OrderVariety int) string {
+	switch OrderVariety {
+	case 1:
+		// 1 is for normal orders
+		return placeOrderUrl
+	case 2:
+		// 2 is for prop orders
+		return basePropURL + "/order/regular"
+	default:
+		// Default to normal orders if OrderVariety is not recognized
+		return placeOrderUrl
+	}
 }

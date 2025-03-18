@@ -101,6 +101,7 @@ var apiResponseStatus = struct {
 
 // Tiqs Base URL
 var baseURL = "https://api.tiqs.trading"
+var basePropURL = "https://propapi.tiqs.in"
 
 var quotesUrl = baseURL + "/info/quotes/full"
 var positionUrl = baseURL + "/user/positions"
@@ -123,4 +124,11 @@ var OrderStatues = struct {
 	COMPLETE: "COMPLETE",
 	REJECTED: "REJECTED",
 	PENDING:  "PENDING",
+}
+
+var OrderVariety = struct {
+	COMMON, PROP int
+}{
+	COMMON: 1,
+	PROP:   2,
 }

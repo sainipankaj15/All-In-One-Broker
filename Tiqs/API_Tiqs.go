@@ -67,7 +67,7 @@ func PositionApi_Tiqs(UserID_Tiqs string) (PositionAPIResp_Tiqs, error) {
 // OrderPlaceMarket_Tiqs is used to place a market order for Tiqs Broker
 // It takes exchange, token, quantity, TransSide, productType and UserID_Tiqs as parameters
 // It returns an error if something goes wrong
-func OrderPlaceMarket_Tiqs(exchange, token, quantity, TransSide, productType, UserID_Tiqs string) (placeOrderResp_Tiqs, error) {
+func OrderPlaceMarket_Tiqs(exchange, token, quantity, TransSide, productType, UserID_Tiqs string, OrderVariety int) (placeOrderResp_Tiqs, error) {
 
 	accessTokenofUser, appIdOfUser, err := ReadingAccessToken_Tiqs(UserID_Tiqs)
 	if err != nil {
@@ -99,8 +99,10 @@ func OrderPlaceMarket_Tiqs(exchange, token, quantity, TransSide, productType, Us
 	// Create HTTP client
 	client := http.DefaultClient
 
+	url := placeOrderEndPoint(OrderVariety)
+
 	// Create HTTP request
-	req, err := http.NewRequest("POST", placeOrderUrl, bytes.NewBuffer(jsonParameters))
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonParameters))
 	if err != nil {
 		log.Println("Error while making request for Order Placement API ")
 		return placeOrderResp_Tiqs{}, err
