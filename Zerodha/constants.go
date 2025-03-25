@@ -102,7 +102,8 @@ var apiResponseStatus = struct {
 // Tiqs Base URL
 var baseURL = "https://api.kite.trade"
 
-var placeOrderUrl = baseURL + "/orders/amo"
+var placeOrderUrl = baseURL + "/orders/regular"
+var placeAMOOrderUrl = baseURL + "/orders/amo"
 
 type orderStatus string
 
