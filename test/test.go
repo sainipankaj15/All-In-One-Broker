@@ -5,7 +5,7 @@ import (
 	"log"
 
 	tiqs "github.com/sainipankaj15/All-In-One-Broker/Tiqs"
-	xts "github.com/sainipankaj15/All-In-One-Broker/XTS"
+	zerodha "github.com/sainipankaj15/All-In-One-Broker/Zerodha"
 )
 
 func main() {
@@ -14,17 +14,17 @@ func main() {
 
 	// allInOneBroker.ExitAllPosition_Tiqs("ABCD12")
 
-	tokenList := []string{"50122"}
+	tokenList := []string{"ACC"}
 
 	for _, token := range tokenList {
-		resp, err := xts.OrderPlaceMarket_XTS(
-			xts.Exchange.NSEFO,
+		resp, err := zerodha.OrderPlaceMarket_Zerodha(
+			zerodha.Exchange.NSE,
 			token,
-			"75",
-			xts.PriceType.MARKET,
-			xts.OrderSide.BUY,
-			string(xts.Product.MARGIN),
-			xts.ADMIN_XTS,
+			"1",
+			zerodha.PriceType.MARKET,
+			zerodha.OrderSide.BUY,
+			string(zerodha.Product.CNC),
+			zerodha.ADMIN_TIQS,
 		)
 
 		if err != nil {
