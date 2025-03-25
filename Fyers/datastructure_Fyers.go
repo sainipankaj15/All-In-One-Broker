@@ -183,8 +183,9 @@ type OptionChain struct {
 }
 
 type Symbol struct {
-	Name    string
-	FyToken string
+	Name          string // Name of the symbol Including Exchange
+	FyToken       string // Fyers Token
+	TradingSymbol string // Trading Symbol Excluding Exchange
 }
 
 // Struct to represent the History API response

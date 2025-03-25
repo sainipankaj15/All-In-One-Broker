@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	fyers "github.com/sainipankaj15/All-In-One-Broker/Fyers"
 	tiqs "github.com/sainipankaj15/All-In-One-Broker/Tiqs"
 )
 
@@ -13,14 +14,29 @@ func main() {
 
 	// allInOneBroker.ExitAllPosition_Tiqs("ABCD12")
 
-	a, err := tiqs.PositionApi_Tiqs("90292", 2)
+	mp, err := fyers.GetOptionChainMap_Fyers(fyers.Index.SENSEX, 15, "XP03754")
 
 	if err != nil {
-		log.Println("Error while getting position API response")
+		log.Println("Error while getting map")
 		log.Println(err)
 	}
 
-	fmt.Println(a)
+	fmt.Println(mp)
+
+	// b, err := fyers.GetOptionChain_Fyers("NSE:NIFTYBANK-INDEX", 2, "XP03754")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
+	// fmt.Printf("%+v", b.Data.OptionsChain)
+
+	// a, err := tiqs.PositionApi_Tiqs("90292", 2)
+
+	// if err != nil {
+	// 	log.Println("Error while getting position API response")
+	// 	log.Println(err)
+	// }
+
+	// fmt.Println(a)
 
 	// tokenList := []string{"50122"}
 

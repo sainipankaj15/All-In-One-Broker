@@ -26,6 +26,7 @@ func ReadingAccessToken_Fyers(userFyersID string) (string, error) {
 	return accessToken, nil
 }
 
+// First string will be Strike after that for that strike value will again a map , in internal map key is string that is option type CE/PE and for both respective there is fytoken and symbolName and TradingSymbol
 func GetOptionChainMap_Fyers(SymbolName string, StrikeCount int, UserID_Fyers string) (map[int]map[string]Symbol, error) {
 
 	// First we will fetch option chain from Fyers
@@ -47,8 +48,9 @@ func GetOptionChainMap_Fyers(SymbolName string, StrikeCount int, UserID_Fyers st
 
 		// Create the Symbol struct
 		symbol := Symbol{
-			Name:    option.Symbol,
-			FyToken: option.FyToken,
+			Name:          option.Symbol,
+			FyToken:       option.FyToken,
+			TradingSymbol: getTradingSymbolFromName(option.Symbol),
 		}
 
 		// Populate the inner map with OptionType as key and Symbol struct as value
@@ -71,4 +73,18 @@ func PrintOptionChainMap(optionMap map[int]map[string]Symbol) {
 		}
 		fmt.Println() // Add a line break for readability between strike prices
 	}
+}
+
+// getTradingSymbolFromName returns a substring of `s` starting from the 4th character.
+// This is used to extract the trading symbol
+// If the length of `s` is less than 4, an empty string is returned.
+func getTradingSymbolFromName(symbolName string) string {
+	// Check if the length of `s` is greater than or equal to 4
+	if len(symbolName) >= 4 {
+		// Return the substring starting from the 4th character
+		// Skip First 4 characters (NSE: and BSE:)
+		return symbolName[4:]
+	}
+	// Return empty string if the length of `s` is less than 4
+	return ""
 }
