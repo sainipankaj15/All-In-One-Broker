@@ -14,4 +14,5 @@ type readDataJsonZerodha struct {
 	ApiKey      string `json:"apiKey"`
 	AccessToken string `json:"token"`
 	UserID      string `json:"userID"`
+	Name        string `json:"name"`
 }
