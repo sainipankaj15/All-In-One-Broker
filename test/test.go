@@ -14,6 +14,19 @@ func main() {
 	fmt.Println("Hello World!")
 	// time.Sleep(5 * time.Second)
 
+	holdings, err := zerodha.GetHoldings("FC8173")
+	if err != nil {
+		log.Fatal(err)
+	}else{
+		log.Printf("%+v", holdings)
+	}
+
+	for _, h := range holdings.Data {
+		fmt.Println(h.TradingSymbol, h.Quantity, h.PnL)
+	}
+
+	time.Sleep(1 * time.Hour)
+
 	// allInOneBroker.ExitAllPosition_Tiqs("ABCD12")
 	funds, err := zerodha.GetFunds("FC8173")
 	if err != nil {

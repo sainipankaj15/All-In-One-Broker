@@ -137,3 +137,58 @@ func GetFunds(userID string) (FundsResponse, error) {
 
 	return fundsResp, nil
 }
+
+// GetHoldings fetches the holdings from the Zerodha API.
+// It takes a user ID as a parameter and returns the holdings response and an error if something goes wrong.
+func GetHoldings(userID string) (HoldingsResponse, error) {
+	// Read access token
+	_, apiKey, accessToken, err := ReadingAccessToken_Zerodha(userID)
+	if err != nil {
+		return HoldingsResponse{}, err
+	}
+
+	// Create a new HTTP GET request
+	req, err := http.NewRequest(
+		http.MethodGet,
+		holdingsURL,
+		nil,
+	)
+	if err != nil {
+		return HoldingsResponse{}, err
+	}
+
+	// Set the headers of the request
+	req.Header.Set("X-Kite-Version", "3")
+	req.Header.Set("Authorization", "token "+apiKey+":"+accessToken)
+
+	// Make the request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return HoldingsResponse{}, err
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return HoldingsResponse{}, err
+	}
+
+	// Check the status code of the response
+	if resp.StatusCode != http.StatusOK {
+		return HoldingsResponse{}, fmt.Errorf(
+			"holdings api failed: status=%d body=%s",
+			resp.StatusCode,
+			body,
+		)
+	}
+
+	// Unmarshal the response body into the HoldingsResponse struct
+	var holdingResp HoldingsResponse
+	if err := json.Unmarshal(body, &holdingResp); err != nil {
+		return HoldingsResponse{}, err
+	}
+
+	return holdingResp, nil
+}

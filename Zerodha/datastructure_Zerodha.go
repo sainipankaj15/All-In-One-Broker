@@ -26,6 +26,7 @@ type FundsResponse struct {
 	Data   FundsData `json:"data"`
 }
 
+// FundsData represents the funds information for equity and commodity segments.
 type FundsData struct {
 	Equity    FundSegment `json:"equity"`
 	Commodity FundSegment `json:"commodity"`
@@ -60,4 +61,49 @@ type FundUtilised struct {
 	LiquidCollateral float64 `json:"liquid_collateral"`
 	StockCollateral  float64 `json:"stock_collateral"`
 	Delivery         float64 `json:"delivery"`
+}
+
+// HoldingsResponse represents the response from the holdings API for Zerodha.
+// It contains the status and a list of holding items.
+type HoldingsResponse struct {
+	// Status is the status of the API response.
+	Status string `json:"status"`
+	// Data is a list of holding items.
+	Data []HoldingItem `json:"data"`
+}
+
+type HoldingItem struct {
+	TradingSymbol       string      `json:"tradingsymbol"`
+	Exchange            string      `json:"exchange"`
+	InstrumentToken     uint32      `json:"instrument_token"`
+	ISIN                string      `json:"isin"`
+	Product             string      `json:"product"`
+	Price               float64     `json:"price"`
+	Quantity            int64       `json:"quantity"`
+	UsedQuantity        int64       `json:"used_quantity"`
+	T1Quantity          int64       `json:"t1_quantity"`
+	RealisedQuantity    int64       `json:"realised_quantity"`
+	AuthorisedQuantity  int64       `json:"authorised_quantity"`
+	AuthorisedDate      string      `json:"authorised_date"`
+	Authorisation       interface{} `json:"authorisation"`
+	OpeningQuantity     int64       `json:"opening_quantity"`
+	ShortQuantity       int64       `json:"short_quantity"`
+	CollateralQuantity  int64       `json:"collateral_quantity"`
+	CollateralType      string      `json:"collateral_type"`
+	Discrepancy         bool        `json:"discrepancy"`
+	AveragePrice        float64     `json:"average_price"`
+	LastPrice           float64     `json:"last_price"`
+	ClosePrice          float64     `json:"close_price"`
+	PnL                 float64     `json:"pnl"`
+	DayChange           float64     `json:"day_change"`
+	DayChangePercentage float64     `json:"day_change_percentage"`
+	MTF                 HoldingMTF  `json:"mtf"`
+}
+
+type HoldingMTF struct {
+	Quantity      int64   `json:"quantity"`
+	UsedQuantity  int64   `json:"used_quantity"`
+	AveragePrice  float64 `json:"average_price"`
+	Value         float64 `json:"value"`
+	InitialMargin float64 `json:"initial_margin"`
 }
