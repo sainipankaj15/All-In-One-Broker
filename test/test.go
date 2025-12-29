@@ -15,6 +15,18 @@ func main() {
 	// time.Sleep(5 * time.Second)
 
 	// allInOneBroker.ExitAllPosition_Tiqs("ABCD12")
+	funds, err := zerodha.GetFunds("FC8173")
+	if err != nil {
+		log.Println("Error while getting funds")
+		log.Println(err)
+	} else {
+		log.Println("Funds fetched successfully")
+		log.Printf("%+v", funds)
+		fmt.Println("Equity Net:", funds.Data.Equity.Net)
+		fmt.Println("Commodity Cash:", funds.Data.Commodity.Available.Cash)
+	}
+
+	time.Sleep(1 * time.Hour)
 
 	resp, err := zerodha.PlaceMarketOrder(zerodha.Exchange.NSE, "SBIN", "1", zerodha.OrderType.MARKET, zerodha.TransactionSide.SELL, zerodha.ProductType.INTRADAY, "FC8173")
 	if err != nil {

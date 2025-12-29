@@ -82,3 +82,58 @@ func PlaceMarketOrder(
 
 	return orderResp, nil
 }
+
+// GetFunds fetches the funds from the Zerodha API.
+// It takes a user ID as a parameter and returns the funds response and an error if something goes wrong.
+func GetFunds(userID string) (FundsResponse, error) {
+	// Read access token
+	_, apiKey, accessToken, err := ReadingAccessToken_Zerodha(userID)
+	if err != nil {
+		return FundsResponse{}, err
+	}
+
+	// Create a new HTTP GET request
+	req, err := http.NewRequest(
+		http.MethodGet,
+		marginsURL,
+		nil,
+	)
+	if err != nil {
+		return FundsResponse{}, err
+	}
+
+	// Set the headers of the request
+	req.Header.Set("X-Kite-Version", "3")
+	req.Header.Set("Authorization", "token "+apiKey+":"+accessToken)
+
+	// Make the request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return FundsResponse{}, err
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return FundsResponse{}, err
+	}
+
+	// Check the status code of the response
+	if resp.StatusCode != http.StatusOK {
+		return FundsResponse{}, fmt.Errorf(
+			"funds api failed: status=%d body=%s",
+			resp.StatusCode,
+			body,
+		)
+	}
+
+	// Unmarshal the response body into the FundsResponse struct
+	var fundsResp FundsResponse
+	if err := json.Unmarshal(body, &fundsResp); err != nil {
+		return FundsResponse{}, err
+	}
+
+	return fundsResp, nil
+}
