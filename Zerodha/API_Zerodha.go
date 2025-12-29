@@ -9,6 +9,9 @@ import (
 	"strings"
 )
 
+// PlaceMarketOrder places a market order on the Zerodha platform.
+// It takes the exchange, trading symbol, quantity, order type, transaction side, product type and user ID as parameters.
+// Returns a PlaceOrderResponse with the order details and an error if any occurs.
 func PlaceMarketOrder(
 	exchange,
 	tradingSymbol,
