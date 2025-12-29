@@ -192,3 +192,58 @@ func GetHoldings(userID string) (HoldingsResponse, error) {
 
 	return holdingResp, nil
 }
+
+// GetPositions retrieves the positions for a given user from the Zerodha API.
+// It takes the user ID as a parameter and returns the positions response and an error if any occurs.
+func GetPositions(userID string) (PositionsResponse, error) {
+	// Read access token
+	_, apiKey, accessToken, err := ReadingAccessToken_Zerodha(userID)
+	if err != nil {
+		return PositionsResponse{}, err
+	}
+
+	// Create a new HTTP GET request
+	req, err := http.NewRequest(
+		http.MethodGet,
+		positionsURL,
+		nil,
+	)
+	if err != nil {
+		return PositionsResponse{}, err
+	}
+
+	// Set the headers of the request
+	req.Header.Set("X-Kite-Version", "3")
+	req.Header.Set("Authorization", "token "+apiKey+":"+accessToken)
+
+	// Make the request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return PositionsResponse{}, err
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return PositionsResponse{}, err
+	}
+
+	// Check the status code of the response
+	if resp.StatusCode != http.StatusOK {
+		return PositionsResponse{}, fmt.Errorf(
+			"positions api failed: status=%d body=%s",
+			resp.StatusCode,
+			body,
+		)
+	}
+
+	// Unmarshal the response body into the PositionsResponse struct
+	var positionsResp PositionsResponse
+	if err := json.Unmarshal(body, &positionsResp); err != nil {
+		return PositionsResponse{}, err
+	}
+
+	return positionsResp, nil
+}

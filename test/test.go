@@ -14,10 +14,23 @@ func main() {
 	fmt.Println("Hello World!")
 	// time.Sleep(5 * time.Second)
 
-	holdings, err := zerodha.GetHoldings("FC8173")
+	positions, err := zerodha.GetPositions("FC8173")
 	if err != nil {
 		log.Fatal(err)
 	}else{
+		log.Printf("%+v", positions)
+	}
+
+	for _, p := range positions.Data.Net {
+		fmt.Println(p.TradingSymbol, p.Quantity, p.PnL)
+	}
+
+	time.Sleep(1 * time.Hour)
+
+	holdings, err := zerodha.GetHoldings("FC8173")
+	if err != nil {
+		log.Fatal(err)
+	} else {
 		log.Printf("%+v", holdings)
 	}
 

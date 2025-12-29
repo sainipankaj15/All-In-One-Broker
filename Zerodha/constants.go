@@ -76,7 +76,7 @@ var apiResponseStatus = struct {
 var baseURL = "https://api.kite.trade"
 
 var placeOrderUrl = baseURL + "/orders/regular"
-var poistionURL = baseURL + "/portfolio/positions"
+var positionsURL = baseURL + "/portfolio/positions"
 var holdingsURL = baseURL + "/portfolio/holdings"
 var marginsURL = baseURL + "/user/margins"
 

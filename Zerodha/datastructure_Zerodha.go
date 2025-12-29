@@ -107,3 +107,52 @@ type HoldingMTF struct {
 	Value         float64 `json:"value"`
 	InitialMargin float64 `json:"initial_margin"`
 }
+
+// PositionsResponse represents the response from the positions API of zerodha.
+// It contains the status and a PositionsData object that contains the net and day positions.
+type PositionsResponse struct {
+	Status string `json:"status"`
+	// Data is a PositionsData object that contains the net and day positions.
+	Data PositionsData `json:"data"`
+}
+
+type PositionsData struct {
+	Net []PositionItem `json:"net"`
+	Day []PositionItem `json:"day"`
+}
+
+type PositionItem struct {
+	TradingSymbol     string  `json:"tradingsymbol"`
+	Exchange          string  `json:"exchange"`
+	InstrumentToken   uint32  `json:"instrument_token"`
+	Product           string  `json:"product"`
+	Quantity          int64   `json:"quantity"`
+	OvernightQuantity int64   `json:"overnight_quantity"`
+	Multiplier        int64   `json:"multiplier"`
+	AveragePrice      float64 `json:"average_price"`
+	ClosePrice        float64 `json:"close_price"`
+	LastPrice         float64 `json:"last_price"`
+	Value             float64 `json:"value"`
+	PnL               float64 `json:"pnl"`
+	M2M               float64 `json:"m2m"`
+	Unrealised        float64 `json:"unrealised"`
+	Realised          float64 `json:"realised"`
+
+	BuyQuantity int64   `json:"buy_quantity"`
+	BuyPrice    float64 `json:"buy_price"`
+	BuyValue    float64 `json:"buy_value"`
+	BuyM2M      float64 `json:"buy_m2m"`
+
+	SellQuantity int64   `json:"sell_quantity"`
+	SellPrice    float64 `json:"sell_price"`
+	SellValue    float64 `json:"sell_value"`
+	SellM2M      float64 `json:"sell_m2m"`
+
+	DayBuyQuantity int64   `json:"day_buy_quantity"`
+	DayBuyPrice    float64 `json:"day_buy_price"`
+	DayBuyValue    float64 `json:"day_buy_value"`
+
+	DaySellQuantity int64   `json:"day_sell_quantity"`
+	DaySellPrice    float64 `json:"day_sell_price"`
+	DaySellValue    float64 `json:"day_sell_value"`
+}
