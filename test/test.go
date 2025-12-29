@@ -3,9 +3,11 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 
 	fyers "github.com/sainipankaj15/All-In-One-Broker/Fyers"
 	tiqs "github.com/sainipankaj15/All-In-One-Broker/Tiqs"
+	zerodha "github.com/sainipankaj15/All-In-One-Broker/Zerodha"
 )
 
 func main() {
@@ -13,6 +15,16 @@ func main() {
 	// time.Sleep(5 * time.Second)
 
 	// allInOneBroker.ExitAllPosition_Tiqs("ABCD12")
+
+	resp, err := zerodha.PlaceMarketOrder(zerodha.Exchange.NSE, "SBIN", "1", zerodha.OrderType.MARKET, zerodha.TransactionSide.SELL, zerodha.ProductType.INTRADAY, "FC8173")
+	if err != nil {
+		log.Println("Error while placing order")
+		log.Println(err)
+	} else {
+		log.Println("Order placed successfully")
+		log.Println(resp)
+	}
+	time.Sleep(1 * time.Hour)
 
 	mp, err := fyers.GetOptionChainMap_Fyers(fyers.Index.SENSEX, 15, "XP03754")
 

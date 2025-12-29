@@ -2,16 +2,6 @@ package zerodha
 
 const ADMIN_TIQS string = "ZM7200"
 
-type ProductType string
-
-var Product = struct {
-	INTRADAY, MARGIN, CNC ProductType
-}{
-	INTRADAY: "MIS",
-	MARGIN:   "NRML",
-	CNC:      "CNC",
-}
-
 var Index = struct {
 	BANKNIFTY, NIFTY, MIDCPNIFTY, FINNIFTY, NIFTYNXT, SENSEX string
 }{
@@ -30,7 +20,7 @@ var OptionTypes = struct {
 	PUT:  "PE",
 }
 
-var OrderSide = struct {
+var TransactionSide = struct {
 	BUY, SELL string
 }{
 	BUY:  "BUY",
@@ -42,23 +32,6 @@ var PositionSide = struct {
 }{
 	LONG:  1,
 	SHORT: -1,
-}
-
-var PriceType = struct {
-	LIMIT, MARKET, STOP, STOP_LIMIT string
-}{
-	LIMIT:      "LIMIT",
-	MARKET:     "MARKET",
-	STOP:       "SL-M",
-	STOP_LIMIT: "SL",
-}
-
-var Exchange = struct {
-	NSE, NFO, BFO string
-}{
-	NSE: "NSE",
-	NFO: "NFO",
-	BFO: "BFO",
 }
 
 var ExchangeToken = struct {
@@ -99,12 +72,10 @@ var apiResponseStatus = struct {
 	FAILURE: "failure",
 }
 
-// Tiqs Base URL
+// Zerodha Base URL
 var baseURL = "https://api.kite.trade"
 
 var placeOrderUrl = baseURL + "/orders/regular"
-
-// var placeAMOOrderUrl = baseURL + "/orders/amo"
 
 type orderStatus string
 
@@ -119,10 +90,29 @@ var OrderStatuses = struct {
 }
 
 var OrderType = struct {
-	REGULAR, BO, CO, AMO string
+	LIMIT, MARKET, STOPLOSS, STOPLOSS_MARKET string
 }{
-	REGULAR: "regular",
-	BO:      "bracket",
-	CO:      "cover",
-	AMO:     "amo",
+	LIMIT:           "LIMIT",
+	MARKET:          "MARKET",
+	STOPLOSS:        "SL",
+	STOPLOSS_MARKET: "SL-M",
+}
+
+var ProductType = struct {
+	INTRADAY, NORMAL, CNC string
+}{
+	CNC:      "CNC",
+	NORMAL:   "NRML", //Normal for futures and options
+	INTRADAY: "MIS",  // Margin Intraday Squareoff for futures and options
+}
+
+var Exchange = struct {
+	NSE, BSE, NFO, CDS, BCD, MCX string
+}{
+	NSE: "NSE",
+	BSE: "BSE",
+	NFO: "NFO",
+	CDS: "CDS",
+	BCD: "BCD",
+	MCX: "MCX",
 }
