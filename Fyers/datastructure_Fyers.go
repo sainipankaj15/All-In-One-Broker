@@ -8,52 +8,15 @@ type ReadDataJson_Fyers struct {
 	AppIdWithType        string `json:"app_id_with_app_type"`
 }
 
-type NetPosition_Fyers struct {
-	Symbol          string  `json:"symbol"`
-	ID              string  `json:"id"`
-	BuyAvg          float64 `json:"buy_avg"`
-	BuyQty          int     `json:"buy_qty"`
-	BuyVal          float64 `json:"buy_val"`
-	SellAvg         float64 `json:"sell_avg"`
-	SellQty         int     `json:"sell_qty"`
-	SellVal         float64 `json:"sell_val"`
-	NetAvg          float64 `json:"net_avg"`
-	NetQty          int     `json:"net_qty"`
-	TranSide        int     `json:"tran_side"`
-	Qty             int     `json:"qty"`
-	ProductType     string  `json:"product_type"`
-	PLRealized      float64 `json:"pl_realized"`
-	CrossCurrFlag   string  `json:"cross_curr_flag"`
-	RBIRefRate      int     `json:"rbirefrate"`
-	FYToken         string  `json:"fy_token"`
-	SymbolDesc      string  `json:"symbol_desc"`
-	SymbolExch      string  `json:"symbol_exch"`
-	Exchange        int     `json:"exchange"`
-	Segment         int     `json:"segment"`
-	Instrument      int     `json:"instrument"`
-	LotSize         int     `json:"lot_size"`
-	TickSize        float64 `json:"tick_size"`
-	DayBuyQty       int     `json:"day_buy_qty"`
-	DayBuyAvg       float64 `json:"day_buy_avg"`
-	DaySellQty      int     `json:"day_sell_qty"`
-	DaySellAvg      float64 `json:"day_sell_avg"`
-	DayNetQty       int     `json:"day_net_qty"`
-	CFBuyQty        int     `json:"cf_buy_qty"`
-	CFBuyAvg        float64 `json:"cf_buy_avg"`
-	CFSellQty       int     `json:"cf_sell_qty"`
-	CFSellAvg       float64 `json:"cf_sell_avg"`
-	CFNetQty        int     `json:"cf_net_qty"`
-	OMSFlag         string  `json:"oms_flag"`
-	QtyMultiplier   int     `json:"qty_multiplier"`
-	PriceMultiplier int     `json:"price_multiplier"`
-	PLTotal         float64 `json:"pl_total"`
-	PLUnrealized    float64 `json:"pl_unrealized"`
-	LTPCh           float64 `json:"ltp_ch"`
-	LTPChp          float64 `json:"ltp_chp"`
-	LTP             float64 `json:"ltp"`
+type PositionResponse struct {
+	S            string          `json:"s"`
+	Code         int             `json:"code"`
+	Message      string          `json:"message"`
+	NetPositions []NetPosition   `json:"netPositions"`
+	Overall      PositionOverall `json:"overall"`
 }
 
-type Overall struct {
+type PositionOverall struct {
 	CountTotal   int     `json:"count_total"`
 	CountOpen    int     `json:"count_open"`
 	PLTotal      float64 `json:"pl_total"`
@@ -61,12 +24,45 @@ type Overall struct {
 	PLUnrealized float64 `json:"pl_unrealized"`
 }
 
-type PositionAPIResp_Fyers struct {
-	S            string              `json:"s"`
-	Code         int                 `json:"code"`
-	Message      string              `json:"message"`
-	NetPositions []NetPosition_Fyers `json:"netPositions"`
-	Overall      Overall             `json:"overall"`
+type NetPosition struct {
+	Symbol string `json:"symbol"`
+	ID     string `json:"id"`
+
+	BuyQty int     `json:"buyQty"`
+	BuyAvg float64 `json:"buyAvg"`
+	BuyVal float64 `json:"buyVal"`
+
+	SellQty int     `json:"sellQty"`
+	SellAvg float64 `json:"sellAvg"`
+	SellVal float64 `json:"sellVal"`
+
+	NetQty   int     `json:"netQty"`
+	Qty      int     `json:"qty"`
+	AvgPrice float64 `json:"avgPrice"`
+	NetAvg   float64 `json:"netAvg"`
+	Side     int     `json:"side"`
+
+	ProductType string `json:"productType"`
+
+	PL           float64 `json:"pl"`
+	PLRealized   float64 `json:"realized_profit"`
+	PLUnrealized float64 `json:"unrealized_profit"`
+
+	LTP float64 `json:"ltp"`
+
+	FYToken       string  `json:"fyToken"`
+	CrossCurrency string  `json:"crossCurrency"`
+	RBIRefRate    float64 `json:"rbiRefRate"`
+	QtyMultiplier float64 `json:"qtyMulti_com"`
+
+	Segment  int `json:"segment"`
+	Exchange int `json:"exchange"`
+	SlNo     int `json:"slNo"`
+
+	CFBuyQty   int `json:"cfBuyQty"`
+	CFSellQty  int `json:"cfSellQty"`
+	DayBuyQty  int `json:"dayBuyQty"`
+	DaySellQty int `json:"daySellQty"`
 }
 
 type MarketDepthAPIResp_Fyers struct {
@@ -202,4 +198,64 @@ type Candle struct {
 	Low       float64 // Lowest Value
 	Close     float64 // Close Value
 	Volume    int64   // Total traded quantity (volume)
+}
+
+type PlaceOrderResponse struct {
+	Status  string `json:"s"` // ok / error
+	Code    int    `json:"code"`
+	Message string `json:"message"` // status message
+	ID      string `json:"id"`      // order id
+}
+
+// HoldingsResponse represents the response from the holding API.
+// It contains the status, a list of holdings items and overall details.
+type HoldingsResponse struct {
+	S        string          `json:"s"`        // status of the response ok/error
+	Code     int             `json:"code"`     // code of the response
+	Message  string          `json:"message"`  // message of the response
+	Holdings []Holding       `json:"holdings"` // list of holding items
+	Overall  HoldingsOverall `json:"overall"`  // overall details of the holdings
+}
+
+type Holding struct {
+	HoldingType             string  `json:"holdingType"`
+	Quantity                int     `json:"quantity"`
+	CostPrice               float64 `json:"costPrice"`
+	MarketVal               float64 `json:"marketVal"`
+	RemainingQuantity       int     `json:"remainingQuantity"`
+	PL                      float64 `json:"pl"`
+	LTP                     float64 `json:"ltp"`
+	ID                      int     `json:"id"`
+	FyToken                 string  `json:"fyToken"`
+	Exchange                int     `json:"exchange"`
+	Symbol                  string  `json:"symbol"`
+	Segment                 int     `json:"segment"`
+	ISIN                    string  `json:"isin"`
+	QtyT1                   int     `json:"qty_t1"`
+	RemainingPledgeQuantity int     `json:"remainingPledgeQuantity"`
+	CollateralQuantity      int     `json:"collateralQuantity"`
+}
+
+type HoldingsOverall struct {
+	CountTotal        int     `json:"count_total"`
+	TotalInvestment   float64 `json:"total_investment"`
+	TotalCurrentValue float64 `json:"total_current_value"`
+	TotalPL           float64 `json:"total_pl"`
+	PnLPercent        float64 `json:"pnl_perc"`
+}
+
+// FundsResponse represents the response from the funds API.
+// It contains the code, message, status and list of fund items.
+type FundsResponse struct {
+	Code      int        `json:"code"`
+	Message   string     `json:"message"`
+	S         string     `json:"s"`
+	FundLimit []FundItem `json:"fund_limit"` // list of fund items
+}
+
+type FundItem struct {
+	ID              int     `json:"id"`
+	Title           string  `json:"title"`
+	EquityAmount    float64 `json:"equityAmount"`
+	CommodityAmount float64 `json:"commodityAmount"`
 }

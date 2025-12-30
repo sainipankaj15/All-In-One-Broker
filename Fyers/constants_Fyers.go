@@ -9,13 +9,6 @@ var OptionTypes = struct {
 	PUT:  "PE",
 }
 
-var OrderSide = struct {
-	BUY, SELL int
-}{
-	BUY:  1,
-	SELL: -1,
-}
-
 var PositionSide = struct {
 	LONG, SHORT int
 }{
@@ -69,4 +62,19 @@ var Index = struct {
 	FINNIFTY:   "NSE:FINNIFTY-INDEX",
 	NIFTYNXT:   "NSE:NIFTYNXT50-INDEX",
 	SENSEX:     "BSE:SENSEX-INDEX",
+}
+
+// Fyers Base URL
+var baseURL = "https://api-t1.fyers.in/api/v3"
+
+var placeOrderUrl = baseURL + "/orders/sync"
+var positionsURL = baseURL + "/positions"
+var holdingsURL = baseURL + "/holdings"
+var marginURL = baseURL + "/funds"
+
+var TransactionSide = struct {
+	BUY, SELL int
+}{
+	BUY:  1,  // BUY is represented by 1
+	SELL: -1, // SELL is represented by -1
 }

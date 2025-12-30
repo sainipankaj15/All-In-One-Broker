@@ -14,10 +14,64 @@ func main() {
 	fmt.Println("Hello World!")
 	// time.Sleep(5 * time.Second)
 
+	respFunds, err := fyers.GetFunds("XP03754")
+	if err != nil {
+		log.Println("Error while getting funds")
+		log.Println(err)
+	} else {
+		log.Println("Funds fetched successfully")
+		log.Printf("%+v", respFunds)
+		fmt.Println("Equity Net:", respFunds.FundLimit[0].EquityAmount)
+		fmt.Println("Commodity Cash:", respFunds.FundLimit[1].EquityAmount)
+	}
+
+	time.Sleep(1 * time.Hour)
+
+	respHoldings, err := fyers.GetHoldings("XP03754")
+	if err != nil {
+		log.Println("Error while getting positions")
+		log.Println(err)
+	} else {
+		log.Println("Positions fetched successfully")
+		log.Printf("%+v", respHoldings)
+	}
+
+	for _, p := range respHoldings.Holdings {
+		fmt.Println(p.Symbol, p.Quantity, p.PL)
+	}
+
+	time.Sleep(1 * time.Hour)
+
+	respPostions, err := fyers.GetPositions("XP03754")
+	if err != nil {
+		log.Println("Error while getting positions")
+		log.Println(err)
+	} else {
+		log.Println("Positions fetched successfully")
+		log.Printf("%+v", respPostions)
+	}
+
+	for _, p := range respPostions.NetPositions {
+		fmt.Println(p.ID, p.NetQty, p.PL)
+	}
+
+	time.Sleep(1 * time.Hour)
+
+	respFyers, err := fyers.PlaceLimitOrder("NSE:SMALLCAP-EQ", 45, 1, fyers.TransactionSide.SELL, fyers.ProductType.INTRADAY, "XP03754")
+	if err != nil {
+		log.Println("Error while placing order")
+		log.Println(err)
+	} else {
+		log.Println("Order placed successfully")
+		log.Println(respFyers)
+	}
+
+	time.Sleep(1 * time.Hour)
+
 	positions, err := zerodha.GetPositions("FC8173")
 	if err != nil {
 		log.Fatal(err)
-	}else{
+	} else {
 		log.Printf("%+v", positions)
 	}
 

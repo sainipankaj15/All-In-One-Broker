@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -12,59 +13,63 @@ import (
 	"time"
 )
 
-// PositionApi_Fyers fetches the current positions for a given user from the Fyers API.
-// It takes the UserID of the user as a parameter and returns the positions and an error if any occurs.
-func PositionApi_Fyers(UserID_Fyers string) (PositionAPIResp_Fyers, error) {
-
+// GetPositions retrieves the positions for a given user from the Fyers API.
+// It takes the user ID as an argument and returns the positions response and an error if any occurs.
+func GetPositions(userID string) (PositionResponse, error) {
 	// Retrieve the access token for the user
-	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
+	accessToken, err := ReadingAccessToken_Fyers(userID)
 	if err != nil {
-		log.Fatalf("Error while getting access token in Fyers")
-		return PositionAPIResp_Fyers{}, err
+		return PositionResponse{}, err
 	}
-
-	// Define the URL for the positions API endpoint
-	positionUrl := "https://api-t1.fyers.in/trade/v3/positions"
 
 	// Create a new HTTP GET request
-	req, err := http.NewRequest("GET", positionUrl, nil)
+	req, err := http.NewRequest(http.MethodGet, positionsURL, nil)
 	if err != nil {
-		log.Println("Error while making request in Position API request in Fyers")
-		return PositionAPIResp_Fyers{}, err
+		return PositionResponse{}, err
 	}
 
-	// Add the Bearer token to the request header
-	req.Header.Add("Authorization", AccessToken)
+	// Set the Authorization header of the request
+	req.Header.Set("Authorization", accessToken)
 
-	// Make the request to the API
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	// Make the request
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		log.Println("Error while making request in Position API in Fyers")
-		return PositionAPIResp_Fyers{}, err
+		return PositionResponse{}, err
 	}
 	defer resp.Body.Close()
 
 	// Read the response body
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Println("Error while reading the body in byte array in Position API in Fyers")
-		return PositionAPIResp_Fyers{}, err
+		return PositionResponse{}, err
 	}
 
-	// Log the direct response from the API
-	jsonBody := string(body)
-	log.Printf("Direct Response from Position API of Fyers %v", jsonBody)
+	fmt.Printf("Positions API Response for %v : %v\n", userID, string(body))
 
-	// Convert the response body into the PositionAPIResp_Fyers struct
-	var positionResp PositionAPIResp_Fyers
-	err = json.Unmarshal(body, &positionResp)
-	if err != nil {
-		log.Println("Error while Unmarshaling the data in Position API in Fyers")
-		return PositionAPIResp_Fyers{}, err
+	// Check for HTTP-level failure
+	if resp.StatusCode != http.StatusOK {
+		return PositionResponse{}, fmt.Errorf(
+			"positions api failed: http_status=%d body=%s",
+			resp.StatusCode,
+			body,
+		)
 	}
 
-	// Return the positions and nil error
+	// Unmarshal the response body into the PositionResponse struct
+	var positionResp PositionResponse
+	if err := json.Unmarshal(body, &positionResp); err != nil {
+		return PositionResponse{}, err
+	}
+
+	// Check for API-level failure
+	if positionResp.S != "ok" {
+		return positionResp, fmt.Errorf(
+			"positions api error: code=%d message=%s",
+			positionResp.Code,
+			positionResp.Message,
+		)
+	}
+
 	return positionResp, nil
 }
 
@@ -315,33 +320,32 @@ func LTP_Fyers(symbolName string, UserID_Fyers string) (float64, error) {
 	return ltp, nil
 }
 
-// PlaceOrder_Fyers places a limit order for the given symbol using the Fyers API.
-// It takes the symbol name, limit price, quantity, side, product type and user ID as parameters.
-// Returns a boolean indicating success and an error if any occurs.
-func PlaceOrder_Fyers(symbolName string, LimitPriceForOrder float64, qty int, whichSide int, productType string, UserID_Fyers string) (bool, error) {
+// PlaceLimitOrder is used to place a limit order using the Fyers API.
+// It takes the symbol name, limit price, quantity, transactionSide, product type, and user ID as parameters.
+// It returns a PlaceOrderResponse and an error if any occurs.
+func PlaceLimitOrder(
+	symbol string, // The symbol name for the order
+	limitPrice float64, // The limit price for the order
+	qty int, // The quantity of the order
+	transactionSide int, // The side of the order (1 = Buy, -1 = Sell)
+	productType string, // The product type of the order
+	userID string, // The user ID of the user placing the order
+) (PlaceOrderResponse, error) {
 
-	// Retrieve the access token for the user
-	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
+	// Read the access token for the user from the file
+	accessToken, err := ReadingAccessToken_Fyers(userID)
 	if err != nil {
-		log.Fatalf("Error while getting access token in Fyers")
-		return false, err
+		return PlaceOrderResponse{}, err
 	}
 
-	// Log the order details
-	msg := fmt.Sprintf("Placing Order for %v and Price is %v and total qty is %v and Client Name is %v", symbolName, LimitPriceForOrder, qty, UserID_Fyers)
-	log.Println(msg)
-
-	// Define the URL for the order placement API endpoint
-	url := "https://api-t1.fyers.in/api/v3/orders/sync"
-
-	// Prepare the payload for the order
-	dataPayload := map[string]interface{}{
-		"symbol":       symbolName,
+	// The payload for the limit order request
+	payload := map[string]interface{}{
+		"symbol":       symbol,
 		"qty":          qty,
-		"type":         1, // Assuming 1 represents a limit order
-		"side":         whichSide,
+		"type":         1, // 1 = Limit
+		"side":         transactionSide,
 		"productType":  productType,
-		"limitPrice":   LimitPriceForOrder,
+		"limitPrice":   limitPrice,
 		"disclosedQty": 0,
 		"stopPrice":    0,
 		"validity":     "DAY",
@@ -352,75 +356,78 @@ func PlaceOrder_Fyers(symbolName string, LimitPriceForOrder float64, qty int, wh
 	}
 
 	// Marshal the payload into JSON
-	jsonData, err := json.Marshal(dataPayload)
+	reqBody, err := json.Marshal(payload)
 	if err != nil {
-		log.Println("Error marshaling JSON:", err)
-		return false, err
+		return PlaceOrderResponse{}, err
 	}
 
-	// Create a new HTTP POST request with the JSON payload
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	// Create the HTTP request
+	req, err := http.NewRequest(
+		http.MethodPost,
+		placeOrderUrl,
+		bytes.NewBuffer(reqBody),
+	)
 	if err != nil {
-		log.Println("Error creating new HTTP request:", err)
-		return false, err
+		return PlaceOrderResponse{}, err
 	}
 
-	// Add headers to the request
-	req.Header.Add("Authorization", AccessToken)
+	// Add the access token to the request header
+	req.Header.Set("Authorization", accessToken)
 	req.Header.Set("Content-Type", "application/json")
 
-	// Log the payload being sent
-	msg = fmt.Sprintf("Order Placement Payload is %v", dataPayload)
-	log.Println(msg)
-
-	// Send the HTTP request
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	// Make the request and read the response
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		log.Println("Error sending HTTP request:", err)
-		return false, err
+		return PlaceOrderResponse{}, err
 	}
 	defer resp.Body.Close()
 
-	// Read the response body
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Println("Error reading response body:", err)
-		return false, err
+		return PlaceOrderResponse{}, err
 	}
 
-	// Log the response status and body
-	msg = fmt.Sprintf("Order Place Status for : %v is %v  \n\nAfter order placement response is %v ", symbolName, resp.Status, string(body))
-	log.Println(msg)
+	// Check the response status
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+		return PlaceOrderResponse{}, fmt.Errorf(
+			"limit order failed: status=%d body=%s",
+			resp.StatusCode,
+			body,
+		)
+	}
 
-	return true, nil
+	// Unmarshal the response body into the PlaceOrderResponse struct
+	var orderResp PlaceOrderResponse
+	if err := json.Unmarshal(body, &orderResp); err != nil {
+		return PlaceOrderResponse{}, err
+	}
+
+	return orderResp, nil
 }
-// PlaceMktOrder_Fyers places a market order for the given symbol using the Fyers API.
-// It takes the symbol name, quantity, side, product type and user ID as parameters.
-// Returns a boolean indicating success and an error if any occurs.
-func PlaceMktOrder_Fyers(symbolName string, qty int, whichSide int, productType string, UserID_Fyers string) (bool, error) {
+
+// PlaceMarketOrder is used to place a market order using the Fyers API.
+// It takes the symbol name, quantity, transactionSide, product type, and user ID as parameters.
+// It returns a PlaceOrderResponse and an error if any occurs.
+func PlaceMarketOrder(
+	symbol string, // The symbol name for the order
+	qty int, // The quantity of the order
+	transactionSide int, // The side of the order (1 = Buy, -1 = Sell)
+	productType string, // The product type of the order
+	userID string, // The user ID of the user placing the order
+) (PlaceOrderResponse, error) {
 
 	// Retrieve the access token for the user
-	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
+	accessToken, err := ReadingAccessToken_Fyers(userID)
 	if err != nil {
-		log.Fatalf("Error while getting access token in Fyers")
-		return false, err
+		return PlaceOrderResponse{}, err
 	}
 
-	// Log the order details
-	msg := fmt.Sprintf("Placing Market Order for %v and total qty is %v and Client Name is %v", symbolName, qty, UserID_Fyers)
-	log.Println(msg)
-	// TelegramSend(msg)
-
-	// Define the URL for the order placement API endpoint
-	url := "https://api-t1.fyers.in/api/v3/orders/sync"
-
-	// Prepare the payload for the order
-	dataPayload := map[string]interface{}{
-		"symbol":       "NSE:ITC-EQ",
-		"qty":          1,
-		"type":         2,
-		"side":         whichSide,
+	// Construct the request payload
+	payload := map[string]interface{}{
+		"symbol":       symbol,
+		"qty":          qty,
+		"type":         2, // 2 = Market
+		"side":         transactionSide,
 		"productType":  productType,
 		"limitPrice":   0,
 		"disclosedQty": 0,
@@ -432,51 +439,55 @@ func PlaceMktOrder_Fyers(symbolName string, qty int, whichSide int, productType 
 		"orderTag":     "orderFromSDK",
 	}
 
-	// Change the name of symbol and price in the payload
-	dataPayload["symbol"] = symbolName
-	dataPayload["qty"] = qty
-
 	// Marshal the payload into JSON
-	jsonData, err := json.Marshal(dataPayload)
+	reqBody, err := json.Marshal(payload)
 	if err != nil {
-		log.Println("Error marshaling JSON:", err)
-		return false, err
+		return PlaceOrderResponse{}, err
 	}
 
-	// Create a new HTTP POST request with the JSON payload
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	// Create a new HTTP POST request
+	req, err := http.NewRequest(
+		http.MethodPost,
+		placeOrderUrl,
+		bytes.NewBuffer(reqBody),
+	)
 	if err != nil {
-		log.Println(err)
-		return false, err
+		return PlaceOrderResponse{}, err
 	}
 
-	// Add headers to the request
-	req.Header.Add("Authorization", AccessToken)
+	// Add the Bearer token to the request header
+	req.Header.Set("Authorization", accessToken)
 	req.Header.Set("Content-Type", "application/json")
 
-	// Log the payload being sent
-	msg = fmt.Sprintf("Order Placement Payload is %v", dataPayload)
-	log.Println(msg)
-
-	// Send the HTTP request
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	// Make the request to the API
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		log.Println(err)
-		return false, err
+		return PlaceOrderResponse{}, err
 	}
 	defer resp.Body.Close()
 
-	// Print the response status and body
-	body, err := ioutil.ReadAll(resp.Body)
+	// Read the response body
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Println(err)
-		return false, err
+		return PlaceOrderResponse{}, err
 	}
-	msg = fmt.Sprintf("Order Place Status for : %v is %v  \n\nAfter order placement response is %v ", symbolName, resp.Status, string(body))
-	log.Println(msg)
 
-	return true, nil
+	// Check the status code of the response
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+		return PlaceOrderResponse{}, fmt.Errorf(
+			"market order failed: status=%d body=%s",
+			resp.StatusCode,
+			body,
+		)
+	}
+
+	// Unmarshal the response into the PlaceOrderResponse struct
+	var orderResp PlaceOrderResponse
+	if err := json.Unmarshal(body, &orderResp); err != nil {
+		return PlaceOrderResponse{}, err
+	}
+
+	return orderResp, nil
 }
 
 // QuotesAPI_Fyers fetches the quote data for a given symbol from the Fyers API.
@@ -836,4 +847,122 @@ func convertToCandles(rawCandles [][]interface{}) ([]Candle, error) {
 		candles = append(candles, candle)
 	}
 	return candles, nil
+}
+
+// GetHoldings fetches the holding data from the Fyers API.
+// It takes a user ID as an argument and returns the holding data and an error if something goes wrong.
+func GetHoldings(userID string) (HoldingsResponse, error) {
+	// Retrieve the access token for the user
+	accessToken, err := ReadingAccessToken_Fyers(userID)
+	if err != nil {
+		return HoldingsResponse{}, err
+	}
+
+	// Create a new HTTP GET request
+	req, err := http.NewRequest(http.MethodGet, holdingsURL, nil)
+	if err != nil {
+		return HoldingsResponse{}, err
+	}
+
+	// Add the Bearer token to the request header
+	req.Header.Set("Authorization", accessToken)
+
+	// Make the request
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return HoldingsResponse{}, err
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return HoldingsResponse{}, err
+	}
+
+	// Check for HTTP-level failure
+	if resp.StatusCode != http.StatusOK {
+		return HoldingsResponse{}, fmt.Errorf(
+			"holdings api failed: http_status=%d body=%s",
+			resp.StatusCode,
+			body,
+		)
+	}
+
+	// Unmarshal the response body into the HoldingsResponse struct
+	var holdingResp HoldingsResponse
+	if err := json.Unmarshal(body, &holdingResp); err != nil {
+		return HoldingsResponse{}, err
+	}
+
+	// Check for API-level failure
+	if holdingResp.S != "ok" {
+		return holdingResp, fmt.Errorf(
+			"holdings api error: code=%d message=%s",
+			holdingResp.Code,
+			holdingResp.Message,
+		)
+	}
+
+	// Return the holding data
+	return holdingResp, nil
+}
+
+// GetFunds fetches the funds data from the Fyers API.
+// It takes a user ID as an argument and returns the funds data and an error if something goes wrong.
+func GetFunds(userID string) (FundsResponse, error) {
+	// Retrieve the access token for the user
+	accessToken, err := ReadingAccessToken_Fyers(userID)
+	if err != nil {
+		return FundsResponse{}, err
+	}
+
+	// Create a new HTTP GET request
+	req, err := http.NewRequest(http.MethodGet, marginURL, nil)
+	if err != nil {
+		return FundsResponse{}, err
+	}
+
+	// Set the Authorization header of the request
+	req.Header.Set("Authorization", accessToken)
+
+	// Make the request
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return FundsResponse{}, err
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return FundsResponse{}, err
+	}
+
+	// Check for HTTP-level failure
+	if resp.StatusCode != http.StatusOK {
+		return FundsResponse{}, fmt.Errorf(
+			"funds api failed: http_status=%d body=%s",
+			resp.StatusCode,
+			body,
+		)
+	}
+
+	// Unmarshal the response body into the FundsResponse struct
+	var fundsResp FundsResponse
+	if err := json.Unmarshal(body, &fundsResp); err != nil {
+		return FundsResponse{}, err
+	}
+
+	// Check for API-level failure
+	if fundsResp.S != "ok" {
+		return fundsResp, fmt.Errorf(
+			"funds api error: code=%d message=%s",
+			fundsResp.Code,
+			fundsResp.Message,
+		)
+	}
+
+	// Return the funds data
+	return fundsResp, nil
 }
