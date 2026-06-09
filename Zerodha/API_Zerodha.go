@@ -37,6 +37,7 @@ func PlaceMarketOrder(
 	form.Set("quantity", quantity)
 	form.Set("product", productType)
 	form.Set("validity", "DAY")
+	form.Set("market_protection", "-1")
 
 	req, err := http.NewRequest(
 		http.MethodPost,
