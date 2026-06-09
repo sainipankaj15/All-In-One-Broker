@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"time"
@@ -44,7 +43,7 @@ func GetPositions(userID string) (PositionResponse, error) {
 		return PositionResponse{}, err
 	}
 
-	fmt.Printf("Positions API Response for %v : %v\n", userID, string(body))
+	// fmt.Printf("Positions API Response for %v : %v\n", userID, string(body))
 
 	// Check for HTTP-level failure
 	if resp.StatusCode != http.StatusOK {
@@ -80,7 +79,7 @@ func ExitingAllPosition(Side, Segement []int, ProductType []string, UserID_Fyers
 	// Retrieve the access token for the user
 	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
 	if err != nil {
-		log.Fatalf("Error while getting access token in Fyers")
+		// log.Fatalf("Error while getting access token in Fyers")
 		return err
 	}
 
@@ -98,14 +97,14 @@ func ExitingAllPosition(Side, Segement []int, ProductType []string, UserID_Fyers
 	// Marshal the data payload into JSON
 	jsonData, err := json.Marshal(dataPayload)
 	if err != nil {
-		log.Println("Error marshaling JSON:", err)
+		// log.Println("Error marshaling JSON:", err)
 		return err
 	}
 
 	// Create a new HTTP DELETE request
 	req, err := http.NewRequest("DELETE", positionUrl, bytes.NewBuffer(jsonData))
 	if err != nil {
-		log.Println("Error while making request in Exit All Position API in Fyers")
+		// log.Println("Error while making request in Exit All Position API in Fyers")
 		return err
 	}
 
@@ -117,7 +116,7 @@ func ExitingAllPosition(Side, Segement []int, ProductType []string, UserID_Fyers
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Println("Error while making request in Exit All Position API in Fyers")
+		// log.Println("Error while making request in Exit All Position API in Fyers")
 		return err
 	}
 	defer resp.Body.Close()
@@ -125,17 +124,17 @@ func ExitingAllPosition(Side, Segement []int, ProductType []string, UserID_Fyers
 	// Read the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Println("Error while reading the body in byte array in Exit All Position API")
+		// log.Println("Error while reading the body in byte array in Exit All Position API")
 		return err
 	}
 
 	// Log the direct response from the API
-	msg := string(body)
-	log.Printf("Direct Response for %v from Fyers API while Exiting all positions %v", UserID_Fyers, msg)
+	_ = string(body)
+	// log.Printf("Direct Response for %v from Fyers API while Exiting all positions %v", UserID_Fyers, string(body))
 
 	// Log the final message
-	finalMsg := fmt.Sprintf("For User : %v \nExit All API response %v", UserID_Fyers, msg)
-	log.Println(finalMsg)
+	// finalMsg := fmt.Sprintf("For User : %v \nExit All API response %v", UserID_Fyers, string(body))
+	// log.Println(finalMsg)
 	return err
 }
 
@@ -146,7 +145,7 @@ func ExitPositionByID_Fyers(UserID_Fyers string, symbolName string) error {
 	// Retrieve the access token for the user
 	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
 	if err != nil {
-		log.Fatalf("Error while getting access token in Fyers")
+		// log.Fatalf("Error while getting access token in Fyers")
 		return err
 	}
 
@@ -161,14 +160,14 @@ func ExitPositionByID_Fyers(UserID_Fyers string, symbolName string) error {
 	// Marshal the data payload into JSON
 	jsonData, err := json.Marshal(dataPayload)
 	if err != nil {
-		log.Println("Error marshaling JSON:", err)
+		// log.Println("Error marshaling JSON:", err)
 		return err
 	}
 
 	// Create a new HTTP DELETE request
 	req, err := http.NewRequest("DELETE", positionUrl, bytes.NewBuffer(jsonData))
 	if err != nil {
-		log.Println("Error while making request in Exiting via Position API")
+		// log.Println("Error while making request in Exiting via Position API")
 		return err
 	}
 
@@ -180,7 +179,7 @@ func ExitPositionByID_Fyers(UserID_Fyers string, symbolName string) error {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Println("Error while making request in Position API")
+		// log.Println("Error while making request in Position API")
 		return err
 	}
 	defer resp.Body.Close()
@@ -188,18 +187,18 @@ func ExitPositionByID_Fyers(UserID_Fyers string, symbolName string) error {
 	// Read the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Println("Error while reading the body in byte array in Position API")
+		// log.Println("Error while reading the body in byte array in Position API")
 		return err
 	}
 
 	// Log the direct response from the API
-	msg := string(body)
-	log.Printf("Direct Response from Fyers API while Exiting position by ID %v", msg)
+	_ = string(body)
+	// log.Printf("Direct Response from Fyers API while Exiting position by ID %v", string(body))
 
 	// Create a new message that includes the user and the exit message
-	newMsg := fmt.Sprintf("%v User \n\nExit Alert From Position\n\n", UserID_Fyers)
-	newMsg += msg
-	log.Println(newMsg)
+	_ = fmt.Sprintf("%v User \n\nExit Alert From Position\n\n", UserID_Fyers)
+	// newMsg += string(body)
+	// log.Println(newMsg)
 
 	return nil
 }
@@ -211,7 +210,7 @@ func MarketDepthAPI_Fyers(symbolName string, UserID_Fyers string) (MarketDepthAP
 	// Retrieve the access token for the user
 	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
 	if err != nil {
-		log.Fatalf("Error while getting access token in Fyers")
+		// log.Fatalf("Error while getting access token in Fyers")
 		return MarketDepthAPIResp_Fyers{}, err
 	}
 
@@ -221,7 +220,7 @@ func MarketDepthAPI_Fyers(symbolName string, UserID_Fyers string) (MarketDepthAP
 	// Create a new HTTP GET request
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		log.Println("Error while making request in marketDepthAPI")
+		// log.Println("Error while making request in marketDepthAPI")
 		return MarketDepthAPIResp_Fyers{}, err
 	}
 
@@ -232,7 +231,7 @@ func MarketDepthAPI_Fyers(symbolName string, UserID_Fyers string) (MarketDepthAP
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Println("Error while making request in marketDepthAPI")
+		// log.Println("Error while making request in marketDepthAPI")
 		return MarketDepthAPIResp_Fyers{}, err
 	}
 	defer resp.Body.Close()
@@ -240,20 +239,20 @@ func MarketDepthAPI_Fyers(symbolName string, UserID_Fyers string) (MarketDepthAP
 	// Read the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Println("Error while reading the body in byte array in marketDepthAPI")
+		// log.Println("Error while reading the body in byte array in marketDepthAPI")
 		return MarketDepthAPIResp_Fyers{}, err
 	}
 
 	// Log the direct response from the API
-	jsonBody := string(body)
-	log.Printf("Direct Response from Market Depth API of fyers for %v is %v", symbolName, jsonBody)
+	_ = string(body)
+	// log.Printf("Direct Response from Market Depth API of fyers for %v is %v", symbolName, string(body))
 
 	// Convert the response body into the MarketDepthAPIResp_Fyers struct
 	var marketDepthResponse MarketDepthAPIResp_Fyers
 
 	err = json.Unmarshal(body, &marketDepthResponse)
 	if err != nil {
-		log.Println("Error while Unmarshaling the data in marketDepthAPI")
+		// log.Println("Error while Unmarshaling the data in marketDepthAPI")
 		return MarketDepthAPIResp_Fyers{}, err
 	}
 
@@ -266,7 +265,7 @@ func LTP_Fyers(symbolName string, UserID_Fyers string) (float64, error) {
 	// Retrieve the access token for the user
 	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
 	if err != nil {
-		log.Fatalf("Error while getting access token in Fyers")
+		// log.Fatalf("Error while getting access token in Fyers")
 		return 0.0, err
 	}
 
@@ -276,7 +275,7 @@ func LTP_Fyers(symbolName string, UserID_Fyers string) (float64, error) {
 	// Create a new HTTP GET request
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		log.Println("Error while making request in marketDepthAPI")
+		// log.Println("Error while making request in marketDepthAPI")
 		return 0.0, err
 	}
 
@@ -287,7 +286,7 @@ func LTP_Fyers(symbolName string, UserID_Fyers string) (float64, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Println("Error while making request in marketDepthAPI")
+		// log.Println("Error while making request in marketDepthAPI")
 		return 0.0, err
 	}
 	defer resp.Body.Close()
@@ -295,27 +294,27 @@ func LTP_Fyers(symbolName string, UserID_Fyers string) (float64, error) {
 	// Read the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Println("Error while reading the body in byte array in marketDepthAPI")
+		// log.Println("Error while reading the body in byte array in marketDepthAPI")
 		return 0.0, err
 	}
 
 	// Log the direct response from the API
-	jsonBody := string(body)
-	log.Printf("Direct Response from Market Depth API of fyers for %v is %v", symbolName, jsonBody)
+	_ = string(body)
+	// log.Printf("Direct Response from Market Depth API of fyers for %v is %v", symbolName, string(body))
 
 	// Convert the response body into the MarketDepthAPIResp_Fyers struct
 	var marketDepthResponse MarketDepthAPIResp_Fyers
 
 	err = json.Unmarshal(body, &marketDepthResponse)
 	if err != nil {
-		log.Println("Error while Unmarshaling the data in marketDepthAPI")
+		// log.Println("Error while Unmarshaling the data in marketDepthAPI")
 		return 0.0, err
 	}
 
 	// ltp is the last traded price
 	ltp := marketDepthResponse.D[symbolName].Ltp
-	final := fmt.Sprintf("\nFor %v LTP is %v", symbolName, ltp)
-	log.Println(final)
+	_ = fmt.Sprintf("\nFor %v LTP is %v", symbolName, ltp)
+	// log.Println(final)
 
 	return ltp, nil
 }
@@ -497,7 +496,7 @@ func QuotesAPI_Fyers(symbolName, UserID_Fyers string) (QuoteAPIResp_Fyers, error
 	// Retrieve the access token for the user
 	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
 	if err != nil {
-		log.Fatalf("Error while getting access token in Fyers")
+		// log.Fatalf("Error while getting access token in Fyers")
 		return QuoteAPIResp_Fyers{}, err
 	}
 
@@ -507,7 +506,7 @@ func QuotesAPI_Fyers(symbolName, UserID_Fyers string) (QuoteAPIResp_Fyers, error
 	// Create a new HTTP GET request
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		log.Println("Error while making request in quotesFyersAPI")
+		// log.Println("Error while making request in quotesFyersAPI")
 		return QuoteAPIResp_Fyers{}, err
 	}
 
@@ -518,7 +517,7 @@ func QuotesAPI_Fyers(symbolName, UserID_Fyers string) (QuoteAPIResp_Fyers, error
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Println("Error while making request in quotesFyersAPI")
+		// log.Println("Error while making request in quotesFyersAPI")
 		return QuoteAPIResp_Fyers{}, err
 	}
 	defer resp.Body.Close()
@@ -526,19 +525,19 @@ func QuotesAPI_Fyers(symbolName, UserID_Fyers string) (QuoteAPIResp_Fyers, error
 	// Read the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Println("Error while reading the body in byte array in quotesFyersAPI")
+		// log.Println("Error while reading the body in byte array in quotesFyersAPI")
 		return QuoteAPIResp_Fyers{}, err
 	}
 
 	// Log the direct response from the API
-	jsonBody := string(body)
-	log.Printf("Direct Response from Quotes API of fyers for %v is %v", symbolName, jsonBody)
+	_ = string(body)
+	// log.Printf("Direct Response from Quotes API of fyers for %v is %v", symbolName, string(body))
 
 	// Convert the response body into the QuoteAPIResp_Fyers struct
 	var qpr QuoteAPIResp_Fyers
 	err = json.Unmarshal(body, &qpr)
 	if err != nil {
-		log.Println("Error while Unmarshaling the data in quotes Fyers API")
+		// log.Println("Error while Unmarshaling the data in quotes Fyers API")
 		return QuoteAPIResp_Fyers{}, err
 	}
 
@@ -552,7 +551,7 @@ func SymbolNameToExchToken(symbolName, UserID_Fyers string) (string, error) {
 	// Retrieve the access token for the user
 	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
 	if err != nil {
-		log.Fatalf("Error while getting access token in Fyers")
+		// log.Fatalf("Error while getting access token in Fyers")
 		return "", err
 	}
 
@@ -562,7 +561,7 @@ func SymbolNameToExchToken(symbolName, UserID_Fyers string) (string, error) {
 	// Create a new HTTP GET request
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		log.Println("Error while making request in quotesFyersAPI")
+		// log.Println("Error while making request in quotesFyersAPI")
 		return "", err
 	}
 
@@ -573,7 +572,7 @@ func SymbolNameToExchToken(symbolName, UserID_Fyers string) (string, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Println("Error while making request in quotesFyersAPI")
+		// log.Println("Error while making request in quotesFyersAPI")
 		return "", err
 	}
 	defer resp.Body.Close()
@@ -581,27 +580,27 @@ func SymbolNameToExchToken(symbolName, UserID_Fyers string) (string, error) {
 	// Read the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Println("Error while reading the body in byte array in quotesFyersAPI")
+		// log.Println("Error while reading the body in byte array in quotesFyersAPI")
 		return "", err
 	}
 
 	// Log the direct response from the API
-	jsonBody := string(body)
-	log.Printf("Direct Response from Quotes API of fyers for %v is %v", symbolName, jsonBody)
+	_ = string(body)
+	// log.Printf("Direct Response from Quotes API of fyers for %v is %v", symbolName, string(body))
 
 	// Convert the response body into the QuoteAPIResp_Fyers struct
 	var qpr QuoteAPIResp_Fyers
 
 	err = json.Unmarshal(body, &qpr)
 	if err != nil {
-		log.Println("Error while Unmarshaling the data in marketDepthAPI")
+		// log.Println("Error while Unmarshaling the data in marketDepthAPI")
 		return "", err
 	}
 
 	// Extract the Fyers token
 	fytoken := qpr.D[0].V.FyToken
-	final := fmt.Sprintf("\nFor %v Fyers token is %v", symbolName, fytoken)
-	log.Println(final)
+	_ = fmt.Sprintf("\nFor %v Fyers token is %v", symbolName, fytoken)
+	// log.Println(final)
 
 	// Check if the token meets the minimum length requirement
 	if len(fytoken) < 12 {
@@ -623,13 +622,13 @@ func MarginMktOrder_Fyers(symbolName string, qty int, whichSide int, productType
 	// Retrieve the access token for the user
 	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
 	if err != nil {
-		log.Fatalf("Error while getting access token in Fyers")
+		// log.Fatalf("Error while getting access token in Fyers")
 		return MarginAPIResp_Fyers{}, err
 	}
 
 	// Log the order details
-	msg := fmt.Sprintf("Margin Market Order for %v and total qty is %v and Client Name is %v", symbolName, qty, UserID_Fyers)
-	log.Println(msg)
+	_ = fmt.Sprintf("Margin Market Order for %v and total qty is %v and Client Name is %v", symbolName, qty, UserID_Fyers)
+	// log.Println(msg)
 
 	// Define the URL for the margin API endpoint
 	url := "https://api-t1.fyers.in/trade/v3/margin"
@@ -654,14 +653,14 @@ func MarginMktOrder_Fyers(symbolName string, qty int, whichSide int, productType
 	// Marshal the payload into JSON
 	jsonData, err := json.Marshal(dataPayload)
 	if err != nil {
-		log.Println("Error marshaling JSON:", err)
+		// log.Println("Error marshaling JSON:", err)
 		return MarginAPIResp_Fyers{}, err
 	}
 
 	// Create a new HTTP POST request with the JSON payload
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
 	if err != nil {
-		log.Println(err)
+		// log.Println(err)
 		return MarginAPIResp_Fyers{}, err
 	}
 
@@ -673,7 +672,7 @@ func MarginMktOrder_Fyers(symbolName string, qty int, whichSide int, productType
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Println(err)
+		// log.Println(err)
 		return MarginAPIResp_Fyers{}, err
 	}
 	defer resp.Body.Close()
@@ -681,7 +680,7 @@ func MarginMktOrder_Fyers(symbolName string, qty int, whichSide int, productType
 	// Read the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Println(err)
+		// log.Println(err)
 		return MarginAPIResp_Fyers{}, err
 	}
 
@@ -689,7 +688,7 @@ func MarginMktOrder_Fyers(symbolName string, qty int, whichSide int, productType
 	var response MarginAPIResp_Fyers
 	err = json.Unmarshal(body, &response)
 	if err != nil {
-		log.Println("Failed to unmarshal response in Margin API in Fyers", err)
+		// log.Println("Failed to unmarshal response in Margin API in Fyers", err)
 		return MarginAPIResp_Fyers{}, err
 	}
 
@@ -702,7 +701,7 @@ func GetOptionChain_Fyers(Symbol string, StrikeCount int, UserID_Fyers string) (
 
 	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
 	if err != nil {
-		log.Fatalf("Error while getting access token in Fyers")
+		// log.Fatalf("Error while getting access token in Fyers")
 		return OptionChainAPIResponse{}, err
 	}
 
@@ -712,7 +711,7 @@ func GetOptionChain_Fyers(Symbol string, StrikeCount int, UserID_Fyers string) (
 	// Create a new HTTP GET request
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		log.Println(err)
+		// log.Println(err)
 		return OptionChainAPIResponse{}, err
 	}
 
@@ -723,7 +722,7 @@ func GetOptionChain_Fyers(Symbol string, StrikeCount int, UserID_Fyers string) (
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Println(err)
+		// log.Println(err)
 		return OptionChainAPIResponse{}, err
 	}
 	defer resp.Body.Close()
@@ -731,20 +730,20 @@ func GetOptionChain_Fyers(Symbol string, StrikeCount int, UserID_Fyers string) (
 	// Read the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Println(err)
+		// log.Println(err)
 		return OptionChainAPIResponse{}, err
 	}
 
 	// Log the direct response from the API
-	jsonBody := string(body)
-	log.Printf("Direct Response from Option Chain API of fyers for %v is %v", Symbol, jsonBody)
+	_ = string(body)
+	// log.Printf("Direct Response from Option Chain API of fyers for %v is %v", Symbol, string(body))
 
 	// Convert the response body into the OptionChainAPIResponse struct
 	var response OptionChainAPIResponse
 
 	err = json.Unmarshal(body, &response)
 	if err != nil {
-		log.Println("Error while Unmarshaling the data in Option Chain API")
+		// log.Println("Error while Unmarshaling the data in Option Chain API")
 		return OptionChainAPIResponse{}, err
 	}
 	return response, nil
@@ -757,7 +756,7 @@ func GetHistoricalData_Fyers(symbol, resolution, dateFormat, rangeFrom, rangeTo,
 	// Retrieve the access token for the user
 	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
 	if err != nil {
-		log.Fatalf("Error while getting access token in Fyers")
+		// log.Fatalf("Error while getting access token in Fyers")
 		return []Candle{}, err
 	}
 
@@ -767,7 +766,7 @@ func GetHistoricalData_Fyers(symbol, resolution, dateFormat, rangeFrom, rangeTo,
 	// Build the URL with query parameters
 	apiURL, err := url.Parse(baseURL)
 	if err != nil {
-		log.Fatal(err)
+		// log.Fatal(err)
 	}
 
 	// Add query parameters
@@ -787,7 +786,7 @@ func GetHistoricalData_Fyers(symbol, resolution, dateFormat, rangeFrom, rangeTo,
 	// Prepare the GET request
 	req, err := http.NewRequest("GET", apiURL.String(), nil)
 	if err != nil {
-		log.Fatal(err)
+		// log.Fatal(err)
 	}
 
 	// Add headers to the request
@@ -796,32 +795,32 @@ func GetHistoricalData_Fyers(symbol, resolution, dateFormat, rangeFrom, rangeTo,
 	// Send the request
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		// log.Fatal(err)
 	}
 	defer resp.Body.Close()
 
 	// Check if response status is 200 OK
 	if resp.StatusCode != http.StatusOK {
-		log.Printf("Error: Status code %d", resp.StatusCode)
+		// log.Printf("Error: Status code %d", resp.StatusCode)
 	}
 
 	// Read the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Println(err)
+		// log.Println(err)
 	}
 
 	// Unmarshal the response into the temporary structure
 	var rawData HistoricalDataAPI_Resp
 	err = json.Unmarshal(body, &rawData)
 	if err != nil {
-		log.Fatalf("Failed to unmarshal response: %v", err)
+		// log.Fatalf("Failed to unmarshal response: %v", err)
 	}
 
 	// Convert the raw candle data into the []Candle format
 	candles, err := convertToCandles(rawData.Candles)
 	if err != nil {
-		log.Fatalf("Failed to convert candle data: %v", err)
+		// log.Fatalf("Failed to convert candle data: %v", err)
 	}
 
 	// Return the candles

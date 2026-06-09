@@ -2,7 +2,6 @@ package zerodha
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 )
 
@@ -18,7 +17,7 @@ func ReadingAccessToken_Zerodha(userID_Zerodha string) (string, string, string, 
 
 	err = json.Unmarshal(fileContent, &fileData)
 	if err != nil {
-		fmt.Println("Error while unmarshalling JSON in ReadingAccessToken_Zerodha()")
+		// fmt.Println("Error while unmarshalling JSON in ReadingAccessToken_Zerodha()")
 		return "", "", "", err
 	}
 
