@@ -2,8 +2,9 @@ package fyers
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
+	"strconv"
+	"strings"
 )
 
 func ReadingAccessToken_Fyers(userFyersID string) (string, error) {
@@ -62,23 +63,31 @@ func GetOptionChainMap_Fyers(SymbolName string, StrikeCount int, UserID_Fyers st
 	return optionMap, nil
 }
 
-// PrintOptionChainMap prints the nested option chain map in a systematic and readable manner.
-// The map is printed with the strike price as the outer key and the option type as the inner key.
-// For each option type, the symbol name and FyToken is printed.
-func PrintOptionChainMap(optionMap map[int]map[string]Symbol) {
-	fmt.Println("Option Chain Data:")
-	// Iterate through the outer map (keyed by StrikePrice)
+// PrintOptionChainMap returns the nested option chain map as a formatted string.
+func PrintOptionChainMap(optionMap map[int]map[string]Symbol) string {
+	var builder strings.Builder
+	builder.WriteString("Option Chain Data:\n")
 	for strikePrice, innerMap := range optionMap {
-		fmt.Printf("Strike Price: %d\n", strikePrice)
-		// Iterate through the inner map (keyed by OptionType)
+		builder.WriteString("Strike Price: ")
+		builder.WriteString(strconv.Itoa(strikePrice))
+		builder.WriteString("\n")
 		for optionType, symbol := range innerMap {
-			fmt.Printf("  Option Type: %s\n", optionType)
-			fmt.Printf("    Symbol: %s\n", symbol.Name)
-			fmt.Printf("    FyToken: %s\n", symbol.FyToken)
-			fmt.Printf("    Trading Symbol: %s\n", symbol.TradingSymbol)
+			builder.WriteString("  Option Type: ")
+			builder.WriteString(optionType)
+			builder.WriteString("\n")
+			builder.WriteString("    Symbol: ")
+			builder.WriteString(symbol.Name)
+			builder.WriteString("\n")
+			builder.WriteString("    FyToken: ")
+			builder.WriteString(symbol.FyToken)
+			builder.WriteString("\n")
+			builder.WriteString("    Trading Symbol: ")
+			builder.WriteString(symbol.TradingSymbol)
+			builder.WriteString("\n")
 		}
-		fmt.Println() // Add a line break for readability between strike prices
+		builder.WriteString("\n")
 	}
+	return builder.String()
 }
 
 // getTradingSymbolFromName returns a substring of `s` starting from the 4th character.

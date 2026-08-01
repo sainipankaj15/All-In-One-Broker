@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"math"
 	"mime/multipart"
 	"net/http"
@@ -14,7 +13,7 @@ import (
 	"time"
 )
 
-func TelegramSend(botToken, chatID, text string) {
+func TelegramSend(botToken, chatID, text string) error {
 
 	requestURL := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", botToken)
 
@@ -23,30 +22,31 @@ func TelegramSend(botToken, chatID, text string) {
 	values := map[string]string{"text": text, "chat_id": chatID}
 	jsonParameters, err := json.Marshal(values)
 	if err != nil {
-		log.Println("Error marshaling JSON : ", err)
-		return
+		return fmt.Errorf("error marshaling JSON: %w", err)
 	}
 
 	req, err := http.NewRequest("POST", requestURL, bytes.NewBuffer(jsonParameters))
 	if err != nil {
-		log.Println("Error creating request in telegram", err)
-		return
+		return fmt.Errorf("error creating request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	res, err := client.Do(req)
 	if err != nil {
-		log.Println("Error sending request:", err)
-		return
+		return fmt.Errorf("error sending request: %w", err)
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		log.Println("Error reading response body:", err)
-		return
+		return fmt.Errorf("error reading response body: %w", err)
 	}
-	log.Println("Telegram Call Response Body:", string(body))
+
+	if res.StatusCode < http.StatusOK || res.StatusCode >= http.StatusMultipleChoices {
+		return fmt.Errorf("telegram API returned status code %d: %s", res.StatusCode, string(body))
+	}
+
+	return nil
 }
 
 // SendSlackNotification sends a message to a Slack channel
@@ -131,7 +131,7 @@ func UploadFileToTelegram(botToken, chatID, filePath string) error {
 
 	// Check the response
 	if response.StatusCode != http.StatusOK {
-		return nil
+		return fmt.Errorf("telegram document upload returned status code %d", response.StatusCode)
 	}
 
 	return nil
@@ -142,7 +142,6 @@ func CurrentDate() string {
 	// Set the time zone to Indian Standard Time (IST)
 	ist, err := time.LoadLocation("Asia/Kolkata")
 	if err != nil {
-		log.Println("Error loading IST location:", err)
 		return ""
 	}
 
@@ -161,7 +160,6 @@ func CurrentTime() string {
 	// Set the time zone to Indian Standard Time (IST)
 	ist, err := time.LoadLocation("Asia/Kolkata")
 	if err != nil {
-		log.Println("Error loading IST location:", err)
 		return ""
 	}
 
@@ -180,7 +178,6 @@ func ApplicationStart(StartingHour, StartingMinutes, StartingSeconds int) {
 	// Load IST location (India)
 	ist, err := time.LoadLocation("Asia/Kolkata")
 	if err != nil {
-		log.Println("Error loading IST location:", err)
 		return
 	}
 
@@ -201,7 +198,6 @@ func ApplicationClosing(ClosingHour, ClosingMinutes, ClosingSeconds int, isWorkD
 	// Load IST location (India)
 	ist, err := time.LoadLocation("Asia/Kolkata")
 	if err != nil {
-		log.Println("Error loading IST location:", err)
 		return
 	}
 

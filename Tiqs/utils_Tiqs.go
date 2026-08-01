@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"math"
 	"net/http"
 	"strings"
@@ -106,7 +105,7 @@ func ExitAllPosition_Tiqs(UserId_Tiqs string, Variety int) (string, error) {
 				qtyInString := typeConversion.IntToString(diff)
 				_, err := OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "S", position.Product, UserId_Tiqs, OrderVariety.COMMON)
 				if err != nil {
-					log.Println(err)
+					// Ignore order-placement failures during bulk exit.
 				}
 			} else if diff < 0 {
 				// Make Qty postive because qty cannot be negative
@@ -117,7 +116,7 @@ func ExitAllPosition_Tiqs(UserId_Tiqs string, Variety int) (string, error) {
 				qtyInString := typeConversion.IntToString(diff)
 				_, err := OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "B", position.Product, UserId_Tiqs, OrderVariety.COMMON)
 				if err != nil {
-					log.Println(err)
+					// Ignore order-placement failures during bulk exit.
 				}
 			}
 
@@ -167,9 +166,8 @@ func ExitByPositionID_Tiqs(symbolExchToken string, productType string, UserId_Ti
 						qtyInString := typeConversion.IntToString(diff)
 						_, err := OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "S", position.Product, UserId_Tiqs, OrderVariety.COMMON)
 						if err != nil {
-							log.Println(err)
+							// Ignore order-placement failures during bulk exit.
 						}
-
 					} else if diff < 0 {
 
 						// Make Qty postive because qty cannot be negative
@@ -182,9 +180,8 @@ func ExitByPositionID_Tiqs(symbolExchToken string, productType string, UserId_Ti
 						_, err := OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "B", position.Product, UserId_Tiqs, OrderVariety.COMMON)
 
 						if err != nil {
-							log.Println(err)
+							// Ignore order-placement failures during bulk exit.
 						}
-
 					}
 				}
 			}
@@ -215,12 +212,10 @@ func ClosestExpiryDate_Tiqs(indexName string, UserId_Tiqs string) (string, error
 	valid, err := isValidExpiryDate(lastExpiryDate)
 
 	if err != nil {
-		log.Println(err)
 		lastExpiryDate = allExpiryList[1]
 	}
 
 	if !valid {
-		log.Println("Invalid expiry date")
 		lastExpiryDate = allExpiryList[1]
 	}
 	// dates, err := nseOptionChainFromNSE(indexName)
@@ -504,7 +499,7 @@ func ExitAllShortPosition_Tiqs(UserId_Tiqs string, Variety int) (string, error) 
 				qtyInString := typeConversion.IntToString(diff)
 				_, err := OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "B", position.Product, UserId_Tiqs, OrderVariety.COMMON)
 				if err != nil {
-					fmt.Println("Error in exiting short position", err)
+					// Ignore order-placement failures during bulk exit.
 				}
 			}
 
@@ -546,7 +541,7 @@ func ExitAllLongPosition_Tiqs(UserId_Tiqs string, Variety int) (string, error) {
 				qtyInString := typeConversion.IntToString(diff)
 				_, err := OrderPlaceMarket_Tiqs(position.Exchange, position.Token, qtyInString, "S", position.Product, UserId_Tiqs, OrderVariety.COMMON)
 				if err != nil {
-					fmt.Println("Error in exiting long position", err)
+					// Ignore order-placement failures during bulk exit.
 				}
 			}
 		}(position)

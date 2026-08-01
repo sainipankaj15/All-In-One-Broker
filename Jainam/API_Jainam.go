@@ -12,8 +12,7 @@ func OrderPlaceMarket_Jainam(exchange, token, quantity, priceType, orderType, tr
 	// Get access token
 	_, accessTokenofUser, err := ReadingAccessToken_Jainam(userID_Jainam)
 	if err != nil {
-		fmt.Println("Error while reading access token in OrderPlaceMarket_Jainam()")
-		return placeOrderResp_Jainam{}, err
+		return placeOrderResp_Jainam{}, fmt.Errorf("error reading access token: %w", err)
 	}
 
 	// Create the order request object
@@ -39,8 +38,7 @@ func OrderPlaceMarket_Jainam(exchange, token, quantity, priceType, orderType, tr
 
 	jsonParameters, err := json.Marshal(orderSlice)
 	if err != nil {
-		fmt.Println("Error marshaling JSON in OrderPlaceMarket_Jainam()", err)
-		return placeOrderResp_Jainam{}, err
+		return placeOrderResp_Jainam{}, fmt.Errorf("error marshaling JSON: %w", err)
 	}
 
 	// Create HTTP client
@@ -52,8 +50,7 @@ func OrderPlaceMarket_Jainam(exchange, token, quantity, priceType, orderType, tr
 	// Create HTTP request
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonParameters))
 	if err != nil {
-		fmt.Println("Error while making request for Order Placement API")
-		return placeOrderResp_Jainam{}, err
+		return placeOrderResp_Jainam{}, fmt.Errorf("error creating order placement request: %w", err)
 	}
 
 	// Add headers to the request
@@ -63,16 +60,14 @@ func OrderPlaceMarket_Jainam(exchange, token, quantity, priceType, orderType, tr
 	// Send HTTP request
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println("Error while getting response in OrderPlaceMarket_Jainam()")
-		return placeOrderResp_Jainam{}, err
+		return placeOrderResp_Jainam{}, fmt.Errorf("error sending order placement request: %w", err)
 	}
 	defer resp.Body.Close()
 
 	// Read the response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println("Error reading response body:", err)
-		return placeOrderResp_Jainam{}, err
+		return placeOrderResp_Jainam{}, fmt.Errorf("error reading response body: %w", err)
 	}
 
 	// Parse the response

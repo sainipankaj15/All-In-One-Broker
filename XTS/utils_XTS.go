@@ -19,8 +19,7 @@ func ReadingAccessToken_XTS(userid_XTS string) (string, string, error) {
 
 	err = json.Unmarshal(fileContent, &fileData)
 	if err != nil {
-		fmt.Println("Error while unmarshalling JSON in ReadingAccessToken for XTS)")
-		return "", "", err
+		return "", "", fmt.Errorf("error unmarshaling token file: %w", err)
 	}
 
 	return fileData.Date, fileData.AccessToken, nil
@@ -29,7 +28,6 @@ func ReadingAccessToken_XTS(userid_XTS string) (string, string, error) {
 func StringToInt(str string) int64 {
 	num, err := strconv.ParseInt(str, 10, 64)
 	if err != nil {
-		fmt.Println("Error while converting string to int in StringToInt()")
 		return 0
 	}
 	return num

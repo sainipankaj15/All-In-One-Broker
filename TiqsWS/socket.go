@@ -3,7 +3,6 @@ package tiqs_socket
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -358,9 +357,7 @@ func (t *TiqsWSClient) parseTick(data []byte) Tick {
 }
 
 func (t *TiqsWSClient) logger(msg ...any) {
-	if t.enableLog {
-		log.Println(msg...)
-	}
+	_ = msg
 }
 
 // Check if the keyword 'orderUpdate' exists in the given string

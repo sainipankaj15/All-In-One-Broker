@@ -2,7 +2,6 @@ package tiqs_greeks_socket
 
 import (
 	"fmt"
-	"log"
 	"math"
 	"strconv"
 	"time"
@@ -26,7 +25,6 @@ func NewTiqsGreeksSocket(appID string, accessToken string, enableLog bool) (*Tiq
 	}
 
 	if enableLog {
-		log.Printf("Initializing NewTiqsGreeksSocket with appID: %s and accessToken: %s", appID, accessToken)
 		client.logger("TiqsGreeksClient created successfully")
 	}
 
@@ -35,9 +33,7 @@ func NewTiqsGreeksSocket(appID string, accessToken string, enableLog bool) (*Tiq
 
 // logger is a helper method to log messages if logging is enabled
 func (t *TiqsGreeksClient) logger(msg ...any) {
-	if t.enableLog {
-		log.Println(msg...)
-	}
+	_ = msg
 }
 
 // GetTickData retrieves the full TickData for a given token
@@ -151,7 +147,6 @@ func (t *TiqsGreeksClient) StartWebSocket(TargetSymbol string, TargetSymbolToken
 								// If implied volatility calculation fails, fetch Greeks from API
 								greeksData, err := tiqs.GetGreeks_Tiqs(int(tick.Token), tiqs.ADMIN_TIQS)
 								if err != nil {
-									log.Printf("Error fetching Greeks from API: %v", err)
 									delta, theta, gamma, vega = 0, 0, 0, 0
 								} else {
 									// Use Greeks from API
@@ -248,18 +243,7 @@ func (t *TiqsGreeksClient) StartWebSocket(TargetSymbol string, TargetSymbolToken
 }
 
 // PrintPriceMap prints the contents of the price map for debugging purposes
-func (t *TiqsGreeksClient) PrintPriceMap() {
-	fmt.Println("PriceMap Contents:")
-	t.priceMap.ForEach(func(key int32, value TickData) bool {
-		fmt.Printf("Token: %d\n", key)
-		fmt.Printf("  LTP: %d\n", value.LTP)
-		fmt.Printf("  Timestamp: %d\n", value.Timestamp)
-		fmt.Printf("  Strike Price: %d\n", value.StrikePrice)
-		fmt.Printf("  Option Type: %s\n", value.OptionType)
-		fmt.Println("--------------------")
-		return true
-	})
-}
+func (t *TiqsGreeksClient) PrintPriceMap() {}
 
 // settingSyntheticFuture calculates and updates the synthetic future prices
 func (t *TiqsGreeksClient) settingSyntheticFuture() {
@@ -296,15 +280,7 @@ func (t *TiqsGreeksClient) settingSyntheticFuture() {
 }
 
 // PrintSyntheticFutureMap prints the contents of the synthetic future map for debugging purposes
-func (t *TiqsGreeksClient) PrintSyntheticFutureMap() {
-	fmt.Println("Synthetic Future Map Contents:")
-	t.strikeToSyntheticFuture.ForEach(func(key int32, value float64) bool {
-		log.Printf("Strike Price: %d\n", key)
-		log.Printf("  Synthetic Future: %f\n", value)
-		log.Println("--------------------")
-		return true
-	})
-}
+func (t *TiqsGreeksClient) PrintSyntheticFutureMap() {}
 
 // settingTimeToExpiry calculates and sets the time to expiry for the options
 func (t *TiqsGreeksClient) settingTimeToExpiry(TargetSymbol string) error {

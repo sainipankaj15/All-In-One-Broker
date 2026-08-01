@@ -12,8 +12,7 @@ func OrderPlaceMarket_XTS(exchange, token, quantity, orderType, transSide, produ
 	// Get access token
 	_, accessTokenofUser, err := ReadingAccessToken_XTS(userid_XTS)
 	if err != nil {
-		fmt.Println("Error while reading access token in OrderPlaceMarket_Jainam()")
-		return placeOrderResp_XTS{}, err
+		return placeOrderResp_XTS{}, fmt.Errorf("error reading access token: %w", err)
 	}
 
 	// Create the order request object
@@ -33,8 +32,7 @@ func OrderPlaceMarket_XTS(exchange, token, quantity, orderType, transSide, produ
 
 	jsonParameters, err := json.Marshal(order)
 	if err != nil {
-		fmt.Println("Error marshaling JSON in OrderPlaceMarket_Jainam()", err)
-		return placeOrderResp_XTS{}, err
+		return placeOrderResp_XTS{}, fmt.Errorf("error marshaling JSON: %w", err)
 	}
 	// Create a slice with the order as its only element
 
@@ -47,28 +45,24 @@ func OrderPlaceMarket_XTS(exchange, token, quantity, orderType, transSide, produ
 	// Create HTTP request
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonParameters))
 	if err != nil {
-		fmt.Println("Error while making request for Order Placement API")
-		return placeOrderResp_XTS{}, err
+		return placeOrderResp_XTS{}, fmt.Errorf("error creating order placement request: %w", err)
 	}
 
 	// Add headers to the request
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", accessTokenofUser)
 
-	fmt.Println("Request:", req)
 	// Send HTTP request
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println("Error while getting response in OrderPlaceMarket_Jainam()")
-		return placeOrderResp_XTS{}, err
+		return placeOrderResp_XTS{}, fmt.Errorf("error sending order placement request: %w", err)
 	}
 	defer resp.Body.Close()
 
 	// Read the response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println("Error reading response body:", err)
-		return placeOrderResp_XTS{}, err
+		return placeOrderResp_XTS{}, fmt.Errorf("error reading response body: %w", err)
 	}
 
 	// Parse the response
