@@ -39,7 +39,7 @@ The library focuses on practical trading operations such as:
 - /Zerodha: Zerodha helpers
 - /XTS: XTS helpers
 - /commanUtilsAcrossBroker: Shared utilities such as Telegram/Slack notifications and time helpers
-- /fyers-go-sdk: a bundled Fyers SDK module included in the repository
+
 
 ## Installation
 
