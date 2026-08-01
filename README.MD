@@ -1,49 +1,45 @@
 # All-In-One-Broker
 
-A comprehensive Go library for interacting with multiple Indian stock brokers' APIs, including Jainam, Fyers, and Tiqs.
+All-In-One-Broker is a Go library for interacting with multiple Indian brokers through a consistent set of helpers. The current codebase includes integrations for Jainam, Fyers, Tiqs, Zerodha, and XTS, along with shared utilities for notifications, time handling, and market-data workflows.
 
-## Overview
+## What this repository provides
 
-This library provides a unified interface to interact with various Indian stock brokers' trading APIs. It handles authentication, order placement, position management, market data retrieval, and more across different brokers.
+The library focuses on practical trading operations such as:
 
-## Supported Brokers
+- Authentication helpers that read broker credentials from local JSON files
+- Order placement for supported brokers
+- Position, holdings, funds, and order-book retrieval
+- Market data access such as quotes, LTP, option chains, and market depth
+- Option Greeks and live WebSocket-based market updates for Tiqs
+- Shared utility helpers for Telegram/Slack notifications, holiday checks, and date/time handling
 
-- **Jainam**: Full support for Jainam Broking APIs
-- **Fyers**: Complete integration with Fyers trading platform
-- **Tiqs**: Comprehensive support for Tiqs trading APIs
+## Supported brokers
 
-## Features
+- Jainam
+  - Order placement helpers
+  - Access-token reading from local JSON files
+- Fyers
+  - Positions, holdings, funds, quotes, LTP, option chain, market depth, historical data, and order placement
+  - Option-chain map helpers and symbol utilities
+- Tiqs
+  - Positions, quotes, LTP, option chain, expiry lists, Greeks, holidays, order status, order book, and order placement
+  - WebSocket data streaming and Greeks calculation helpers
+- Zerodha
+  - Market orders, funds, holdings, and positions
+- XTS
+  - Market order placement and access-token helpers
 
-- **Authentication**: Secure token management for each broker
-- **Order Management**: 
-  - Place market and limit orders
-  - Modify and cancel orders
-  - Track order status
-- **Position Management**: 
-  - View current positions
-  - Exit positions individually or in bulk
-- **Market Data**: 
-  - Real-time quotes and LTP (Last Traded Price)
-  - Option chains with Greeks calculations
-  - Market depth information
-- **Historical Data**: Access to historical price data
-- **WebSocket Integration**: Real-time data streaming
-- **Option Analytics**: 
-  - Greeks calculation (Delta, Gamma, Theta, Vega)
-  - Synthetic future pricing
-- **Utility Functions**: 
-  - Holiday calendar integration
-  - Notification services (Telegram, Slack)
-  - Time management utilities
+## Repository layout
 
-## Package Structure
-
-- `/Jainam`: Jainam broker API integration
-- `/Fyers`: Fyers broker API integration
-- `/Tiqs`: Tiqs broker API integration
-- `/TiqsWS`: WebSocket implementation for Tiqs
-- `/TiqsGreeks`: Option Greeks calculations for Tiqs
-- `/commanUtilsAcrossBroker`: Shared utilities across brokers
+- /Jainam: Jainam broker helpers
+- /Fyers: Fyers broker helpers and constants
+- /Tiqs: Tiqs broker helpers, constants, and utility functions
+- /TiqsWS: Tiqs WebSocket client
+- /TiqsGreeks: Greeks calculation and live option analytics
+- /Zerodha: Zerodha helpers
+- /XTS: XTS helpers
+- /commanUtilsAcrossBroker: Shared utilities such as Telegram/Slack notifications and time helpers
+- /fyers-go-sdk: a bundled Fyers SDK module included in the repository
 
 ## Installation
 
@@ -51,127 +47,124 @@ This library provides a unified interface to interact with various Indian stock 
 go get github.com/sainipankaj15/All-In-One-Broker
 ```
 
-## Usage Examples
+## Authentication
 
-### Authentication
+Most helpers expect the broker credentials or access token to be available in a local JSON file named after the user ID. The exact file format depends on the broker helper, but the common pattern is that the helper reads a file such as:
 
-```go
-// Jainam authentication
-date, accessToken, err := jainam.ReadingAccessToken_Jainam("userID")
-
-// Fyers authentication
-accessToken, err := fyers.ReadingAccessToken_Fyers("userFyersID")
-
-// Tiqs authentication
-accessToken, appID, err := tiqs.ReadingAccessToken_Tiqs("userID_Tiqs")
+```text
+<userID>.json
 ```
 
-### Market Data
+Example usage:
 
 ```go
-// Get option chain from Fyers
-optionChainMap, err := fyers.GetOptionChain_Fyers("NIFTY", 10, "userID")
+import (
+    "fmt"
 
-// Get LTP from Tiqs
-ltp, err := tiqs.LTPInPaisa_Tiqs(tokenNumber, "userID_Tiqs")
+    fyers "github.com/sainipankaj15/All-In-One-Broker/Fyers"
+    zerodha "github.com/sainipankaj15/All-In-One-Broker/Zerodha"
+)
 
-// Get Greeks from Tiqs
-greeksData, err := tiqs.GetGreeks_Tiqs(tokenNumber, "userID_Tiqs")
+func main() {
+    // Fyers helpers
+    positions, err := fyers.GetPositions("XP03754")
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+    fmt.Println(positions)
 
-// Get market depth from Fyers
-marketDepth, err := fyers.MarketDepthAPI_Fyers(symbolName, "userID_Fyers")
+    // Zerodha helpers
+    funds, err := zerodha.GetFunds("FC8173")
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+    fmt.Println(funds)
+}
 ```
 
-### Order Placement
+## Order placement examples
+
+### Fyers
 
 ```go
-// Place market order with Jainam
-response, err := jainam.OrderPlaceMarket_Jainam(exchange, token, quantity, priceType, orderType, transSide, productType, "userID_Jainam")
-
-// Place limit order with Fyers
-success, err := fyers.PlaceOrder_Fyers(symbolName, limitPrice, qty, fyers.OrderSide.BUY, fyers.ProductType.INTRADAY, "userID")
-
-// Place market order with Tiqs
-response, err := tiqs.OrderPlaceMarket_Tiqs(exchange, token, quantity, tiqs.OrderSide.BUY, string(tiqs.Product.INTRADAY), "userID_Tiqs")
+resp, err := fyers.PlaceLimitOrder(
+    "NSE:SMALLCAP-EQ",
+    45,
+    1,
+    fyers.TransactionSide.SELL,
+    fyers.ProductType.INTRADAY,
+    "XP03754",
+)
 ```
 
-### Position Management
+### Zerodha
 
 ```go
-// Get positions from Fyers
-positions, err := fyers.PositionApi_Fyers("userID_Fyers")
-
-// Get positions from Tiqs
-positions, err := tiqs.PositionApi_Tiqs("userID_Tiqs")
-
-// Exit all positions in Fyers
-err := fyers.ExitingAllPosition(sides, segments, productTypes, "userID_Fyers")
-
-// Exit specific position in Fyers
-err := fyers.ExitPositionByID_Fyers("userID_Fyers", symbolName)
+resp, err := zerodha.PlaceMarketOrder(
+    zerodha.Exchange.NSE,
+    "SBIN",
+    "1",
+    zerodha.OrderType.MARKET,
+    zerodha.TransactionSide.SELL,
+    zerodha.ProductType.INTRADAY,
+    "FC8173",
+)
 ```
 
-### WebSocket Integration
+## Market data and analytics
+
+### Fyers
 
 ```go
-// Initialize Tiqs WebSocket client
-client, err := tiqs_socket.NewTiqsWebSocket(appID, accessToken, true)
-
-// Get data channel for real-time ticks
-dataChannel := client.GetDataChannel()
-
-// Get order updates channel
-orderChannel := client.GetOrderChannel()
-
-// Subscribe to a token
-client.AddSubscription(tokenNumber)
+optionChain, err := fyers.GetOptionChain_Fyers("NIFTY", 10, "XP03754")
+marketDepth, err := fyers.MarketDepthAPI_Fyers("NSE:NIFTY50-INDEX", "XP03754")
 ```
 
-### Option Greeks Calculation
+### Option-chain mapping helpers
 
 ```go
-// Initialize Tiqs Greeks calculation
-client, err := tiqs_greeks_socket.NewTiqsGreeksSocket(appID, accessToken, true)
-
-// Start WebSocket for a specific symbol
-err := client.StartWebSocket("NIFTY", niftyToken)
-
-// Get delta for an option
-delta, err := client.GetDelta(optionToken)
-
-// Find nearest option with specific delta
-token, err := client.GetNearestCallToken(0.5)
+optionMap, err := fyers.GetOptionChainMap_Fyers(fyers.Index.NIFTY, 15, "XP03754")
 ```
 
-### Utility Functions
+## Position and portfolio helpers
 
 ```go
-// Send Telegram notification
+positions, err := fyers.GetPositions("XP03754")
+holdings, err := zerodha.GetHoldings("FC8173")
+```
+
+## Utility helpers
+
+```go
 utils.TelegramSend(botToken, chatID, message)
-
-// Send Slack notification
 utils.SlackSend(webhookURL, message)
-
-// Get current date in IST
-date := utils.CurrentDate()
-
-// Schedule application start/stop
-utils.ApplicationStart(9, 15, 0)  // Start at 9:15 AM
+fmt.Println(utils.CurrentDate())
+utils.ApplicationStart(9, 15, 0)
 ```
 
 ## Dependencies
 
-- github.com/alphadose/haxmap: High-performance thread-safe concurrent map
-- github.com/gorilla/websocket: WebSocket implementation for Go
-- github.com/sainipankaj15/data-type-conversion: Data type conversion utilities
+The main module depends on:
+
+- github.com/alphadose/haxmap
+- github.com/gorilla/websocket
+- github.com/sainipankaj15/data-type-conversion
+
+## Notes
+
+- This repository is a library wrapper around broker APIs; it is not a standalone trading server.
+- Token handling is based on local JSON files and the calling code is responsible for managing credentials.
+- Some helpers are broker-specific and may require additional context such as app IDs, user IDs, or symbol/token details.
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome. Please open a pull request with a clear description of the change.
 
 ## License
 
-[For License information, Please Check Licencse file]
+See the LICENSE file for details.
 
 ## Disclaimer
 
