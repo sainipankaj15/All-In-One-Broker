@@ -67,7 +67,7 @@ import (
 
 func main() {
     // Fyers helpers
-    positions, err := fyers.GetPositions("XP03754")
+    positions, err := fyers.GetPositions("fyersUserID")
     if err != nil {
         fmt.Println(err)
         return
@@ -75,7 +75,7 @@ func main() {
     fmt.Println(positions)
 
     // Zerodha helpers
-    funds, err := zerodha.GetFunds("FC8173")
+    funds, err := zerodha.GetFunds("zerodhaUserID")
     if err != nil {
         fmt.Println(err)
         return
@@ -95,7 +95,7 @@ resp, err := fyers.PlaceLimitOrder(
     1,
     fyers.TransactionSide.SELL,
     fyers.ProductType.INTRADAY,
-    "XP03754",
+    "fyersUserID",
 )
 ```
 
@@ -109,7 +109,7 @@ resp, err := zerodha.PlaceMarketOrder(
     zerodha.OrderType.MARKET,
     zerodha.TransactionSide.SELL,
     zerodha.ProductType.INTRADAY,
-    "FC8173",
+    "zerodhaUserID",
 )
 ```
 
@@ -131,8 +131,8 @@ optionMap, err := fyers.GetOptionChainMap_Fyers(fyers.Index.NIFTY, 15, "XP03754"
 ## Position and portfolio helpers
 
 ```go
-positions, err := fyers.GetPositions("XP03754")
-holdings, err := zerodha.GetHoldings("FC8173")
+positions, err := fyers.GetPositions("fyersUserID")
+holdings, err := zerodha.GetHoldings("zerodhaUserID")
 ```
 
 ## Utility helpers
