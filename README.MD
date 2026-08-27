@@ -118,14 +118,14 @@ resp, err := zerodha.PlaceMarketOrder(
 ### Fyers
 
 ```go
-optionChain, err := fyers.GetOptionChain_Fyers("NIFTY", 10, "XP03754")
-marketDepth, err := fyers.MarketDepthAPI_Fyers("NSE:NIFTY50-INDEX", "XP03754")
+optionChain, err := fyers.GetOptionChain("NIFTY", 10, "fyersUserID")
+marketDepth, err := fyers.GetMarketDepth("NSE:NIFTY50-INDEX", "fyersUserID")
 ```
 
 ### Option-chain mapping helpers
 
 ```go
-optionMap, err := fyers.GetOptionChainMap_Fyers(fyers.Index.NIFTY, 15, "XP03754")
+optionMap, err := fyers.GetOptionChainMap(fyers.Index.NIFTY, 15, "fyersUserID")
 ```
 
 ## Position and portfolio helpers
