@@ -2,7 +2,7 @@ package fyers
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -11,7 +11,7 @@ import (
 func ReadAccessToken_Fyers(userID string) (string, error) {
 	fileName := userID + ".json"
 
-	fileContent, err := ioutil.ReadFile(fileName)
+	fileContent, err := os.ReadFile(fileName)
 	if err != nil {
 		return "", err
 	}
