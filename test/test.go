@@ -12,7 +12,17 @@ import (
 
 func main() {
 	fmt.Println("Hello World!")
-	// time.Sleep(5 * time.Second)
+
+	resp, err := fyers.GetLTP("NSE:NIFTY26SEPFUT", "XP03754")
+	if err != nil {
+		log.Println("Error while getting quotes")
+		log.Println(err)
+	} else {
+		log.Println("Quotes fetched successfully")
+		log.Printf("For Symbol NSE:NIFTY26SEPFUT %+v", resp)
+	}
+
+	time.Sleep(50000 * time.Second)
 
 	respFunds, err := fyers.GetFunds("XP03754")
 	if err != nil {
@@ -108,24 +118,24 @@ func main() {
 
 	time.Sleep(1 * time.Hour)
 
-	resp, err := zerodha.PlaceMarketOrder(zerodha.Exchange.NSE, "SBIN", "1", zerodha.OrderType.MARKET, zerodha.TransactionSide.SELL, zerodha.ProductType.INTRADAY, "FC8173")
+	resp1, err := zerodha.PlaceMarketOrder(zerodha.Exchange.NSE, "SBIN", "1", zerodha.OrderType.MARKET, zerodha.TransactionSide.SELL, zerodha.ProductType.INTRADAY, "FC8173")
 	if err != nil {
 		log.Println("Error while placing order")
 		log.Println(err)
 	} else {
 		log.Println("Order placed successfully")
-		log.Println(resp)
+		log.Println(resp1)
 	}
 	time.Sleep(1 * time.Hour)
 
-	mp, err := fyers.GetOptionChainMap_Fyers(fyers.Index.SENSEX, 15, "XP03754")
+	// mp, err := fyers.GetOptionChainMap_Fyers(fyers.Index.SENSEX, 15, "XP03754")
 
-	if err != nil {
-		log.Println("Error while getting map")
-		log.Println(err)
-	}
+	// if err != nil {
+	// 	log.Println("Error while getting map")
+	// 	log.Println(err)
+	// }
 
-	fmt.Println(mp)
+	// fmt.Println(mp)
 
 	// b, err := fyers.GetOptionChain_Fyers("NSE:NIFTYBANK-INDEX", 2, "XP03754")
 	// if err != nil {

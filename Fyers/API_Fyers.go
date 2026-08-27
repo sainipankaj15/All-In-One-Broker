@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"time"
@@ -16,7 +16,7 @@ import (
 // It takes the user ID as an argument and returns the positions response and an error if any occurs.
 func GetPositions(userID string) (PositionResponse, error) {
 	// Retrieve the access token for the user
-	accessToken, err := ReadingAccessToken_Fyers(userID)
+	accessToken, err := ReadAccessToken_Fyers(userID)
 	if err != nil {
 		return PositionResponse{}, err
 	}
@@ -72,12 +72,12 @@ func GetPositions(userID string) (PositionResponse, error) {
 	return positionResp, nil
 }
 
-// ExitingAllPosition deletes all open positions for a given user in Fyers.
-// It takes the list of sides, segments, product types and UserID_Fyers as parameters and returns an error if any occurs.
-func ExitingAllPosition(Side, Segement []int, ProductType []string, UserID_Fyers string) error {
+// ExitAllPositions deletes all open positions for a given user in Fyers.
+// It takes the list of sides, segments, product types and userID as parameters and returns an error if any occurs.
+func ExitAllPositions(side, segment []int, productType []string, userID string) error {
 
 	// Retrieve the access token for the user
-	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
+	accessToken, err := ReadAccessToken_Fyers(userID)
 	if err != nil {
 		// log.Fatalf("Error while getting access token in Fyers")
 		return err
@@ -89,9 +89,9 @@ func ExitingAllPosition(Side, Segement []int, ProductType []string, UserID_Fyers
 	// Define the data payload for the request
 	dataPayload := map[string]interface{}{
 		"exit_all":    0,
-		"side":        Side,
-		"segment":     Segement,
-		"productType": ProductType,
+		"side":        side,
+		"segment":     segment,
+		"productType": productType,
 	}
 
 	// Marshal the data payload into JSON
@@ -109,7 +109,7 @@ func ExitingAllPosition(Side, Segement []int, ProductType []string, UserID_Fyers
 	}
 
 	// Add the Bearer token to the request header
-	req.Header.Add("Authorization", AccessToken)
+	req.Header.Add("Authorization", accessToken)
 	req.Header.Set("Content-Type", "application/json")
 
 	// Make the request
@@ -122,28 +122,27 @@ func ExitingAllPosition(Side, Segement []int, ProductType []string, UserID_Fyers
 	defer resp.Body.Close()
 
 	// Read the response body
-	body, err := ioutil.ReadAll(resp.Body)
+	_, err = io.ReadAll(resp.Body)
 	if err != nil {
 		// log.Println("Error while reading the body in byte array in Exit All Position API")
 		return err
 	}
 
 	// Log the direct response from the API
-	_ = string(body)
-	// log.Printf("Direct Response for %v from Fyers API while Exiting all positions %v", UserID_Fyers, string(body))
+	// log.Printf("Direct Response for %v from Fyers API while Exiting all positions %v", userID, string(body))
 
 	// Log the final message
-	// finalMsg := fmt.Sprintf("For User : %v \nExit All API response %v", UserID_Fyers, string(body))
+	// finalMsg := fmt.Sprintf("For User : %v \nExit All API response %v", userID, string(body))
 	// log.Println(finalMsg)
 	return err
 }
 
-// ExitPositionByID_Fyers exits a position by its ID.
-// It takes the UserID_Fyers and symbol name as parameters and returns an error if something goes wrong.
-func ExitPositionByID_Fyers(UserID_Fyers string, symbolName string) error {
+// ExitPositionByID exits a position by its ID.
+// It takes the userID and symbol name as parameters and returns an error if something goes wrong.
+func ExitPositionByID(userID string, symbol string) error {
 
 	// Retrieve the access token for the user
-	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
+	accessToken, err := ReadAccessToken_Fyers(userID)
 	if err != nil {
 		// log.Fatalf("Error while getting access token in Fyers")
 		return err
@@ -154,7 +153,7 @@ func ExitPositionByID_Fyers(UserID_Fyers string, symbolName string) error {
 
 	// Define the data payload for the request
 	dataPayload := map[string]interface{}{
-		"id": symbolName,
+		"id": symbol,
 	}
 
 	// Marshal the data payload into JSON
@@ -172,7 +171,7 @@ func ExitPositionByID_Fyers(UserID_Fyers string, symbolName string) error {
 	}
 
 	// Add the Bearer token to the request header
-	req.Header.Add("Authorization", AccessToken)
+	req.Header.Add("Authorization", accessToken)
 	req.Header.Set("Content-Type", "application/json")
 
 	// Make the request
@@ -185,37 +184,34 @@ func ExitPositionByID_Fyers(UserID_Fyers string, symbolName string) error {
 	defer resp.Body.Close()
 
 	// Read the response body
-	body, err := ioutil.ReadAll(resp.Body)
+	_, err = io.ReadAll(resp.Body)
 	if err != nil {
 		// log.Println("Error while reading the body in byte array in Position API")
 		return err
 	}
 
 	// Log the direct response from the API
-	_ = string(body)
 	// log.Printf("Direct Response from Fyers API while Exiting position by ID %v", string(body))
 
 	// Create a new message that includes the user and the exit message
-	_ = fmt.Sprintf("%v User \n\nExit Alert From Position\n\n", UserID_Fyers)
-	// newMsg += string(body)
 	// log.Println(newMsg)
 
 	return nil
 }
 
-// MarketDepthAPI_Fyers fetches the market depth for a given symbol from the Fyers API.
+// GetMarketDepth fetches the market depth for a given symbol from the Fyers API.
 // It takes the symbol name and UserID of the user as parameters and returns the market depth and an error if any occurs.
-func MarketDepthAPI_Fyers(symbolName string, UserID_Fyers string) (MarketDepthAPIResp_Fyers, error) {
+func GetMarketDepth(symbol string, userID string) (MarketDepthAPIResp_Fyers, error) {
 
 	// Retrieve the access token for the user
-	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
+	accessToken, err := ReadAccessToken_Fyers(userID)
 	if err != nil {
 		// log.Fatalf("Error while getting access token in Fyers")
 		return MarketDepthAPIResp_Fyers{}, err
 	}
 
 	// Define the URL for the positions API endpoint
-	url := fmt.Sprintf("https://api-t1.fyers.in/data/depth?symbol=%s&ohlcv_flag=1", symbolName)
+	url := fmt.Sprintf("https://api-t1.fyers.in/data/depth?symbol=%s&ohlcv_flag=1", symbol)
 
 	// Create a new HTTP GET request
 	req, err := http.NewRequest("GET", url, nil)
@@ -225,7 +221,7 @@ func MarketDepthAPI_Fyers(symbolName string, UserID_Fyers string) (MarketDepthAP
 	}
 
 	// Add the Bearer token to the request header
-	req.Header.Add("Authorization", AccessToken)
+	req.Header.Add("Authorization", accessToken)
 
 	// Make the request
 	client := &http.Client{}
@@ -237,15 +233,14 @@ func MarketDepthAPI_Fyers(symbolName string, UserID_Fyers string) (MarketDepthAP
 	defer resp.Body.Close()
 
 	// Read the response body
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		// log.Println("Error while reading the body in byte array in marketDepthAPI")
 		return MarketDepthAPIResp_Fyers{}, err
 	}
 
 	// Log the direct response from the API
-	_ = string(body)
-	// log.Printf("Direct Response from Market Depth API of fyers for %v is %v", symbolName, string(body))
+	// log.Printf("Direct Response from Market Depth API of fyers for %v is %v", symbol, string(body))
 
 	// Convert the response body into the MarketDepthAPIResp_Fyers struct
 	var marketDepthResponse MarketDepthAPIResp_Fyers
@@ -259,18 +254,18 @@ func MarketDepthAPI_Fyers(symbolName string, UserID_Fyers string) (MarketDepthAP
 	return marketDepthResponse, nil
 }
 
-// LTP_Fyers fetches the last traded price (LTP) of a symbol from Fyers using the Market Depth API.
-func LTP_Fyers(symbolName string, UserID_Fyers string) (float64, error) {
+// GetLTP fetches the last traded price (LTP) of a symbol from Fyers using the Market Depth API.
+func GetLTP(symbol string, userID string) (float64, error) {
 
 	// Retrieve the access token for the user
-	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
+	accessToken, err := ReadAccessToken_Fyers(userID)
 	if err != nil {
 		// log.Fatalf("Error while getting access token in Fyers")
 		return 0.0, err
 	}
 
 	// Construct the URL for the Market Depth API request
-	url := fmt.Sprintf("https://api-t1.fyers.in/data/depth?symbol=%s&ohlcv_flag=1", symbolName)
+	url := fmt.Sprintf("https://api-t1.fyers.in/data/depth?symbol=%s&ohlcv_flag=1", symbol)
 
 	// Create a new HTTP GET request
 	req, err := http.NewRequest("GET", url, nil)
@@ -280,7 +275,7 @@ func LTP_Fyers(symbolName string, UserID_Fyers string) (float64, error) {
 	}
 
 	// Add the Bearer token to the request header
-	req.Header.Add("Authorization", AccessToken)
+	req.Header.Add("Authorization", accessToken)
 
 	// Make the request
 	client := &http.Client{}
@@ -292,15 +287,14 @@ func LTP_Fyers(symbolName string, UserID_Fyers string) (float64, error) {
 	defer resp.Body.Close()
 
 	// Read the response body
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		// log.Println("Error while reading the body in byte array in marketDepthAPI")
 		return 0.0, err
 	}
 
 	// Log the direct response from the API
-	_ = string(body)
-	// log.Printf("Direct Response from Market Depth API of fyers for %v is %v", symbolName, string(body))
+	// log.Printf("Direct Response from Market Depth API of fyers for %v is %v", symbol, string(body))
 
 	// Convert the response body into the MarketDepthAPIResp_Fyers struct
 	var marketDepthResponse MarketDepthAPIResp_Fyers
@@ -312,9 +306,7 @@ func LTP_Fyers(symbolName string, UserID_Fyers string) (float64, error) {
 	}
 
 	// ltp is the last traded price
-	ltp := marketDepthResponse.D[symbolName].Ltp
-	_ = fmt.Sprintf("\nFor %v LTP is %v", symbolName, ltp)
-	// log.Println(final)
+	ltp := marketDepthResponse.D[symbol].Ltp
 
 	return ltp, nil
 }
@@ -332,7 +324,7 @@ func PlaceLimitOrder(
 ) (PlaceOrderResponse, error) {
 
 	// Read the access token for the user from the file
-	accessToken, err := ReadingAccessToken_Fyers(userID)
+	accessToken, err := ReadAccessToken_Fyers(userID)
 	if err != nil {
 		return PlaceOrderResponse{}, err
 	}
@@ -416,7 +408,7 @@ func PlaceMarketOrder(
 ) (PlaceOrderResponse, error) {
 
 	// Retrieve the access token for the user
-	accessToken, err := ReadingAccessToken_Fyers(userID)
+	accessToken, err := ReadAccessToken_Fyers(userID)
 	if err != nil {
 		return PlaceOrderResponse{}, err
 	}
@@ -489,19 +481,19 @@ func PlaceMarketOrder(
 	return orderResp, nil
 }
 
-// QuotesAPI_Fyers fetches the quote data for a given symbol from the Fyers API.
+// GetQuotes fetches the quote data for a given symbol from the Fyers API.
 // It takes the symbol name and UserID of the user as parameters and returns the quote response and an error if any occurs.
-func QuotesAPI_Fyers(symbolName, UserID_Fyers string) (QuoteAPIResp_Fyers, error) {
+func GetQuotes(symbol, userID string) (QuoteAPIResp_Fyers, error) {
 
 	// Retrieve the access token for the user
-	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
+	accessToken, err := ReadAccessToken_Fyers(userID)
 	if err != nil {
 		// log.Fatalf("Error while getting access token in Fyers")
 		return QuoteAPIResp_Fyers{}, err
 	}
 
 	// Construct the URL for the Quotes API request
-	url := fmt.Sprintf("https://api-t1.fyers.in/data/quotes?symbols=%s", symbolName)
+	url := fmt.Sprintf("https://api-t1.fyers.in/data/quotes?symbols=%s", symbol)
 
 	// Create a new HTTP GET request
 	req, err := http.NewRequest("GET", url, nil)
@@ -511,7 +503,7 @@ func QuotesAPI_Fyers(symbolName, UserID_Fyers string) (QuoteAPIResp_Fyers, error
 	}
 
 	// Add the Bearer token to the request header
-	req.Header.Add("Authorization", AccessToken)
+	req.Header.Add("Authorization", accessToken)
 
 	// Make the request to the API
 	client := &http.Client{}
@@ -523,15 +515,14 @@ func QuotesAPI_Fyers(symbolName, UserID_Fyers string) (QuoteAPIResp_Fyers, error
 	defer resp.Body.Close()
 
 	// Read the response body
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		// log.Println("Error while reading the body in byte array in quotesFyersAPI")
 		return QuoteAPIResp_Fyers{}, err
 	}
 
 	// Log the direct response from the API
-	_ = string(body)
-	// log.Printf("Direct Response from Quotes API of fyers for %v is %v", symbolName, string(body))
+	log.Printf("Direct Response from Quotes API of fyers for %v is %v", symbol, string(body))
 
 	// Convert the response body into the QuoteAPIResp_Fyers struct
 	var qpr QuoteAPIResp_Fyers
@@ -544,19 +535,19 @@ func QuotesAPI_Fyers(symbolName, UserID_Fyers string) (QuoteAPIResp_Fyers, error
 	return qpr, nil
 }
 
-// SymbolNameToExchToken retrieves the exchange token for a given symbol name from the Fyers API.
+// GetExchangeToken retrieves the exchange token for a given symbol name from the Fyers API.
 // It takes the symbol name and UserID of the user as parameters and returns the exchange token and an error if any occurs.
-func SymbolNameToExchToken(symbolName, UserID_Fyers string) (string, error) {
+func GetExchangeToken(symbol, userID string) (string, error) {
 
 	// Retrieve the access token for the user
-	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
+	accessToken, err := ReadAccessToken_Fyers(userID)
 	if err != nil {
 		// log.Fatalf("Error while getting access token in Fyers")
 		return "", err
 	}
 
 	// Construct the URL for the Quotes API request
-	url := fmt.Sprintf("https://api-t1.fyers.in/data/quotes?symbols=%s", symbolName)
+	url := fmt.Sprintf("https://api-t1.fyers.in/data/quotes?symbols=%s", symbol)
 
 	// Create a new HTTP GET request
 	req, err := http.NewRequest("GET", url, nil)
@@ -566,7 +557,7 @@ func SymbolNameToExchToken(symbolName, UserID_Fyers string) (string, error) {
 	}
 
 	// Add the Bearer token to the request header
-	req.Header.Add("Authorization", AccessToken)
+	req.Header.Add("Authorization", accessToken)
 
 	// Make the request to the API
 	client := &http.Client{}
@@ -578,15 +569,14 @@ func SymbolNameToExchToken(symbolName, UserID_Fyers string) (string, error) {
 	defer resp.Body.Close()
 
 	// Read the response body
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		// log.Println("Error while reading the body in byte array in quotesFyersAPI")
 		return "", err
 	}
 
 	// Log the direct response from the API
-	_ = string(body)
-	// log.Printf("Direct Response from Quotes API of fyers for %v is %v", symbolName, string(body))
+	// log.Printf("Direct Response from Quotes API of fyers for %v is %v", symbol, string(body))
 
 	// Convert the response body into the QuoteAPIResp_Fyers struct
 	var qpr QuoteAPIResp_Fyers
@@ -599,8 +589,6 @@ func SymbolNameToExchToken(symbolName, UserID_Fyers string) (string, error) {
 
 	// Extract the Fyers token
 	fytoken := qpr.D[0].V.FyToken
-	_ = fmt.Sprintf("\nFor %v Fyers token is %v", symbolName, fytoken)
-	// log.Println(final)
 
 	// Check if the token meets the minimum length requirement
 	if len(fytoken) < 12 {
@@ -614,20 +602,20 @@ func SymbolNameToExchToken(symbolName, UserID_Fyers string) (string, error) {
 	return exchangeToken, nil
 }
 
-// MarginMktOrder_Fyers retrieves the margin information for a market order for a given symbol using the Fyers API.
+// GetOrderMargin retrieves the margin information for a market order for a given symbol using the Fyers API.
 // It takes the symbol name, quantity, side, product type, and user ID as parameters.
 // Returns a MarginAPIResp_Fyers struct and an error if any occurs.
-func MarginMktOrder_Fyers(symbolName string, qty int, whichSide int, productType string, UserID_Fyers string) (MarginAPIResp_Fyers, error) {
+func GetOrderMargin(symbol string, qty int, whichSide int, productType string, userID string) (MarginAPIResp_Fyers, error) {
 
 	// Retrieve the access token for the user
-	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
+	accessToken, err := ReadAccessToken_Fyers(userID)
 	if err != nil {
 		// log.Fatalf("Error while getting access token in Fyers")
 		return MarginAPIResp_Fyers{}, err
 	}
 
 	// Log the order details
-	_ = fmt.Sprintf("Margin Market Order for %v and total qty is %v and Client Name is %v", symbolName, qty, UserID_Fyers)
+	_ = fmt.Sprintf("Margin Market Order for %v and total qty is %v and Client Name is %v", symbol, qty, userID)
 	// log.Println(msg)
 
 	// Define the URL for the margin API endpoint
@@ -635,7 +623,7 @@ func MarginMktOrder_Fyers(symbolName string, qty int, whichSide int, productType
 
 	// Prepare the payload for the margin request
 	dataPayload := map[string]interface{}{
-		"symbol":       symbolName,
+		"symbol":       symbol,
 		"qty":          qty,
 		"type":         2, // Assuming 2 represents a market order
 		"side":         whichSide,
@@ -665,7 +653,7 @@ func MarginMktOrder_Fyers(symbolName string, qty int, whichSide int, productType
 	}
 
 	// Add headers to the request
-	req.Header.Add("Authorization", AccessToken)
+	req.Header.Add("Authorization", accessToken)
 	req.Header.Set("Content-Type", "application/json")
 
 	// Make the request to the API
@@ -678,7 +666,7 @@ func MarginMktOrder_Fyers(symbolName string, qty int, whichSide int, productType
 	defer resp.Body.Close()
 
 	// Read the response body
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		// log.Println(err)
 		return MarginAPIResp_Fyers{}, err
@@ -695,18 +683,18 @@ func MarginMktOrder_Fyers(symbolName string, qty int, whichSide int, productType
 	return response, nil
 }
 
-// GetOptionChain_Fyers fetches the option chain for a given symbol and strike count from the Fyers API.
+// GetOptionChain fetches the option chain for a given symbol and strike count from the Fyers API.
 // It takes the symbol name, strike count and UserID of the user as parameters and returns the option chain response and an error if any occurs.
-func GetOptionChain_Fyers(Symbol string, StrikeCount int, UserID_Fyers string) (OptionChainAPIResponse, error) {
+func GetOptionChain(symbol string, strikeCount int, userID string) (OptionChainAPIResponse, error) {
 
-	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
+	accessToken, err := ReadAccessToken_Fyers(userID)
 	if err != nil {
 		// log.Fatalf("Error while getting access token in Fyers")
 		return OptionChainAPIResponse{}, err
 	}
 
 	// Construct the URL for the option chain API request
-	url := fmt.Sprintf("https://api-t1.fyers.in/data/options-chain-v3?symbol=%s&strikecount=%d", Symbol, StrikeCount)
+	url := fmt.Sprintf("https://api-t1.fyers.in/data/options-chain-v3?symbol=%s&strikecount=%d", symbol, strikeCount)
 
 	// Create a new HTTP GET request
 	req, err := http.NewRequest("GET", url, nil)
@@ -716,7 +704,7 @@ func GetOptionChain_Fyers(Symbol string, StrikeCount int, UserID_Fyers string) (
 	}
 
 	// Add the Bearer token to the request header
-	req.Header.Add("Authorization", AccessToken)
+	req.Header.Add("Authorization", accessToken)
 
 	// Make the request
 	client := &http.Client{}
@@ -728,14 +716,13 @@ func GetOptionChain_Fyers(Symbol string, StrikeCount int, UserID_Fyers string) (
 	defer resp.Body.Close()
 
 	// Read the response body
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		// log.Println(err)
 		return OptionChainAPIResponse{}, err
 	}
 
 	// Log the direct response from the API
-	_ = string(body)
 	// log.Printf("Direct Response from Option Chain API of fyers for %v is %v", Symbol, string(body))
 
 	// Convert the response body into the OptionChainAPIResponse struct
@@ -749,12 +736,12 @@ func GetOptionChain_Fyers(Symbol string, StrikeCount int, UserID_Fyers string) (
 	return response, nil
 }
 
-// GetHistoricalData_Fyers fetches the historical data for a given symbol from the Fyers API.
+// GetHistoricalData fetches the historical data for a given symbol from the Fyers API.
 // It takes the symbol name, resolution, date format, range from and range to as parameters and returns the historical data and an error if any occurs.
-func GetHistoricalData_Fyers(symbol, resolution, dateFormat, rangeFrom, rangeTo, UserID_Fyers string) ([]Candle, error) {
+func GetHistoricalData(symbol, resolution, dateFormat, rangeFrom, rangeTo, userID string) ([]Candle, error) {
 
 	// Retrieve the access token for the user
-	AccessToken, err := ReadingAccessToken_Fyers(UserID_Fyers)
+	accessToken, err := ReadAccessToken_Fyers(userID)
 	if err != nil {
 		// log.Fatalf("Error while getting access token in Fyers")
 		return []Candle{}, err
@@ -790,7 +777,7 @@ func GetHistoricalData_Fyers(symbol, resolution, dateFormat, rangeFrom, rangeTo,
 	}
 
 	// Add headers to the request
-	req.Header.Add("Authorization", AccessToken)
+	req.Header.Add("Authorization", accessToken)
 
 	// Send the request
 	resp, err := client.Do(req)
@@ -805,7 +792,7 @@ func GetHistoricalData_Fyers(symbol, resolution, dateFormat, rangeFrom, rangeTo,
 	}
 
 	// Read the response body
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		// log.Println(err)
 	}
@@ -852,7 +839,7 @@ func convertToCandles(rawCandles [][]interface{}) ([]Candle, error) {
 // It takes a user ID as an argument and returns the holding data and an error if something goes wrong.
 func GetHoldings(userID string) (HoldingsResponse, error) {
 	// Retrieve the access token for the user
-	accessToken, err := ReadingAccessToken_Fyers(userID)
+	accessToken, err := ReadAccessToken_Fyers(userID)
 	if err != nil {
 		return HoldingsResponse{}, err
 	}
@@ -911,7 +898,7 @@ func GetHoldings(userID string) (HoldingsResponse, error) {
 // It takes a user ID as an argument and returns the funds data and an error if something goes wrong.
 func GetFunds(userID string) (FundsResponse, error) {
 	// Retrieve the access token for the user
-	accessToken, err := ReadingAccessToken_Fyers(userID)
+	accessToken, err := ReadAccessToken_Fyers(userID)
 	if err != nil {
 		return FundsResponse{}, err
 	}
