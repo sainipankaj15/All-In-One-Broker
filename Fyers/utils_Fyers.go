@@ -2,6 +2,8 @@ package fyers
 
 import (
 	"encoding/json"
+	"fmt"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -95,4 +97,69 @@ func getTradingSymbolFromName(symbolName string) string {
 	}
 
 	return ""
+}
+
+// GetATMOptionSymbols returns the ATM Call (CE) and Put (PE) option symbols
+// for the given underlying symbol and user ID.
+func GetATMOptionSymbols(symbol, userID string) (string, string, error) {
+	optionChainResp, err := GetOptionChain(symbol, 1, userID)
+	if err != nil {
+		return "", "", err
+	}
+
+	optionsChain := optionChainResp.Data.OptionsChain
+
+	var underlyingLTP float64
+
+	// Get the underlying LTP from the option chain response.
+	for _, option := range optionsChain {
+		if option.OptionType == "" && option.StrikePrice == -1 {
+			underlyingLTP = option.Ltp
+			break
+		}
+	}
+
+	if underlyingLTP == 0 {
+		return "", "", fmt.Errorf("underlying LTP not found for %s", symbol)
+	}
+
+	// Find the strike closest to the underlying LTP.
+	var atmStrike int
+	minDifference := math.MaxFloat64
+
+	for _, option := range optionsChain {
+		if option.OptionType == "" || option.StrikePrice < 0 {
+			continue
+		}
+
+		difference := math.Abs(underlyingLTP - float64(option.StrikePrice))
+
+		if difference < minDifference {
+			minDifference = difference
+			atmStrike = int(option.StrikePrice)
+		}
+	}
+
+	var callSymbol string
+	var putSymbol string
+
+	// Get CE and PE symbols for the ATM strike.
+	for _, option := range optionsChain {
+		if int(option.StrikePrice) != atmStrike {
+			continue
+		}
+
+		switch option.OptionType {
+		case OptionTypes.CALL:
+			callSymbol = option.Symbol
+		case OptionTypes.PUT:
+			putSymbol = option.Symbol
+		}
+	}
+
+	if callSymbol == "" || putSymbol == "" {
+		return "", "", fmt.Errorf("ATM CE/PE symbols not found for %s", symbol)
+	}
+
+	return callSymbol, putSymbol, nil
 }

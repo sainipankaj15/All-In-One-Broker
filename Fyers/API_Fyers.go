@@ -723,9 +723,6 @@ func GetOptionChain(symbol string, strikeCount int, userID string) (OptionChainA
 		return OptionChainAPIResponse{}, err
 	}
 
-	// Log the direct response from the API
-	// log.Printf("Direct Response from Option Chain API of fyers for %v is %v", Symbol, string(body))
-
 	// Convert the response body into the OptionChainAPIResponse struct
 	var response OptionChainAPIResponse
 

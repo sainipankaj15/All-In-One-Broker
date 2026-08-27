@@ -13,14 +13,26 @@ import (
 func main() {
 	fmt.Println("Hello World!")
 
-	resp, err := fyers.GetCurrentMonthFutureSymbol("NSE", "NIFTY", "XP03754")
+	callSymbol, putSymbol, err := fyers.GetATMOptionSymbols(
+		"NSE:NIFTY50-INDEX",
+		fyers.ADMIN_FYERS,
+	)
 	if err != nil {
-		log.Println("Error while getting quotes")
+		log.Println("Error while getting ATM option symbols")
 		log.Println(err)
 	} else {
-		log.Println("Quotes fetched successfully")
-		log.Printf("For Symbol %+v", resp)
+		log.Println("ATM option symbols fetched successfully")
+		log.Printf("Call Symbol: %+v, Put Symbol: %+v", callSymbol, putSymbol)
 	}
+
+	// resp, err := fyers.GetCurrentMonthFutureSymbol("NSE", "NIFTY", "XP03754")
+	// if err != nil {
+	// 	log.Println("Error while getting quotes")
+	// 	log.Println(err)
+	// } else {
+	// 	log.Println("Quotes fetched successfully")
+	// 	log.Printf("For Symbol %+v", resp)
+	// }
 
 	time.Sleep(50000 * time.Second)
 
