@@ -102,7 +102,11 @@ func getTradingSymbolFromName(symbolName string) string {
 // GetATMOptionSymbols returns the ATM Call (CE) and Put (PE) option symbols
 // for the given underlying symbol and user ID.
 func GetATMOptionSymbols(symbol, userID string) (string, string, error) {
+
+	// Fetch the option chain with one strike on either side of the ATM strike.
+	// The response also contains the current underlying LTP.
 	optionChainResp, err := GetOptionChain(symbol, 1, userID)
+
 	if err != nil {
 		return "", "", err
 	}
@@ -111,7 +115,8 @@ func GetATMOptionSymbols(symbol, userID string) (string, string, error) {
 
 	var underlyingLTP float64
 
-	// Get the underlying LTP from the option chain response.
+	// Find the underlying index/stock entry in the option chain.
+	// Fyers identifies this entry with an empty option type and strike price -1.
 	for _, option := range optionsChain {
 		if option.OptionType == "" && option.StrikePrice == -1 {
 			underlyingLTP = option.Ltp
@@ -119,15 +124,19 @@ func GetATMOptionSymbols(symbol, userID string) (string, string, error) {
 		}
 	}
 
+	// Make sure the underlying LTP was available before calculating the ATM strike.
 	if underlyingLTP == 0 {
 		return "", "", fmt.Errorf("underlying LTP not found for %s", symbol)
 	}
 
-	// Find the strike closest to the underlying LTP.
+	// Find the strike price closest to the current underlying LTP.
+	// This closest strike is considered the ATM strike.
 	var atmStrike int
 	minDifference := math.MaxFloat64
 
 	for _, option := range optionsChain {
+
+		// Skip the underlying entry and any entries without a valid strike price.
 		if option.OptionType == "" || option.StrikePrice < 0 {
 			continue
 		}
@@ -143,8 +152,9 @@ func GetATMOptionSymbols(symbol, userID string) (string, string, error) {
 	var callSymbol string
 	var putSymbol string
 
-	// Get CE and PE symbols for the ATM strike.
+	// Find both CE and PE symbols corresponding to the ATM strike.
 	for _, option := range optionsChain {
+
 		if int(option.StrikePrice) != atmStrike {
 			continue
 		}
@@ -157,6 +167,7 @@ func GetATMOptionSymbols(symbol, userID string) (string, string, error) {
 		}
 	}
 
+	// Both ATM Call and Put symbols are required for a successful result.
 	if callSymbol == "" || putSymbol == "" {
 		return "", "", fmt.Errorf("ATM CE/PE symbols not found for %s", symbol)
 	}
