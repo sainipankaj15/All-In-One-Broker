@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -951,4 +952,34 @@ func GetFunds(userID string) (FundsResponse, error) {
 
 	// Return the funds data
 	return fundsResp, nil
+}
+
+// GetCurrentMonthFutureSymbol returns the valid current-month futures symbol for the given exchange and underlying.
+// It constructs the current-month futures symbol and validates it using the Fyers LTP API.
+// If the current-month contract has expired, it checks the following month and returns the first valid futures symbol.
+func GetCurrentMonthFutureSymbol(exchange, underlying, userID string) (string, error) {
+	now := time.Now()
+
+	for i := 0; i < 3; i++ {
+		month := now.AddDate(0, i, 0)
+
+		symbol := fmt.Sprintf(
+			"%s:%s%d%sFUT",
+			exchange,
+			underlying,
+			month.Year()%100,
+			strings.ToUpper(month.Format("Jan")),
+		)
+
+		ltp, err := GetLTP(symbol, userID)
+		if err != nil {
+			return "", err
+		}
+
+		if ltp > 0 {
+			return symbol, nil
+		}
+	}
+
+	return "", fmt.Errorf("no valid futures symbol found for %s", underlying)
 }

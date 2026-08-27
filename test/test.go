@@ -13,13 +13,13 @@ import (
 func main() {
 	fmt.Println("Hello World!")
 
-	resp, err := fyers.GetLTP("NSE:NIFTY26SEPFUT", "XP03754")
+	resp, err := fyers.GetCurrentMonthFutureSymbol("NSE", "NIFTY", "XP03754")
 	if err != nil {
 		log.Println("Error while getting quotes")
 		log.Println(err)
 	} else {
 		log.Println("Quotes fetched successfully")
-		log.Printf("For Symbol NSE:NIFTY26SEPFUT %+v", resp)
+		log.Printf("For Symbol %+v", resp)
 	}
 
 	time.Sleep(50000 * time.Second)
